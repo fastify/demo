@@ -1,0 +1,1 @@
+Fastify core plugins configuration.

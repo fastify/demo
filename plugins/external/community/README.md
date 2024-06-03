@@ -1,0 +1,1 @@
+Fastify community plugins configuration.
