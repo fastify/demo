@@ -1,6 +1,6 @@
 /**
  * If you would like to turn your application into a standalone executable, lookt at server.js file
- * 
+ *
  */
 
 import path from 'node:path'

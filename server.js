@@ -1,5 +1,5 @@
 /**
- * This file is here only to show you what to proceed if 
+ * This file is here only to show you what to proceed if
  * you would like to turn your application into a standalone executable.
  */
 
@@ -10,7 +10,6 @@ import closeWithGrace from 'close-with-grace'
 
 // Import your application as a normal plugin.
 import appService from './app.js'
-
 
 // Instantiate Fastify with some config
 const app = Fastify({
