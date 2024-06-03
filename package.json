@@ -1,0 +1,31 @@
+{
+  "name": "fastify-demo",
+  "version": "0.0.0",
+  "description": "The official Fastify demo!",
+  "main": "app.js",
+  "type": "module",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "cross-env node --test test/**/*.test.js",
+    "start": "fastify start -l info app.js",
+    "dev": "fastify start -w -l info -P app.js",
+    "lint": "standard",
+    "lint:fix": "npm run lint -- --fix"
+  },
+  "keywords": [],
+  "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@fastify/autoload": "^5.0.0",
+    "@fastify/sensible": "^5.0.0",
+    "fastify": "^4.26.1",
+    "fastify-cli": "^6.1.1",
+    "fastify-plugin": "^4.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "standard": "^17.1.0"
+  }
+}
