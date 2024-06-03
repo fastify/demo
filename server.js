@@ -1,5 +1,5 @@
 /**
- * This file is here only to show you how to proceed if you would 
+ * This file is here only to show you how to proceed if you would
  * like to turn your application into a standalone executable.
  */
 
