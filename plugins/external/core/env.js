@@ -4,7 +4,6 @@ import env from '@fastify/env'
 const schema = {
   type: 'object',
   required: ['PORT'],
-  // will read .env in root folder
   properties: {
     PORT: {
       type: 'string',
