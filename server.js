@@ -1,6 +1,6 @@
 /**
- * This file is here only to show you what to proceed if
- * you would like to turn your application into a standalone executable.
+ * This file is here only to show you how to proceed if you would 
+ * like to turn your application into a standalone executable.
  */
 
 import Fastify from 'fastify'
