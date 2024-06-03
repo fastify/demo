@@ -2,12 +2,11 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../helper.js'
 
-test('example is loaded', async (t) => {
+test('default root route', async (t) => {
   const app = await build(t)
 
   const res = await app.inject({
-    url: '/example'
+    url: '/'
   })
-
-  assert.equal(res.payload, 'this is an example')
+  assert.deepStrictEqual(JSON.parse(res.payload), 'Welcome to the official fastify demo!')
 })

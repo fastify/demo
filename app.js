@@ -1,14 +1,12 @@
+/**
+ * If you would like to turn your application into a standalone executable, lookt at server.js file
+ * 
+ */
+
 import path from 'node:path'
 import AutoLoad from '@fastify/autoload'
 
-// Pass --options via CLI arguments in command to enable these options.
-export const options = {}
-
 export default async function app (fastify, opts) {
-  // Place here your custom code!
-
-  // Do not touch the following lines
-
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
   // through your application
