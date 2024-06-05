@@ -21,4 +21,35 @@ export default async function app (fastify, opts) {
     dir: path.join(import.meta.dirname, 'routes'),
     options: { ...opts }
   })
+
+  fastify.setErrorHandler((err, request, reply) => {
+    request.log.error({
+      err,
+      request: {
+        method: request.method,
+        url: request.url,
+        query: request.query,
+        params: request.params
+      }
+    }, 'Unhandled error occurred')
+
+    reply.code(err.statusCode ?? 500)
+
+    return { message: 'Internal Server Error' }
+  })
+
+  fastify.setNotFoundHandler(async (request, reply) => {
+    request.log.warn({
+      request: {
+        method: request.method,
+        url: request.url,
+        query: request.query,
+        params: request.params
+      }
+    }, 'Resource not found')
+
+    reply.code(404)
+
+    return { message: 'Not Found' }
+  })
 }
