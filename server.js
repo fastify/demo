@@ -1,6 +1,8 @@
 /**
  * This file is here only to show you how to proceed if you would
  * like to turn your application into a standalone executable.
+ *
+ * You can launch it with the command `npm run standalone`
  */
 
 import Fastify from 'fastify'
@@ -11,9 +13,24 @@ import closeWithGrace from 'close-with-grace'
 // Import your application as a normal plugin.
 import appService from './app.js'
 
-// Instantiate Fastify with some config
+const environment = process.env.NODE_ENV ?? 'production'
+const envToLogger = {
+  development: {
+    level: 'info',
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        translateTime: 'HH:MM:ss Z',
+        ignore: 'pid,hostname'
+      }
+    }
+  },
+  production: true,
+  test: false
+}
+
 const app = Fastify({
-  logger: true
+  logger: envToLogger[environment] ?? true
 })
 
 async function init () {

@@ -11,6 +11,7 @@
     "test": "cross-env node --test test/**/*.test.js",
     "start": "fastify start -l info app.js",
     "dev": "fastify start -w -l info -P app.js",
+    "standalone": "node --env-file=.env server.js",
     "lint": "standard",
     "lint:fix": "npm run lint -- --fix"
   },
