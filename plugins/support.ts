@@ -1,4 +1,4 @@
-import fp from 'fastify-plugin'
+import fp from "fastify-plugin";
 
 /**
  * The use of fastify-plugin is required to be able
@@ -7,7 +7,7 @@ import fp from 'fastify-plugin'
  * @see https://github.com/fastify/fastify-plugin
  */
 export default fp(async function (fastify) {
-  fastify.decorate('someSupport', function () {
-    return 'hugs'
-  })
-})
+  fastify.decorate("someSupport", function () {
+    return "hugs";
+  });
+});

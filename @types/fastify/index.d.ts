@@ -1,11 +1,7 @@
-declare module 'fastify' {
-  export interface FastifyInstance<
-      HttpServer = http.Server,
-      HttpRequest = http.IncomingMessage,
-      HttpResponse = http.ServerResponse
-    > {
-    someSupport(): void
+declare module "fastify" {
+  export interface FastifyInstance {
+    someSupport(): void;
   }
 }
 
-export {}
+export {};
