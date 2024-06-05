@@ -3,13 +3,12 @@
  *
  */
 
-import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
-import { fileURLToPath } from 'url'
-import { dirname } from 'path'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
 
 const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
+const __dirname = path.dirname(__filename)
 
 export default async function app (fastify, opts) {
   // This loads all plugins defined in plugins
