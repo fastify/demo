@@ -4,7 +4,7 @@ import assert from 'node:assert'
 import Fastify from 'fastify'
 import Support from '../../plugins/support.js'
 
-test('support works standalone', async (t) => {
+test('support works standalone', async () => {
   const fastify = Fastify()
   fastify.register(Support)
 

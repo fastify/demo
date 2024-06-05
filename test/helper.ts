@@ -3,6 +3,7 @@
 
 import { build as buildApplication } from 'fastify-cli/helper.js'
 import path from 'node:path'
+import { TestContext } from 'node:test'
 import { fileURLToPath } from 'node:url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -17,7 +18,7 @@ export function config () {
 }
 
 // automatically build and tear down our instance
-export async function build (t) {
+export async function build (t: TestContext) {
   // you can set all the options supported by the fastify CLI command
   const argv = [AppPath]
 

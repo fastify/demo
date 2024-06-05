@@ -8,6 +8,6 @@ import sensible from '@fastify/sensible'
  */
 export default fp(async function (fastify, opts) {
   fastify.register(sensible, {
-    errorHandler: false
+    // Set plugin options here
   })
 })

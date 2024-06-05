@@ -1,16 +1,16 @@
 /**
  * If you would like to turn your application into a standalone executable, look at server.js file
- *
- */
+*/
 
 import fastifyAutoload from '@fastify/autoload'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { FastifyInstance, FastifyPluginOptions } from 'fastify'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export default async function app (fastify, opts) {
+export default async function serviceApp (fastify: FastifyInstance, opts: FastifyPluginOptions) {
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
   // through your application

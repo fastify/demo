@@ -8,5 +8,6 @@ test('default root route', async (t) => {
   const res = await app.inject({
     url: '/'
   })
-  assert.deepStrictEqual(res.payload, 'Welcome to the official fastify demo!')
+
+  assert.deepStrictEqual(JSON.parse(res.payload), { message: 'Welcome to the official fastify demo!' })
 })

@@ -11,7 +11,7 @@ import Fastify from 'fastify'
 import closeWithGrace from 'close-with-grace'
 
 // Import your application as a normal plugin.
-import appService from './app.js'
+import serviceApp from './app.js'
 
 const environment = process.env.NODE_ENV ?? 'production'
 const envToLogger = {
@@ -30,16 +30,24 @@ const envToLogger = {
 }
 
 const app = Fastify({
-  logger: envToLogger[environment] ?? true
+  logger: envToLogger[environment] ?? true,
+  ajv: {
+    customOptions: {
+      coerceTypes: 'array', // change data type of data to match type keyword
+      removeAdditional: 'all',// Remove additional body properties
+    },
+  },
 })
 
 async function init () {
   // Register your application as a normal plugin.
-  app.register(appService)
+  app.register(serviceApp)
+
+  // console.log(app.config("hello"))
 
   // Delay is the number of milliseconds for the graceful close to finish
-  const closeListeners = closeWithGrace({ delay: process.env.FASTIFY_CLOSE_GRACE_DELAY || 500 }, async ({ err }) => {
-    if (err) {
+  const closeListeners = closeWithGrace({ delay: process.env.FASTIFY_CLOSE_GRACE_DELAY ?? 500 }, async ({ err }) => {
+    if (err != null) {
       app.log.error(err)
     }
 
@@ -54,8 +62,8 @@ async function init () {
   await app.ready()
 
   // Start listening.
-  app.listen({ port: process.env.PORT || 3000 }, (err) => {
-    if (err) {
+  app.listen({ port: process.env.PORT ?? 3000 }, (err) => {
+    if (err != null) {
       app.log.error(err)
       process.exit(1)
     }
