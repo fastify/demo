@@ -5,20 +5,25 @@
 
 import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
+import { fileURLToPath } from 'url'
+import { dirname } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
 export default async function app (fastify, opts) {
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
   // through your application
   fastify.register(fastifyAutoload, {
-    dir: path.join(import.meta.dirname, 'plugins'),
+    dir: path.join(__dirname, 'plugins'),
     options: { ...opts }
   })
 
   // This loads all plugins defined in routes
   // define your routes in one of these
   fastify.register(fastifyAutoload, {
-    dir: path.join(import.meta.dirname, 'routes'),
+    dir: path.join(__dirname, 'routes'),
     options: { ...opts }
   })
 
