@@ -38,7 +38,7 @@ export default async function app (fastify, opts) {
     return { message: 'Internal Server Error' }
   })
 
-  fastify.setNotFoundHandler(async (request, reply) => {
+  fastify.setNotFoundHandler((request, reply) => {
     request.log.warn({
       request: {
         method: request.method,
