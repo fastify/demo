@@ -10,9 +10,9 @@ The aim of this repository is to provide a concrete example of a Fastify applica
 **Prerequisites:** You need to have Node.js version 22 or higher installed.
 
 ## Getting started
-Install [`fastify-cli`](https://github.com/fastify/fastify-cli):
-```
-npm install fastify-cli --global
+Install the dependencies:
+```bash
+npm install
 ```
 
 ## Available Scripts
