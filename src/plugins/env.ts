@@ -16,8 +16,8 @@ const schema = {
       default: "localhost",
     },
     MYSQL_PORT: {
-      type: "string",
-      default: "3306",
+      type: "number",
+      default: 3306,
     },
     MYSQL_USER: {
       type: "string",
@@ -43,7 +43,7 @@ const options = {
   dotenv: true,
   // or, pass config options available on dotenv module
   // dotenv: {
-  //   path: `${__dirname}/.env`,
+  //   path: `${import.meta.dirname}/.env`,
   //   debug: true
   // }
 

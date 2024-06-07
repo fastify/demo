@@ -5,7 +5,7 @@ declare module "fastify" {
     someSupport(): void;
     mysql: MySQLPromisePool;
     config: {
-      PORT: string;
+      PORT: number;
       MYSQL_HOST: string;
       MYSQL_PORT: string;
       MYSQL_USER: string;
