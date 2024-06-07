@@ -12,4 +12,6 @@ test("example is loaded", async (t) => {
   assert.deepStrictEqual(JSON.parse(res.payload), {
     message: "This is an example",
   });
+
+  app.listen()
 });

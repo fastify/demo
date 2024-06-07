@@ -10,7 +10,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "watch": "npm run build -- --watch",
-    "test": "npm run build && glob -c \"node --test\" \"./test/**/*.dist.js\"",
+    "test": "tap test/**/*.ts",
     "start": "npm run build && fastify start -l info dist/app.js",
     "dev": "npm run build && fastify start -w -l info -P dist/app.js",
     "standalone": "npm run build && node --env-file=.env dist/server.js",
@@ -44,6 +44,7 @@
     "eslint": "^8.57.0",
     "fastify-tsconfig": "^2.0.0",
     "glob": "^10.4.1",
+    "tap": "^19.2.2",
     "ts-standard": "^12.0.2",
     "typescript": "^5.4.5",
     "typescript-eslint": "^7.12.0"
