@@ -13,5 +13,5 @@ test("example is loaded", async (t) => {
     message: "This is an example",
   });
 
-  app.listen()
+  app.listen();
 });
