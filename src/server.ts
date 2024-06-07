@@ -13,24 +13,29 @@ import closeWithGrace from "close-with-grace";
 // Import your application as a normal plugin.
 import serviceApp from "./app.js";
 
-const environment = process.env.NODE_ENV ?? "production";
-const envToLogger = {
-  development: {
-    level: "info",
-    transport: {
-      target: "pino-pretty",
-      options: {
-        translateTime: "HH:MM:ss Z",
-        ignore: "pid,hostname",
+/**
+ * Do not use NODE_ENV to determine what logger (or any env related feature) to use
+ * @see https://www.youtube.com/watch?v=HMM7GJC5E2o
+ */
+function getLoggerOptions() {
+  if (process.env.LOGGING === "pretty") {
+    return {
+      level: "info",
+      transport: {
+        target: "pino-pretty",
+        options: {
+          translateTime: "HH:MM:ss Z",
+          ignore: "pid,hostname",
+        },
       },
-    },
-  },
-  production: true,
-  test: false,
-};
+    };
+  }
+
+  return process.env.LOGGING === "default";
+}
 
 const app = Fastify({
-  logger: envToLogger[environment] ?? true,
+  logger: getLoggerOptions(),
   ajv: {
     customOptions: {
       coerceTypes: "array", // change data type of data to match type keyword
@@ -42,8 +47,6 @@ const app = Fastify({
 async function init() {
   // Register your application as a normal plugin.
   app.register(serviceApp);
-
-  // console.log(app.config("hello"))
 
   // Delay is the number of milliseconds for the graceful close to finish
   const closeListeners = closeWithGrace(
