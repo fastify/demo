@@ -2,7 +2,7 @@ import fp from "fastify-plugin";
 import fastifyMysql from "@fastify/mysql";
 
 /**
- * This plugins allows to use `mysql2`.
+ * This plugin allows using `mysql2` with Fastify.
  *
  * @see https://github.com/fastify/fastify-mysql
  */

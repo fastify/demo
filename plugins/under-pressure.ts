@@ -7,8 +7,8 @@ import fp from "fastify-plugin";
 const opts = (parent: FastifyInstance) => {
   return {
     maxEventLoopDelay: 1000,
-    maxHeapUsedBytes: 100000000,
-    maxRssBytes: 100000000,
+    maxHeapUsedBytes: 100_000_000,
+    maxRssBytes: 100_000_000,
     maxEventLoopUtilization: 0.98,
     message: "The server is under pressure, retry later!",
     retryAfter: 50,
