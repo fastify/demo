@@ -1,4 +1,4 @@
-# Fastify Official Demo 
+# Fastify Official Demo
 
 ![CI](https://github.com/fastify/demo/workflows/CI/badge.svg)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://standardjs.com/)
@@ -10,12 +10,15 @@ The aim of this repository is to provide a concrete example of a Fastify applica
 **Prerequisites:** You need to have Node.js version 22 or higher installed.
 
 ## Getting started
+
 Install the dependencies:
+
 ```bash
 npm install
 ```
 
 ## Available Scripts
+
 In the project directory, you can run:
 
 ### `npm run dev`
@@ -34,7 +37,3 @@ Run the test cases.
 ## Learn More
 
 To learn Fastify, check out the [Fastify documentation](https://fastify.dev/docs/latest/).
-
-
-
-

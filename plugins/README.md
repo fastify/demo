@@ -8,6 +8,6 @@ Files in this folder are typically defined through the
 
 Check out:
 
-* [The hitchhiker's guide to plugins](https://fastify.dev/docs/latest/Guides/Plugins-Guide/)
-* [Fastify decorators](https://fastify.dev/docs/latest/Reference/Decorators/).
-* [Fastify lifecycle](https://fastify.dev/docs/latest/Reference/Lifecycle/).
+- [The hitchhiker's guide to plugins](https://fastify.dev/docs/latest/Guides/Plugins-Guide/)
+- [Fastify decorators](https://fastify.dev/docs/latest/Reference/Decorators/).
+- [Fastify lifecycle](https://fastify.dev/docs/latest/Reference/Lifecycle/).
