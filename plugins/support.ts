@@ -10,4 +10,7 @@ export default fp(async function (fastify) {
   fastify.decorate("someSupport", function () {
     return "hugs";
   });
-});
+
+  // You should name your custom plugins to avoid name collisions
+  // and to perform dependency checks.
+}, { name: "support" });
