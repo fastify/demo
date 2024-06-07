@@ -28,6 +28,15 @@ const opts = (/* parent: FastifyInstance */) => {
   } satisfies UnderPressureOptions;
 };
 
+/**
+ * A Fastify plugin for mesuring process load and automatically
+ * handle of "Service Unavailable"
+ *
+ * @see https://github.com/fastify/under-pressure
+ *
+ * Video on the topic: Do not thrash the event loop
+ * @see https://www.youtube.com/watch?v=VI29mUA8n9w
+ */
 export default fp(async function (fastify: FastifyInstance) {
   fastify.register(fastifyUnderPressure, opts);
 });
