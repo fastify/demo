@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert";
 import { build } from "../helper.js";
 
-test("default root route", async (t) => {
+test("GET /", async (t) => {
   const app = await build(t);
 
   const res = await app.inject({
