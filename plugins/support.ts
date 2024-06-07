@@ -6,11 +6,13 @@ import fp from "fastify-plugin";
  *
  * @see https://github.com/fastify/fastify-plugin
  */
-export default fp(async function (fastify) {
-  fastify.decorate("someSupport", function () {
-    return "hugs";
-  });
-
-  // You should name your custom plugins to avoid name collisions
-  // and to perform dependency checks.
-}, { name: "support" });
+export default fp(
+  async function (fastify) {
+    fastify.decorate("someSupport", function () {
+      return "hugs";
+    });
+    // You should name your plugins if you want to avoid name collisions
+    // and/or to perform dependency checks.
+  },
+  { name: "support" },
+);

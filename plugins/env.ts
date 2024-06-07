@@ -3,11 +3,30 @@ import env from "@fastify/env";
 
 const schema = {
   type: "object",
-  required: ["PORT"],
+  required: [
+    "MYSQL_HOST",
+    "MYSQL_PORT",
+    "MYSQL_USER",
+    "MYSQL_PASSWORD",
+    "MYSQL_DATABASE",
+  ],
   properties: {
-    PORT: {
+    MYSQL_HOST: {
       type: "string",
-      default: 3000,
+      default: "localhost",
+    },
+    MYSQL_PORT: {
+      type: "string",
+      default: "3306",
+    },
+    MYSQL_USER: {
+      type: "string",
+    },
+    MYSQL_PASSWORD: {
+      type: "string",
+    },
+    MYSQL_DATABASE: {
+      type: "string",
     },
   },
 };
