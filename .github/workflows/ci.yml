@@ -49,14 +49,7 @@ jobs:
 
       - name: Lint Code
         run: npm run lint
-
-      - name: Wait for MySQL to be ready
-        run: |
-          until mysqladmin ping -h localhost -P 3306 --silent; do
-            echo 'Waiting for MySQL...'
-            sleep 3
-          done
-
+        
       - name: Test
         env:
           MYSQL_HOST: localhost
