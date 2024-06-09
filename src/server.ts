@@ -18,7 +18,8 @@ import serviceApp from "./app.js";
  * @see https://www.youtube.com/watch?v=HMM7GJC5E2o
  */
 function getLoggerOptions() {
-  if (process.env.LOGGING === "pretty") {
+  // Only if the program is running in an interactive terminal
+  if (process.stdout.isTTY) {
     return {
       level: "info",
       transport: {
@@ -31,14 +32,16 @@ function getLoggerOptions() {
     };
   }
 
-  return process.env.LOGGING === "default";
+  // Don't forget to configure it with 
+  // a truthy value in production
+  return !!process.env.LOGGING;
 }
 
 const app = Fastify({
   logger: getLoggerOptions(),
   ajv: {
     customOptions: {
-      coerceTypes: "array", // change data type of data to match type keyword
+      coerceTypes: "array", // change type of data to match type keyword
       removeAdditional: "all", // Remove additional body properties
     },
   },
