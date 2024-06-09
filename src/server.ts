@@ -6,6 +6,7 @@
  */
 
 import Fastify from "fastify";
+import fp from "fastify-plugin";
 
 // Import library to exit fastify process, gracefully (if possible)
 import closeWithGrace from "close-with-grace";
@@ -32,7 +33,7 @@ function getLoggerOptions() {
     };
   }
 
-  // Don't forget to configure it with 
+  // Don't forget to configure it with
   // a truthy value in production
   return !!process.env.LOGGING;
 }
@@ -49,7 +50,8 @@ const app = Fastify({
 
 async function init() {
   // Register your application as a normal plugin.
-  app.register(serviceApp);
+  // fp must be used to override default error handler
+  app.register(fp(serviceApp));
 
   // Delay is the number of milliseconds for the graceful close to finish
   const closeListeners = closeWithGrace(
