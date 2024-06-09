@@ -10,15 +10,5 @@ services:
     volumes:
       - db_data:/var/lib/mysql
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    depends_on:
-      - db
-    ports:
-      - 8001:80
-    environment:
-      PMA_HOST: db
-      PMA_PORT: ${MYSQL_PORT}
-
 volumes:
   db_data:

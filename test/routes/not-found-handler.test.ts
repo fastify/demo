@@ -1,8 +1,8 @@
-import { test } from "node:test";
+import { it } from "node:test";
 import assert from "node:assert";
 import { build } from "../helper.js";
 
-test("root not found handler", async (t) => {
+it("should call notFoundHandler", async (t) => {
   const app = await build(t);
 
   const res = await app.inject({

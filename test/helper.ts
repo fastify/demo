@@ -4,12 +4,8 @@
 import { build as buildApplication } from "fastify-cli/helper.js";
 import path from "node:path";
 import { TestContext } from "node:test";
-import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const AppPath = path.join(__dirname, "../app.js");
+const AppPath = path.join(import.meta.dirname, "../src/app.ts");
 
 // Fill in this config with all the configurations
 // needed for testing the application

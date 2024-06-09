@@ -1,9 +1,9 @@
 name: CI
+
 on:
   push:
     branches:
       - main
-      - master
       - next
       - "v*"
     paths-ignore:
@@ -13,9 +13,56 @@ on:
     paths-ignore:
       - "docs/**"
       - "*.md"
+
 jobs:
-  test:
-    uses: fastify/workflows/.github/workflows/plugins-ci.yml@v4.1.0
-    with:
-      license-check: true
-      lint: true
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [22]
+
+    services:
+      mysql:
+        image: mysql:8.4
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+        options: >-
+          --health-cmd="mysqladmin ping -u$MYSQL_USER -p$MYSQL_PASSWORD"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: npm i --ignore-scripts
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping -h localhost -P 3306 --silent; do
+            echo 'Waiting for MySQL...'
+            sleep 3
+          done
+
+      - name: Test
+        env:
+          MYSQL_HOST: localhost
+          MYSQL_PORT: 3306
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+        run: npm run test
