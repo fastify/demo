@@ -49,7 +49,7 @@ jobs:
 
       - name: Lint Code
         run: npm run lint
-        
+
       - name: Test
         env:
           MYSQL_HOST: localhost
