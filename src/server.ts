@@ -54,7 +54,7 @@ async function init() {
   app.register(fp(serviceApp));
 
   // Delay is the number of milliseconds for the graceful close to finish
-  const closeListeners = closeWithGrace(
+  closeWithGrace(
     { delay: process.env.FASTIFY_CLOSE_GRACE_DELAY ?? 500 },
     async ({ err }) => {
       if (err != null) {
@@ -64,11 +64,6 @@ async function init() {
       await app.close();
     },
   );
-
-  app.addHook("onClose", (instance, done) => {
-    closeListeners.uninstall();
-    done();
-  });
 
   await app.ready();
 
