@@ -1,9 +1,20 @@
-// @ts-check
+'use strict'
 
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
+import neo from 'neostandard'
 
-export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-);
+export default [
+  ...neo({
+    ts: true
+  }),
+  {
+    rules: {
+      '@stylistic/comma-dangle': ['error', {
+        arrays: 'never',
+        objects: 'never',
+        imports: 'never',
+        exports: 'never',
+        functions: 'never'
+      }]
+    }
+  }
+]

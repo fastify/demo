@@ -14,10 +14,10 @@ export default fp(
       user: fastify.config.MYSQL_USER,
       password: fastify.config.MYSQL_PASSWORD,
       database: fastify.config.MYSQL_DATABASE,
-      port: Number(fastify.config.MYSQL_PORT),
+      port: Number(fastify.config.MYSQL_PORT)
     });
   },
   // You should name your plugins if you want to avoid name collisions
   // and/or to perform dependency checks.
-  { name: "db" },
+  { name: "db" }
 );

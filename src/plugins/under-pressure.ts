@@ -33,10 +33,10 @@ export default fp(
           connection?.release();
         }
       },
-      healthCheckInterval: 5000,
+      healthCheckInterval: 5000
     });
   },
   {
-    dependencies: ["db"],
-  },
+    dependencies: ["db"]
+  }
 );

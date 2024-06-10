@@ -8,27 +8,27 @@ const schema = {
     "MYSQL_PORT",
     "MYSQL_USER",
     "MYSQL_PASSWORD",
-    "MYSQL_DATABASE",
+    "MYSQL_DATABASE"
   ],
   properties: {
     MYSQL_HOST: {
       type: "string",
-      default: "localhost",
+      default: "localhost"
     },
     MYSQL_PORT: {
       type: "number",
-      default: 3306,
+      default: 3306
     },
     MYSQL_USER: {
-      type: "string",
+      type: "string"
     },
     MYSQL_PASSWORD: {
-      type: "string",
+      type: "string"
     },
     MYSQL_DATABASE: {
-      type: "string",
-    },
-  },
+      type: "string"
+    }
+  }
 };
 
 const options = {
@@ -49,7 +49,7 @@ const options = {
 
   // Source for the configuration data
   // Optional, default: process.env
-  data: process.env,
+  data: process.env
 };
 
 /**

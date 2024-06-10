@@ -27,9 +27,9 @@ function getLoggerOptions() {
         target: "pino-pretty",
         options: {
           translateTime: "HH:MM:ss Z",
-          ignore: "pid,hostname",
-        },
-      },
+          ignore: "pid,hostname"
+        }
+      }
     };
   }
 
@@ -43,9 +43,9 @@ const app = Fastify({
   ajv: {
     customOptions: {
       coerceTypes: "array", // change type of data to match type keyword
-      removeAdditional: "all", // Remove additional body properties
-    },
-  },
+      removeAdditional: "all" // Remove additional body properties
+    }
+  }
 });
 
 async function init() {
@@ -62,7 +62,7 @@ async function init() {
       }
 
       await app.close();
-    },
+    }
   );
 
   await app.ready();

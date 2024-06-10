@@ -13,9 +13,9 @@ export default fp(async function (fastify) {
       info: {
         title: "Fastify demo API",
         description: "The official Fastify demo API",
-        version: "0.0.0",
-      },
-    },
+        version: "0.0.0"
+      }
+    }
   });
 
   /**

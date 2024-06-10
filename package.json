@@ -14,8 +14,8 @@
     "start": "npm run build && fastify start -l info dist/app.js",
     "dev": "npm run build && fastify start -w -l info -P dist/app.js",
     "standalone": "npm run build && node --env-file=.env dist/server.js",
-    "lint": "prettier . --list-different && eslint . --ignore-pattern=dist",
-    "prettier": "prettier . --write"
+    "lint": "eslint . --ignore-pattern=dist",
+    "lint:fix": "npm run lint -- --fix"
   },
   "keywords": [],
   "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",
@@ -34,18 +34,14 @@
     "@sinclair/typebox": "^0.32.31",
     "fastify": "^4.26.1",
     "fastify-cli": "^6.1.1",
-    "fastify-plugin": "^4.0.0",
-    "prettier": "^3.3.1"
+    "fastify-plugin": "^4.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.4.0",
-    "@types/eslint__js": "^8.42.3",
     "@types/node": "^20.14.2",
-    "eslint": "^8.57.0",
+    "eslint": "^9.4.0",
     "fastify-tsconfig": "^2.0.0",
+    "neostandard": "^0.7.0",
     "tap": "^19.2.2",
-    "ts-standard": "^12.0.2",
-    "typescript": "^5.4.5",
-    "typescript-eslint": "^7.12.0"
+    "typescript": "^5.4.5"
   }
 }

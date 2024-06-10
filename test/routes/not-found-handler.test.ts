@@ -7,7 +7,7 @@ it("should call notFoundHandler", async (t) => {
 
   const res = await app.inject({
     method: "GET",
-    url: "/this-route-does-not-exist",
+    url: "/this-route-does-not-exist"
   });
 
   assert.strictEqual(res.statusCode, 404);
