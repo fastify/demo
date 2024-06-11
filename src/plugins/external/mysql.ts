@@ -17,7 +17,8 @@ export default fp(
       port: Number(fastify.config.MYSQL_PORT)
     });
   },
-  // You should name your plugins if you want to avoid name collisions
-  // and/or to perform dependency checks.
-  { name: "db" }
+  {
+    // We need to name this plugin to set it as an `under-pressure` dependency
+    name: "mysql"
+  }
 );

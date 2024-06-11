@@ -26,17 +26,19 @@ export default fp(
           connection = await fastify.mysql.getConnection();
           await connection.query("SELECT 1;");
           return true;
+          /* c8 ignore start */
         } catch (err) {
           fastify.log.error(err, "healthCheck has failed");
           throw new Error("Database connection is not available");
         } finally {
           connection?.release();
         }
+        /* c8 ignore stop */
       },
       healthCheckInterval: 5000
     });
   },
   {
-    dependencies: ["db"]
+    dependencies: ["mysql"]
   }
 );

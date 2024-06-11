@@ -2,8 +2,8 @@
  * If you would like to turn your application into a standalone executable, look at server.js file
  */
 
-import fastifyAutoload from "@fastify/autoload";
 import path from "node:path";
+import fastifyAutoload from "@fastify/autoload";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 
 export default async function serviceApp(
