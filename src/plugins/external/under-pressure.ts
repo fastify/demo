@@ -16,7 +16,7 @@ export default fp(
     fastify.register(fastifyUnderPressure, {
       maxEventLoopDelay: 1000,
       maxHeapUsedBytes: 100_000_000,
-      maxRssBytes: 200_000_000,
+      maxRssBytes: 1_000_000_000,
       maxEventLoopUtilization: 0.98,
       message: "The server is under pressure, retry later!",
       retryAfter: 50,
