@@ -1,4 +1,3 @@
-import fp from "fastify-plugin";
 import env from "@fastify/env";
 
 const schema = {
@@ -31,7 +30,7 @@ const schema = {
   }
 };
 
-const options = {
+export const autoConfig = {
   // Decorate Fastify instance with `config` key
   // Optional, default: 'config'
   confKey: "config",
@@ -57,6 +56,4 @@ const options = {
  *
  * @see https://github.com/fastify/fastify-env
  */
-export default fp(async function (fastify) {
-  fastify.register(env, options);
-});
+export default env

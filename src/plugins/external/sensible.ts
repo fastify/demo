@@ -1,13 +1,12 @@
-import fp from "fastify-plugin";
 import sensible from "@fastify/sensible";
+
+export const autoConfig = {
+  // Set plugin options here
+}
 
 /**
  * This plugin adds some utilities to handle http errors
  *
  * @see https://github.com/fastify/fastify-sensible
  */
-export default fp(async function (fastify) {
-  fastify.register(sensible, {
-    // Set plugin options here
-  });
-});
+export default sensible;

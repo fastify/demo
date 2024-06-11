@@ -17,7 +17,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         tags: ["Example"]
       }
     },
-    async function () {
+    async function () {      
       return { message: "This is an example" };
     }
   );

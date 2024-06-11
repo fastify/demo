@@ -1,13 +1,13 @@
-import fp from "fastify-plugin";
 import helmet from "@fastify/helmet";
+
+
+export const autoConfig = {
+  // Set plugin options here
+}
 
 /**
  * This plugins sets the basic security headers.
  *
  * @see https://github.com/fastify/fastify-helmet
  */
-export default fp(async function (fastify) {
-  fastify.register(helmet, {
-    // Set plugin options here
-  });
-});
+export default helmet;
