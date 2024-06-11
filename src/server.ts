@@ -33,9 +33,7 @@ function getLoggerOptions() {
     };
   }
 
-  // Don't forget to configure it with
-  // a truthy value in production
-  return !!process.env.LOGGING;
+  return { level: process.env.LOG_LEVEL ?? 'silent' };
 }
 
 const app = Fastify({
