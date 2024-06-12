@@ -2,27 +2,27 @@
  * If you would like to turn your application into a standalone executable, look at server.js file
  */
 
-import fastifyAutoload from "@fastify/autoload";
 import path from "node:path";
+import fastifyAutoload from "@fastify/autoload";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 
 export default async function serviceApp(
   fastify: FastifyInstance,
-  opts: FastifyPluginOptions,
+  opts: FastifyPluginOptions
 ) {
   // This loads all plugins defined in plugins
   // those should be support plugins that are reused
   // through your application
   fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "plugins"),
-    options: { ...opts },
+    options: { ...opts }
   });
 
   // This loads all plugins defined in routes
   // define your routes in one of these
   fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "routes"),
-    options: { ...opts },
+    options: { ...opts }
   });
 
   fastify.setErrorHandler((err, request, reply) => {
@@ -33,10 +33,10 @@ export default async function serviceApp(
           method: request.method,
           url: request.url,
           query: request.query,
-          params: request.params,
-        },
+          params: request.params
+        }
       },
-      "Unhandled error occurred",
+      "Unhandled error occurred"
     );
 
     reply.code(err.statusCode ?? 500);
@@ -51,10 +51,10 @@ export default async function serviceApp(
           method: request.method,
           url: request.url,
           query: request.query,
-          params: request.params,
-        },
+          params: request.params
+        }
       },
-      "Resource not found",
+      "Resource not found"
     );
 
     reply.code(404);

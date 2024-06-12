@@ -27,15 +27,13 @@ function getLoggerOptions() {
         target: "pino-pretty",
         options: {
           translateTime: "HH:MM:ss Z",
-          ignore: "pid,hostname",
-        },
-      },
+          ignore: "pid,hostname"
+        }
+      }
     };
   }
 
-  // Don't forget to configure it with
-  // a truthy value in production
-  return !!process.env.LOGGING;
+  return { level: process.env.LOG_LEVEL ?? 'silent' };
 }
 
 const app = Fastify({
@@ -43,9 +41,9 @@ const app = Fastify({
   ajv: {
     customOptions: {
       coerceTypes: "array", // change type of data to match type keyword
-      removeAdditional: "all", // Remove additional body properties
-    },
-  },
+      removeAdditional: "all" // Remove additional body properties
+    }
+  }
 });
 
 async function init() {
@@ -54,7 +52,7 @@ async function init() {
   app.register(fp(serviceApp));
 
   // Delay is the number of milliseconds for the graceful close to finish
-  const closeListeners = closeWithGrace(
+  closeWithGrace(
     { delay: process.env.FASTIFY_CLOSE_GRACE_DELAY ?? 500 },
     async ({ err }) => {
       if (err != null) {
@@ -62,23 +60,18 @@ async function init() {
       }
 
       await app.close();
-    },
+    }
   );
-
-  app.addHook("onClose", (instance, done) => {
-    closeListeners.uninstall();
-    done();
-  });
 
   await app.ready();
 
-  // Start listening.
-  app.listen({ port: process.env.PORT ?? 3000 }, (err) => {
-    if (err != null) {
-      app.log.error(err);
-      process.exit(1);
-    }
-  });
+  try {
+    // Start listening.
+    await app.listen({ port: process.env.PORT ?? 3000 });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
 }
 
 init();

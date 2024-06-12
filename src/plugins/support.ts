@@ -14,5 +14,5 @@ export default fp(
     // You should name your plugins if you want to avoid name collisions
     // and/or to perform dependency checks.
   },
-  { name: "support" },
+  { name: "support" }
 );

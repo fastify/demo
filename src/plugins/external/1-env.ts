@@ -1,4 +1,3 @@
-import fp from "fastify-plugin";
 import env from "@fastify/env";
 
 const schema = {
@@ -8,30 +7,30 @@ const schema = {
     "MYSQL_PORT",
     "MYSQL_USER",
     "MYSQL_PASSWORD",
-    "MYSQL_DATABASE",
+    "MYSQL_DATABASE"
   ],
   properties: {
     MYSQL_HOST: {
       type: "string",
-      default: "localhost",
+      default: "localhost"
     },
     MYSQL_PORT: {
       type: "number",
-      default: 3306,
+      default: 3306
     },
     MYSQL_USER: {
-      type: "string",
+      type: "string"
     },
     MYSQL_PASSWORD: {
-      type: "string",
+      type: "string"
     },
     MYSQL_DATABASE: {
-      type: "string",
-    },
-  },
+      type: "string"
+    }
+  }
 };
 
-const options = {
+export const autoConfig = {
   // Decorate Fastify instance with `config` key
   // Optional, default: 'config'
   confKey: "config",
@@ -49,7 +48,7 @@ const options = {
 
   // Source for the configuration data
   // Optional, default: process.env
-  data: process.env,
+  data: process.env
 };
 
 /**
@@ -57,6 +56,4 @@ const options = {
  *
  * @see https://github.com/fastify/fastify-env
  */
-export default fp(async function (fastify) {
-  fastify.register(env, options);
-});
+export default env

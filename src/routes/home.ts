@@ -1,6 +1,6 @@
 import {
   FastifyPluginAsyncTypebox,
-  Type,
+  Type
 } from "@fastify/type-provider-typebox";
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -10,15 +10,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: {
         response: {
           200: Type.Object({
-            message: Type.String(),
-          }),
+            message: Type.String()
+          })
         },
-        tags: ["Home"],
-      },
+        tags: ["Home"]
+      }
     },
     async function () {
       return { message: "Welcome to the official fastify demo!" };
-    },
+    }
   );
 };
 

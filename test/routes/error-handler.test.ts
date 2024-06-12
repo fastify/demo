@@ -18,10 +18,10 @@ it("should call errorHandler", async (t) => {
 
   const res = await app.inject({
     method: "GET",
-    url: "/error",
+    url: "/error"
   });
 
   assert.deepStrictEqual(JSON.parse(res.payload), {
-    message: "Internal Server Error",
+    message: "Internal Server Error"
   });
 });

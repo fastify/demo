@@ -16,7 +16,7 @@ export default fp(
     fastify.register(fastifyUnderPressure, {
       maxEventLoopDelay: 1000,
       maxHeapUsedBytes: 100_000_000,
-      maxRssBytes: 100_000_000,
+      maxRssBytes: 1_000_000_000,
       maxEventLoopUtilization: 0.98,
       message: "The server is under pressure, retry later!",
       retryAfter: 50,
@@ -26,17 +26,19 @@ export default fp(
           connection = await fastify.mysql.getConnection();
           await connection.query("SELECT 1;");
           return true;
+          /* c8 ignore start */
         } catch (err) {
           fastify.log.error(err, "healthCheck has failed");
           throw new Error("Database connection is not available");
         } finally {
           connection?.release();
         }
+        /* c8 ignore stop */
       },
-      healthCheckInterval: 5000,
+      healthCheckInterval: 5000
     });
   },
   {
-    dependencies: ["db"],
-  },
+    dependencies: ["mysql"]
+  }
 );
