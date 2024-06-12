@@ -65,13 +65,13 @@ async function init() {
 
   await app.ready();
 
-  // Start listening.
-  app.listen({ port: process.env.PORT ?? 3000 }, (err) => {
-    if (err != null) {
-      app.log.error(err);
-      process.exit(1);
-    }
-  });
+  try {
+    // Start listening.
+    await app.listen({ port: process.env.PORT ?? 3000 });
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
 }
 
 init();
