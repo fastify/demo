@@ -2,7 +2,7 @@ declare global {
   namespace NodeJS {
     interface ProcessEnv {
       PORT: number;
-      LOGGING?: number;
+      LOG_LEVEL: string;
       FASTIFY_CLOSE_GRACE_DELAY: number;
     }
   }
