@@ -16,4 +16,3 @@ export const autoConfig = (fastify: FastifyInstance) => {
 export default fp(fastifyMysql, {
   name: 'mysql'
 })
-
