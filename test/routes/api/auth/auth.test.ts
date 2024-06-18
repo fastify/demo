@@ -15,8 +15,7 @@ test("POST /api/auth/login with valid credentials", async (t) => {
   });
 
   assert.strictEqual(res.statusCode, 200);
-  const responsePayload = JSON.parse(res.payload);
-  assert.ok(responsePayload.token, "Token should be present in the response");
+  assert.ok(JSON.parse(res.payload).token);
 });
 
 test("POST /api/auth/login with invalid credentials", async (t) => {

@@ -1,10 +1,10 @@
 import { FastifyInstance } from "fastify";
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get("/", ({ protocol, hostname }) => {
+  fastify.get("/", ({ user, protocol, hostname }) => {
     return {
       message:
-        "See documentation at " + `${protocol}://${hostname}/documentation`
+        `Hello ${user.username}! See documentation at ${protocol}://${hostname}/documentation`
     };
   });
 }

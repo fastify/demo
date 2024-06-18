@@ -38,4 +38,5 @@ test("GET /api with JWT Token", async (t) => {
   });
 
   assert.equal(res.statusCode, 200);
+  assert.ok(JSON.parse(res.payload).message.startsWith("Hello basic!"));
 });
