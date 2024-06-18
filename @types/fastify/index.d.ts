@@ -11,6 +11,7 @@ declare module "fastify" {
       MYSQL_USER: string;
       MYSQL_PASSWORD: string;
       MYSQL_DATABASE: string;
+      JWT_SECRET: string;
     };
   }
 }

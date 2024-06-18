@@ -26,8 +26,8 @@ export const autoConfig = (fastify: FastifyInstance) => {
       /* c8 ignore stop */
     },
     healthCheckInterval: 5000
-  }
-}
+  };
+};
 
 /**
  * A Fastify plugin for mesuring process load and automatically
@@ -38,8 +38,6 @@ export const autoConfig = (fastify: FastifyInstance) => {
  * Video on the topic: Do not thrash the event loop
  * @see https://www.youtube.com/watch?v=VI29mUA8n9w
  */
-export default fp(fastifyUnderPressure,
-  {
-    dependencies: ["mysql"]
-  }
-);
+export default fp(fastifyUnderPressure, {
+  dependencies: ["mysql"]
+});
