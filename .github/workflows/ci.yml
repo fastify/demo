@@ -50,6 +50,12 @@ jobs:
       - name: Lint Code
         run: npm run lint
 
+      - name: Generate JWT Secret
+        id: gen-jwt
+        run: |
+          JWT_SECRET=$(openssl rand -hex 32)
+          echo "JWT_SECRET=$JWT_SECRET" >> $GITHUB_ENV
+
       - name: Test
         env:
           MYSQL_HOST: localhost
@@ -57,4 +63,5 @@ jobs:
           MYSQL_DATABASE: test_db
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_password
+          # JWT_SECRET is dynamically generated and loaded from the environment
         run: npm run test
