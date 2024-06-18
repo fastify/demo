@@ -22,6 +22,8 @@ export default async function serviceApp(
   // define your routes in one of these
   fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "routes"),
+    autoHooks: true,
+    cascadeHooks: true,
     options: { ...opts }
   });
 
@@ -41,7 +43,12 @@ export default async function serviceApp(
 
     reply.code(err.statusCode ?? 500);
 
-    return { message: "Internal Server Error" };
+    let message = "Internal Server Error";
+    if (err.statusCode === 401) {
+      message = err.message;
+    }
+
+    return { message };
   });
 
   fastify.setNotFoundHandler((request, reply) => {

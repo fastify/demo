@@ -7,9 +7,11 @@ const schema = {
     "MYSQL_PORT",
     "MYSQL_USER",
     "MYSQL_PASSWORD",
-    "MYSQL_DATABASE"
+    "MYSQL_DATABASE",
+    "JWT_SECRET"
   ],
   properties: {
+    // Database
     MYSQL_HOST: {
       type: "string",
       default: "localhost"
@@ -25,6 +27,11 @@ const schema = {
       type: "string"
     },
     MYSQL_DATABASE: {
+      type: "string"
+    },
+
+    // Security
+    JWT_SECRET: {
       type: "string"
     }
   }
@@ -56,4 +63,4 @@ export const autoConfig = {
  *
  * @see https://github.com/fastify/fastify-env
  */
-export default env
+export default env;

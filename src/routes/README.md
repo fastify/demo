@@ -1,10 +1,10 @@
 # Routes Folder
 
-Routes define the pathways within your application. 
-Fastify's structure supports the modular monolith approach, where your 
-application is organized into distinct, self-contained modules. 
-This facilitates easier scaling and future transition to a microservice architecture. 
-Each module can evolve independently, and in the future, you might want to deploy 
+Routes define the pathways within your application.
+Fastify's structure supports the modular monolith approach, where your
+application is organized into distinct, self-contained modules.
+This facilitates easier scaling and future transition to a microservice architecture.
+Each module can evolve independently, and in the future, you might want to deploy
 some of these modules separately.
 
 In this folder you should define all the routes that define the endpoints
