@@ -15,7 +15,8 @@
     "dev": "fastify start -w -l info -P dist/app.js",
     "standalone": "node --env-file=.env dist/server.js",
     "lint": "eslint --ignore-pattern=dist",
-    "lint:fix": "npm run lint -- --fix"
+    "lint:fix": "npm run lint -- --fix",
+    "migrate": "node --env-file=.env scripts/migrate.js"
   },
   "keywords": [],
   "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",
@@ -35,7 +36,8 @@
     "@sinclair/typebox": "^0.32.31",
     "fastify": "^4.26.1",
     "fastify-cli": "^6.1.1",
-    "fastify-plugin": "^4.0.0"
+    "fastify-plugin": "^4.0.0",
+    "postgrator": "^7.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
