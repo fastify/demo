@@ -2,8 +2,8 @@ import mysql from 'mysql2/promise'
 import path from 'path'
 import Postgrator from 'postgrator'
 
-async function doMigration (con) {
-  const connection = con ?? await mysql.createConnection({
+async function doMigration () {
+  const connection = await mysql.createConnection({
     multipleStatements: true,
     host: process.env.MYSQL_HOST,
     port: process.env.MYSQL_PORT,
