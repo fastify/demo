@@ -1,11 +1,12 @@
 import { MySQLPromisePool } from "@fastify/mysql";
 import { Static } from "@sinclair/typebox";
 import { CredentialsSchema } from "../../src/schemas/auth.ts";
+import { IRepository } from '../../src/plugins/custom/repository.ts'
 
 declare module "fastify" {
   export interface FastifyInstance {
-    someSupport(): void;
     mysql: MySQLPromisePool;
+    repository: IRepository;
     config: {
       PORT: number;
       MYSQL_HOST: string;
