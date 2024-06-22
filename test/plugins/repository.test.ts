@@ -10,8 +10,6 @@ import { IAuth } from '../../src/schemas/auth.js';
 test("repository works standalone", async (t) => {
   const app = Fastify();
 
-  t.before(() => execSync('npm run seed:db'))
-
   t.after(() => {
     app.close();
     // Run the seed script again to clean up after tests
