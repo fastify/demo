@@ -3,6 +3,12 @@ import { FastifyInstance } from "fastify";
 import fp from "fastify-plugin";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 
+declare module "fastify" {
+  export interface FastifyInstance {
+    repository: IRepository;
+  }
+}
+
 export type IRepository = MySQLPromisePool & ReturnType<typeof createRepository>;
 
 type QuerySeparator = 'AND' | ',';

@@ -1,5 +1,19 @@
 import env from "@fastify/env";
 
+declare module "fastify" {
+  export interface FastifyInstance {
+    config: {
+      PORT: number;
+      MYSQL_HOST: string;
+      MYSQL_PORT: string;
+      MYSQL_USER: string;
+      MYSQL_PASSWORD: string;
+      MYSQL_DATABASE: string;
+      JWT_SECRET: string;
+    };
+  }
+}
+
 const schema = {
   type: "object",
   required: [

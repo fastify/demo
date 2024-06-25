@@ -1,6 +1,12 @@
 import fp from "fastify-plugin";
-import fastifyMysql from "@fastify/mysql";
+import fastifyMysql, { MySQLPromisePool } from "@fastify/mysql";
 import { FastifyInstance } from "fastify";
+
+declare module "fastify" {
+  export interface FastifyInstance {
+    mysql: MySQLPromisePool;
+  }
+}
 
 export const autoConfig = (fastify: FastifyInstance) => {
   return {
