@@ -1,6 +1,5 @@
 import { MySQLPromisePool } from "@fastify/mysql";
-import { Static } from "@sinclair/typebox";
-import { CredentialsSchema } from "../../src/schemas/auth.ts";
+import { IAuth } from "../../src/schemas/auth.ts";
 import { IRepository } from '../../src/plugins/custom/repository.ts'
 
 declare module "fastify" {
@@ -19,7 +18,7 @@ declare module "fastify" {
   }
 
   export interface FastifyRequest {
-    user: Static<typeof CredentialsSchema>
+    user: IAuth
   }
 }
 
