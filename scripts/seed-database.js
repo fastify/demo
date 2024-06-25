@@ -31,13 +31,11 @@ async function truncateTables (connection) {
     const tableNames = tables.map((row) => row[`Tables_in_${process.env.MYSQL_DATABASE}`])
     const truncateQueries = tableNames.map((tableName) => `TRUNCATE TABLE \`${tableName}\``).join('; ')
 
-    // Disable foreign key checks
     await connection.query('SET FOREIGN_KEY_CHECKS = 0')
     try {
       await connection.query(truncateQueries)
       console.log('All tables have been truncated successfully.')
     } finally {
-      // Re-enable foreign key checks
       await connection.query('SET FOREIGN_KEY_CHECKS = 1')
     }
   }
