@@ -35,14 +35,12 @@
     "@fastify/type-provider-typebox": "^4.0.0",
     "@fastify/under-pressure": "^8.3.0",
     "@sinclair/typebox": "^0.32.31",
-    "bcrypt": "^5.1.1",
     "fastify": "^4.26.1",
     "fastify-cli": "^6.1.1",
     "fastify-plugin": "^4.0.0",
     "postgrator": "^7.2.0"
   },
   "devDependencies": {
-    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.14.2",
     "eslint": "^9.4.0",
     "fastify-tsconfig": "^2.0.0",

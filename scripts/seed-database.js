@@ -1,5 +1,4 @@
 import { createConnection } from 'mysql2/promise'
-import bcrypt from 'bcrypt'
 
 async function seed () {
   const connection = await createConnection({
@@ -45,8 +44,7 @@ async function seedUsers (connection) {
   const usernames = ['basic', 'moderator', 'admin']
 
   for (const username of usernames) {
-    const hash = await bcrypt.hash('password', 10)
-
+    const hash = '918933f991bbf22eade96420811e46b4.b2e2105880b90b66bf6d6247a42a81368819a1c57c07165cf8b25df80b5752bb'
     const insertUserQuery = `
       INSERT INTO users (username, password)
       VALUES (?, ?)
