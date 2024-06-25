@@ -2,7 +2,6 @@ import {
   FastifyPluginAsyncTypebox,
   Type
 } from "@fastify/type-provider-typebox";
-import bcrypt from "bcrypt";
 import { CredentialsSchema, IAuth } from "../../../schemas/auth.js";
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -31,7 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       })
 
       if (user) {
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await fastify.compare(password, user.password);
         if (isPasswordValid) {
           const token = fastify.jwt.sign({ username: user.username });
 
