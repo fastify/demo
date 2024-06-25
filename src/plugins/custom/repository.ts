@@ -5,7 +5,17 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 export type IRepository = MySQLPromisePool & ReturnType<typeof createRepository>;
 
-type QuerySeparator = 'AND' | 'OR' | ',';
+type QuerySeparator = 'AND' | ',';
+
+type QueryOptions = {
+  select?: string;
+  where?: Record<string, any>;
+};
+
+type WriteOptions = {
+  data: Record<string, any>;
+  where?: Record<string, any>;
+};
 
 function createRepository(fastify: FastifyInstance) {
   const processAssignementRecord = (record: Record<string, any>, separator: QuerySeparator) => {
@@ -14,16 +24,6 @@ function createRepository(fastify: FastifyInstance) {
     const clause = keys.map((key) => `${key} = ?`).join(` ${separator} `);
 
     return [clause, values] as const;
-  };
-
-  type QueryOptions = {
-    select?: string;
-    where?: Record<string, any>;
-  };
-
-  type WriteOptions = {
-    data: Record<string, any>;
-    where?: Record<string, any>;
   };
 
   const repository = {
