@@ -14,9 +14,12 @@ async function seed () {
   try {
     await truncateTables(connection)
     await seedUsers(connection)
+
+    /* c8 ignore start */
   } catch (error) {
     console.error('Error seeding database:', error)
   } finally {
+    /* c8 ignore end */
     await connection.end()
   }
 }
