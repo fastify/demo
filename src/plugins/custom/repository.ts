@@ -9,7 +9,7 @@ declare module "fastify" {
   }
 }
 
-export type IRepository = MySQLPromisePool & ReturnType<typeof createRepository>;
+export type Repository = MySQLPromisePool & ReturnType<typeof createRepository>;
 
 type QuerySeparator = 'AND' | ',';
 
