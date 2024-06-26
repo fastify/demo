@@ -5,7 +5,7 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 
 declare module "fastify" {
   export interface FastifyInstance {
-    repository: IRepository;
+    repository: Repository;
   }
 }
 

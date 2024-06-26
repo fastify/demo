@@ -55,9 +55,9 @@ async function compare(value: string, hash: string): Promise<boolean> {
         resolve(false)
       } 
       /* c8 ignore end */
-    else {
-        resolve(timingSafeEqual(key, hashedBuffer))
-      }
+      else {
+          resolve(timingSafeEqual(key, hashedBuffer))
+        }
     })
   })
 }

@@ -2,7 +2,7 @@ import {
   FastifyPluginAsyncTypebox,
   Type
 } from "@fastify/type-provider-typebox";
-import { CredentialsSchema, IAuth } from "../../../schemas/auth.js";
+import { CredentialsSchema, Auth } from "../../../schemas/auth.js";
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
@@ -24,7 +24,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async function (request, reply) {
       const { username, password } = request.body;
 
-      const user = await fastify.repository.find<IAuth>('users', {
+      const user = await fastify.repository.find<Auth>('users', {
         select: 'username, password',
         where: { username }
       })
