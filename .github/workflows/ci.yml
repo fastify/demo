@@ -67,4 +67,4 @@ jobs:
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_password
           # JWT_SECRET is dynamically generated and loaded from the environment
-        run: npm run test
+        run: npm run db:migrate && npm run test

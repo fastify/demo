@@ -10,14 +10,14 @@
   "scripts": {
     "build": "rm -rf dist && tsc",
     "watch": "npm run build -- --watch",
-    "test": "npm run seed:db && tap --jobs=1 test/**/*",
+    "test": "npm run db:seed && tap --jobs=1 test/**/*",
     "start": "fastify start -l info dist/app.js",
     "dev": "fastify start -w -l info -P dist/app.js",
     "standalone": "node --env-file=.env dist/server.js",
     "lint": "eslint --ignore-pattern=dist",
     "lint:fix": "npm run lint -- --fix",
-    "migrate": "node --env-file=.env scripts/migrate.js",
-    "seed:db": "node --env-file=.env scripts/seed-database.js"
+    "db:migrate": "node --env-file=.env scripts/migrate.js",
+    "db:seed": "node --env-file=.env scripts/seed-database.js"
   },
   "keywords": [],
   "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",

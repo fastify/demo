@@ -13,7 +13,7 @@ test("repository works standalone", async (t) => {
   t.after(() => {
     app.close();
     // Run the seed script again to clean up after tests
-    execSync('npm run seed:db');
+    execSync('npm run db:seed');
   });
 
   app.register(envPlugin.default, envPlugin.autoConfig);
