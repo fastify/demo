@@ -24,7 +24,7 @@ type WriteOptions = {
 };
 
 function createRepository(fastify: FastifyInstance) {
-  const processAssignementRecord = (record: Record<string, any>, separator: QuerySeparator) => {
+  const processAssignmentRecord = (record: Record<string, any>, separator: QuerySeparator) => {
     const keys = Object.keys(record);
     const values = Object.values(record);
     const clause = keys.map((key) => `${key} = ?`).join(` ${separator} `);
@@ -36,7 +36,7 @@ function createRepository(fastify: FastifyInstance) {
     ...fastify.mysql,
     find: async <T>(table: string, opts: QueryOptions): Promise<T | null> => {
       const { select = '*', where = {1:1} } = opts;
-      const [clause, values] = processAssignementRecord(where, 'AND');
+      const [clause, values] = processAssignmentRecord(where, 'AND');
 
       const query = `SELECT ${select} FROM ${table} WHERE ${clause} LIMIT 1`;
       const [rows] = await fastify.mysql.query<RowDataPacket[]>(query, values);
@@ -49,7 +49,7 @@ function createRepository(fastify: FastifyInstance) {
 
     findMany: async <T>(table: string, opts: QueryOptions): Promise<T[]> => {
       const { select = '*', where = {1:1} } = opts;
-      const [clause, values] = processAssignementRecord(where, 'AND');
+      const [clause, values] = processAssignmentRecord(where, 'AND');
 
       const query = `SELECT ${select} FROM ${table} WHERE ${clause}`;
       const [rows] = await fastify.mysql.query<RowDataPacket[]>(query, values);
@@ -71,8 +71,8 @@ function createRepository(fastify: FastifyInstance) {
 
     update: async (table: string, opts: WriteOptions): Promise<number> => {
       const { data, where = {} } = opts;
-      const [dataClause, dataValues] = processAssignementRecord(data, ',');
-      const [whereClause, whereValues] = processAssignementRecord(where, 'AND');
+      const [dataClause, dataValues] = processAssignmentRecord(data, ',');
+      const [whereClause, whereValues] = processAssignmentRecord(where, 'AND');
 
       const query = `UPDATE ${table} SET ${dataClause} WHERE ${whereClause}`;
       const [result] = await fastify.mysql.query<ResultSetHeader>(query, [...dataValues, ...whereValues]);
@@ -81,7 +81,7 @@ function createRepository(fastify: FastifyInstance) {
     },
 
     delete: async (table: string, where: Record<string, any>): Promise<number> => {
-      const [clause, values] = processAssignementRecord(where, 'AND');
+      const [clause, values] = processAssignmentRecord(where, 'AND');
 
       const query = `DELETE FROM ${table} WHERE ${clause}`;
       const [result] = await fastify.mysql.query<ResultSetHeader>(query, values);
