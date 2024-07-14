@@ -7,6 +7,6 @@ export const autoConfig = {
 /**
  * This plugin adds some utilities to handle http errors
  *
- * @see https://github.com/fastify/fastify-sensible
+ * @see {@link https://github.com/fastify/fastify-sensible}
  */
 export default sensible;

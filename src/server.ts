@@ -16,7 +16,7 @@ import serviceApp from "./app.js";
 
 /**
  * Do not use NODE_ENV to determine what logger (or any env related feature) to use
- * @see https://www.youtube.com/watch?v=HMM7GJC5E2o
+ * @see {@link https://www.youtube.com/watch?v=HMM7GJC5E2o}
  */
 function getLoggerOptions() {
   // Only if the program is running in an interactive terminal

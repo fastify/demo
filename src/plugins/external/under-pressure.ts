@@ -33,10 +33,10 @@ export const autoConfig = (fastify: FastifyInstance) => {
  * A Fastify plugin for mesuring process load and automatically
  * handle of "Service Unavailable"
  *
- * @see https://github.com/fastify/under-pressure
+ * @see {@link https://github.com/fastify/under-pressure}
  *
  * Video on the topic: Do not thrash the event loop
- * @see https://www.youtube.com/watch?v=VI29mUA8n9w
+ * @see {@link https://www.youtube.com/watch?v=VI29mUA8n9w}
  */
 export default fp(fastifyUnderPressure, {
   dependencies: ["mysql"]

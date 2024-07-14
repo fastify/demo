@@ -7,6 +7,6 @@ export const autoConfig = {
 /**
  * This plugins sets the basic security headers.
  *
- * @see https://github.com/fastify/fastify-helmet
+ * @see {@link https://github.com/fastify/fastify-helmet}
  */
 export default helmet;

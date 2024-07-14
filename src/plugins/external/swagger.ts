@@ -6,7 +6,7 @@ export default fp(async function (fastify) {
   /**
    * A Fastify plugin for serving Swagger (OpenAPI v2) or OpenAPI v3 schemas
    *
-   * @see https://github.com/fastify/fastify-swagger
+   * @see {@link https://github.com/fastify/fastify-swagger}
    */
   await fastify.register(fastifySwagger, {
     hideUntagged: true,
@@ -22,7 +22,7 @@ export default fp(async function (fastify) {
   /**
    * A Fastify plugin for serving Swagger UI.
    *
-   * @see https://github.com/fastify/fastify-swagger-ui
+   * @see {@link https://github.com/fastify/fastify-swagger-ui}
    */
   await fastify.register(fastifySwaggerUi, {
     // Set plugin options here

@@ -75,6 +75,6 @@ export const autoConfig = {
 /**
  * This plugins helps to check environment variables.
  *
- * @see https://github.com/fastify/fastify-env
+ * @see {@link https://github.com/fastify/fastify-env}
  */
 export default env;
