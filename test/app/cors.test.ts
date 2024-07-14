@@ -2,7 +2,7 @@ import { it } from "node:test";
 import { build } from "../helper.js";
 import assert from "node:assert";
 
-it("should correctly handle CORS preflight for common methods and reject TRACE", async (t) => {
+it("should correctly handle CORS preflight requests", async (t) => {
     const app = await build(t);
 
     const res = await app.inject({
