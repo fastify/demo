@@ -10,6 +10,7 @@ declare module "fastify" {
       MYSQL_PASSWORD: string;
       MYSQL_DATABASE: string;
       JWT_SECRET: string;
+      RATE_LIMIT_MAX: number;
     };
   }
 }
@@ -47,6 +48,10 @@ const schema = {
     // Security
     JWT_SECRET: {
       type: "string"
+    },
+    RATE_LIMIT_MAX: {
+      type: "number",
+      default: 100
     }
   }
 };
