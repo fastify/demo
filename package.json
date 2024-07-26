@@ -45,7 +45,7 @@
     "eslint": "^9.4.0",
     "fastify-tsconfig": "^2.0.0",
     "mysql2": "^3.10.1",
-    "neostandard": "^0.7.0",
+    "neostandard": "^0.11.1",
     "tap": "^19.2.2",
     "typescript": "^5.4.5"
   }
