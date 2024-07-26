@@ -46,7 +46,7 @@
     "fastify-tsconfig": "^2.0.0",
     "mysql2": "^3.10.1",
     "neostandard": "^0.7.0",
-    "tap": "^19.2.2",
+    "tap": "^21.0.0",
     "typescript": "^5.4.5"
   }
 }
