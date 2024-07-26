@@ -26,6 +26,9 @@ coverage
 # nyc test coverage
 .nyc_output
 
+# tap test coverage
+.tap
+
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
 
@@ -128,3 +131,9 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# lock files
+bun.lockb
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
