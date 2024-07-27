@@ -1,6 +1,6 @@
 /**
  * This file is here only to show you how to proceed if you would
- * like to turn your application into a standalone executable.
+ * like to run your application as a standalone executable.
  *
  * You can launch it with the command `npm run standalone`
  */
