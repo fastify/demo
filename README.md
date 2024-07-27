@@ -6,7 +6,7 @@
 
 The aim of this repository is to provide a concrete example of a Fastify application using what are considered best practices by the Fastify community.
 
-**Prerequisites:** You need to have Node.js version 22 or higher.
+**Prerequisites:** You need to have Node.js version 22 or higher installed.
 
 ## Getting started
 Install the dependencies:
@@ -20,7 +20,7 @@ You can run a MySQL instance with Docker:
 docker compose up
 ```
 
-Or to run it in the background:
+To run it in the background:
 ```bash
 docker compose up -d
 ```
@@ -59,7 +59,7 @@ npm run start
 ```
 
 ### Testing
-Run the test cases:
+To run the tests:
 ```bash
 npm run test
 ```
@@ -72,12 +72,12 @@ npm run standalone
 ```
 
 ### Linting
-Check for linting errors:
+To check for linting errors:
 ```bash
 npm run lint
 ```
 
-Automatically fix linting errors:
+To check and automatically fix linting errors:
 ```bash
 npm run lint:fix
 ```
