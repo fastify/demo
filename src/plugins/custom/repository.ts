@@ -47,7 +47,7 @@ function createRepository(fastify: FastifyInstance) {
       return rows[0] as T;
     },
 
-    findMany: async <T>(table: string, opts: QueryOptions): Promise<T[]> => {
+    findMany: async <T>(table: string, opts: QueryOptions = {}): Promise<T[]> => {
       const { select = '*', where = {1:1} } = opts;
       const [clause, values] = processAssignmentRecord(where, 'AND');
 

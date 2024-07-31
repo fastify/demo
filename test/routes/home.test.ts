@@ -4,7 +4,6 @@ import { build } from "../helper.js";
 
 test("GET /", async (t) => {
   const app = await build(t);
-
   const res = await app.inject({
     url: "/"
   });

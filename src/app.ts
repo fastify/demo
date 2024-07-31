@@ -12,7 +12,7 @@ export default async function serviceApp(
 ) {
   // This loads all external plugins defined in plugins/external
   // those should be registered first as your custom plugins might depend on them
-  fastify.register(fastifyAutoload, {
+  await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "plugins/external"),
     options: { ...opts }
   });
@@ -58,7 +58,16 @@ export default async function serviceApp(
     return { message };
   });
 
-  fastify.setNotFoundHandler((request, reply) => {
+  // An attacker could search for valid URLs if your 404 error handling is not rate limited.
+  fastify.setNotFoundHandler(
+      {
+        preHandler: fastify.rateLimit({
+          max: 3,
+          timeWindow: 500
+        })
+    }, 
+    (request, reply) => {
+
     request.log.warn(
       {
         request: {
