@@ -37,7 +37,7 @@
     "@fastify/under-pressure": "^8.3.0",
     "@sinclair/typebox": "^0.32.31",
     "fastify": "^4.26.1",
-    "fastify-cli": "^6.1.1",
+    "fastify-cli": "^6.3.0",
     "fastify-plugin": "^4.0.0",
     "postgrator": "^7.2.0"
   },
@@ -47,7 +47,7 @@
     "fastify-tsconfig": "^2.0.0",
     "mysql2": "^3.10.1",
     "neostandard": "^0.7.0",
-    "tap": "^19.2.2",
+    "tap": "^21.0.1",
     "typescript": "^5.4.5"
   }
 }
