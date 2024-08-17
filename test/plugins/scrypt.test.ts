@@ -1,6 +1,6 @@
 import { test } from "tap";
 import Fastify from "fastify";
-import scryptPlugin from "../../src/plugins/custom/scrypt.ts";
+import scryptPlugin from "../../src/plugins/custom/scrypt.js";
 
 test("scrypt works standalone", async t => {
   const app = Fastify();

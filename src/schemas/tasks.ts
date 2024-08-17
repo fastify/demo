@@ -12,8 +12,8 @@ export const TaskTransitions = {
 export const TaskStatus = {
   New: 'new',
   InProgress: 'in-progress',
-  Completed: 'completed',
   OnHold: 'on-hold',
+  Completed: 'completed',
   Canceled: 'canceled',
   Archived: 'archived'
 } as const;
