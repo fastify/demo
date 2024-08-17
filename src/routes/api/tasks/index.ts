@@ -7,7 +7,8 @@ import {
   Task,
   CreateTaskSchema,
   UpdateTaskSchema,
-  PatchTaskStatusSchema
+  TaskStatus,
+  PatchTaskTransitionSchema
 } from "../../../schemas/tasks.js";
 import { FastifyReply } from "fastify";
 
@@ -69,7 +70,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const id = await fastify.repository.create("tasks", { data: request.body });
+      const id = await fastify.repository.create("tasks", { data: {...request.body, status: TaskStatus.New} });
       reply.code(201);
 
       return {
@@ -78,7 +79,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     }
   );
 
-  fastify.put(
+  fastify.patch(
     "/:id",
     {
       schema: {
@@ -111,13 +112,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   );
 
   fastify.patch(
-    "/:id/status",
+    "/:id/transition",
     {
       schema: {
         params: Type.Object({
           id: Type.Number()
         }),
-        body: PatchTaskStatusSchema,
+        body: PatchTaskTransitionSchema,
         response: {
           200: Type.Object({ message: Type.String() }),
           404: Type.Object({ message: Type.String() })
@@ -127,16 +128,25 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params;
-      const { status } = request.body;
+      const { transition } = request.body;
 
-      const affectedRows = await fastify.repository.update("tasks", {
-        data: { status },
+      const task = await fastify.repository.find<Task>("tasks", { select: 'status', where: { id } });
+
+      if (!task) {
+        return notFound(reply);
+      }
+      
+      if (!fastify.taskWorkflow.can(transition, task)) {
+        reply.status(400)
+        return { message: `Transition "${transition}" can not be applied to task with status "${task.status}"` }
+      }
+
+      fastify.taskWorkflow.apply(transition, task)
+
+      await fastify.repository.update("tasks", {
+        data: { status: task.status },
         where: { id }
       });
-
-      if (affectedRows === 0) {
-        return notFound(reply)
-      }
 
       return {
         message: "Status changed"

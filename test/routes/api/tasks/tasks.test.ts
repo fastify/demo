@@ -1,7 +1,7 @@
-import { describe, test } from "node:test";
+import { describe, it } from "node:test";
 import assert from "node:assert";
 import { build } from "../../../helper.js";
-import { Task, TaskStatus } from "../../../../src/schemas/tasks.js";
+import { Task, TaskStatus, TaskTransitions } from "../../../../src/schemas/tasks.js";
 import { FastifyInstance } from "fastify";
 
 async function createTask(app: FastifyInstance, taskData: Partial<Task>) {
@@ -10,7 +10,7 @@ async function createTask(app: FastifyInstance, taskData: Partial<Task>) {
 
 describe('Tasks api (logged user only)', () => {
   describe('GET /api/tasks', () => {
-    test("should return a list of tasks", async (t) => {
+    it("should return a list of tasks", async (t) => {
       const app = await build(t);
     
       const taskData = {
@@ -38,7 +38,7 @@ describe('Tasks api (logged user only)', () => {
   })
 
   describe('GET /api/tasks/:id', () => {
-    test("should return a task", async (t) => {
+    it("should return a task", async (t) => {
       const app = await build(t);
   
       const taskData = {
@@ -59,7 +59,7 @@ describe('Tasks api (logged user only)', () => {
       assert.equal(task.id, newTaskId);
     });
   
-    test("should return 404 if task is not found", async (t) => {
+    it("should return 404 if task is not found", async (t) => {
       const app = await build(t);
   
       const res = await app.injectWithLogin("basic", {
@@ -74,13 +74,12 @@ describe('Tasks api (logged user only)', () => {
   });
 
   describe('POST /api/tasks', () => {
-    test("should create a new task", async (t) => {
+    it("should create a new task", async (t) => {
       const app = await build(t);
 
       const taskData = {
         name: "New Task",
-        author_id: 1,
-        status: TaskStatus.New
+        author_id: 1
       };
 
       const res = await app.injectWithLogin("basic", {
@@ -97,8 +96,8 @@ describe('Tasks api (logged user only)', () => {
     });
   });
 
-  describe('PUT /api/tasks/:id', () => {
-    test("should update an existing task", async (t) => {
+  describe('PATCH /api/tasks/:id', () => {
+    it("should update an existing task", async (t) => {
       const app = await build(t);
 
       const taskData = {
@@ -113,7 +112,7 @@ describe('Tasks api (logged user only)', () => {
       };
 
       const res = await app.injectWithLogin("basic", {
-        method: "PUT",
+        method: "PATCH",
         url: `/api/tasks/${newTaskId}`,
         payload: updatedData
       });
@@ -123,7 +122,7 @@ describe('Tasks api (logged user only)', () => {
       assert.equal(updatedTask.name, updatedData.name);
     });
 
-    test("should return 404 if task is not found for update", async (t) => {
+    it("should return 404 if task is not found for update", async (t) => {
       const app = await build(t);
 
       const updatedData = {
@@ -131,7 +130,7 @@ describe('Tasks api (logged user only)', () => {
       };
 
       const res = await app.injectWithLogin("basic", {
-        method: "PUT",
+        method: "PATCH",
         url: "/api/tasks/9999",
         payload: updatedData
       });
@@ -142,8 +141,8 @@ describe('Tasks api (logged user only)', () => {
     });
   });
 
-  describe('PATCH /api/tasks/:id/status', () => {
-    test("should patch the status of an existing task", async (t) => {
+  describe('PATCH /api/tasks/:id/transition', () => {
+    it("should apply transition if valid", async (t) => {
       const app = await build(t);
 
       const taskData = {
@@ -153,11 +152,11 @@ describe('Tasks api (logged user only)', () => {
       };
       const newTaskId = await createTask(app, taskData);
 
-      const patchData = { status: TaskStatus.InProgress };
+      const patchData = { transition: TaskTransitions.Start};
 
       const res = await app.injectWithLogin("basic", {
         method: "PATCH",
-        url: `/api/tasks/${newTaskId}/status`,
+        url: `/api/tasks/${newTaskId}/transition`,
         payload: patchData
       });
 
@@ -166,17 +165,36 @@ describe('Tasks api (logged user only)', () => {
       assert.strictEqual(message, "Status changed");
 
       const patchedTask = await app.repository.find<Task>("tasks", { where: { id: newTaskId } }) as Task;
-      assert.strictEqual(patchedTask.status, patchData.status);
+      assert.strictEqual(patchedTask.status, TaskStatus.InProgress);
+
+      const res2 = await app.injectWithLogin("basic", {
+        method: "PATCH",
+        url: `/api/tasks/${newTaskId}/transition`,
+        payload: { ...patchData, transition: 'invalid' }
+      });
+
+      assert.strictEqual(res2.statusCode, 400);
+
+      const res3 = await app.injectWithLogin("basic", {
+        method: "PATCH",
+        url: `/api/tasks/${newTaskId}/transition`,
+        payload: { ...patchData, transition: TaskTransitions.Start }
+      });
+
+      assert.strictEqual(res3.statusCode, 400);
+      assert.deepStrictEqual(JSON.parse(res3.body), {
+        message: `Transition "${TaskTransitions.Start}" can not be applied to task with status "in-progress"`
+      })
     });
 
-    test("should return 404 if task is not found for status patch", async (t) => {
+    it("should return 404 if task is not found", async (t) => {
       const app = await build(t);
 
-      const patchData = { status: TaskStatus.Completed };
+      const patchData = { transition: TaskTransitions.Start };
 
       const res = await app.injectWithLogin("basic", {
         method: "PATCH",
-        url: "/api/tasks/9999/status",
+        url: "/api/tasks/9999/transition",
         payload: patchData
       });
 
@@ -187,7 +205,7 @@ describe('Tasks api (logged user only)', () => {
   });
 
   describe('DELETE /api/tasks/:id', () => {
-    test("should delete an existing task", async (t) => {
+    it("should delete an existing task", async (t) => {
       const app = await build(t);
 
       const taskData = {
@@ -208,7 +226,7 @@ describe('Tasks api (logged user only)', () => {
       assert.strictEqual(deletedTask, null);
     });
 
-    test("should return 404 if task is not found for deletion", async (t) => {
+    it("should return 404 if task is not found for deletion", async (t) => {
       const app = await build(t);
 
       const res = await app.injectWithLogin("basic", {

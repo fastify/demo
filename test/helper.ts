@@ -24,8 +24,13 @@ export function config() {
   };
 }
 
+const tokens: Record<string, string> = {}
 // We will create different users with different roles
 async function login(this: FastifyInstance, username: string) {
+  if (tokens[username]) {
+    return tokens[username]
+  }
+
   const res = await this.inject({
     method: "POST",
     url: "/api/auth/login",
@@ -35,7 +40,9 @@ async function login(this: FastifyInstance, username: string) {
     }
   });
 
-  return JSON.parse(res.payload).token;
+  tokens[username] = JSON.parse(res.payload).token;
+
+  return tokens[username]
 }
 
 async function injectWithLogin(this: FastifyInstance, username: string, opts: InjectOptions) {
