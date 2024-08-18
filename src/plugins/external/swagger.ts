@@ -25,6 +25,6 @@ export default fp(async function (fastify) {
    * @see {@link https://github.com/fastify/fastify-swagger-ui}
    */
   await fastify.register(fastifySwaggerUi, {
-    // Set plugin options here
+    routePrefix: '/api/docs'
   });
 });
