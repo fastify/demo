@@ -10,6 +10,7 @@ export default async function serviceApp(
   fastify: FastifyInstance,
   opts: FastifyPluginOptions
 ) {
+  delete opts.skipOverride // This option only serves testing purpose
   // This loads all external plugins defined in plugins/external
   // those should be registered first as your custom plugins might depend on them
   await fastify.register(fastifyAutoload, {
