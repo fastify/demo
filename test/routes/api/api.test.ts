@@ -9,9 +9,8 @@ test("GET /api without authorization header", async (t) => {
     url: "/api"
   });
 
-  assert.deepStrictEqual(JSON.parse(res.payload), {
-    message: "No Authorization was found in request.headers"
-  });
+  assert.equal(res.statusCode, 401)
+  assert.deepStrictEqual(JSON.parse(res.payload).message, "No Authorization was found in request.headers");
 });
 
 test("GET /api without JWT Token", async (t) => {
@@ -25,9 +24,8 @@ test("GET /api without JWT Token", async (t) => {
     }
   });
 
-  assert.deepStrictEqual(JSON.parse(res.payload), {
-    message: "Authorization token is invalid: The token is malformed."
-  });
+  assert.equal(res.statusCode, 401)
+  assert.deepStrictEqual(JSON.parse(res.payload).message, "Authorization token is invalid: The token is malformed.");
 });
 
 test("GET /api with JWT Token", async (t) => {

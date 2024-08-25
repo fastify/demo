@@ -11,6 +11,7 @@ declare module "fastify" {
       MYSQL_DATABASE: string;
       JWT_SECRET: string;
       RATE_LIMIT_MAX: number;
+      FASTIFY_VITE_DEV_MODE: boolean;
     };
   }
 }
@@ -52,6 +53,12 @@ const schema = {
     RATE_LIMIT_MAX: {
       type: "number",
       default: 100
+    },
+
+    // Frontend
+    FASTIFY_VITE_DEV_MODE: {
+      type: "boolean",
+      default: true
     }
   }
 };

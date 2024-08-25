@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { execSync } from "child_process";
 import Fastify from "fastify";
 import repository from "../../src/plugins/custom/repository.js";
-import * as envPlugin from "../../src/plugins/external/1-env.js";
+import * as envPlugin from "../../src/plugins/external/env.js";
 import * as mysqlPlugin from "../../src/plugins/external/mysql.js";
 import { Auth } from '../../src/schemas/auth.js';
 

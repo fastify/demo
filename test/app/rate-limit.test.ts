@@ -11,7 +11,7 @@ it("should be rate limited", async (t) => {
         url: "/"
       });
 
-    assert.strictEqual(res.statusCode, 200);
+      assert.strictEqual(res.statusCode, 200);
     }
   
     const res = await app.inject({

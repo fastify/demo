@@ -5,6 +5,7 @@
 import path from "node:path";
 import fastifyAutoload from "@fastify/autoload";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
+import fastifyVite from "@fastify/vite";
 
 export default async function serviceApp(
   fastify: FastifyInstance,
@@ -14,24 +15,24 @@ export default async function serviceApp(
   // those should be registered first as your custom plugins might depend on them
   await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "plugins/external"),
-    options: { ...opts }
+    options: {}
   });
 
   // This loads all your custom plugins defined in plugins/custom
   // those should be support plugins that are reused
   // through your application
-  fastify.register(fastifyAutoload, {
+  await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "plugins/custom"),
-    options: { ...opts }
+    options: {}
   });
 
   // This loads all plugins defined in routes
   // define your routes in one of these
-  fastify.register(fastifyAutoload, {
+  await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, "routes"),
     autoHooks: true,
     cascadeHooks: true,
-    options: { ...opts }
+    options: {}
   });
 
   fastify.setErrorHandler((err, request, reply) => {
@@ -48,14 +49,10 @@ export default async function serviceApp(
       "Unhandled error occurred"
     );
 
-    reply.code(err.statusCode ?? 500);
+    const statusCode = err.statusCode ?? 500
+    reply.code(statusCode);
 
-    let message = "Internal Server Error";
-    if (err.statusCode === 401) {
-      message = err.message;
-    }
-
-    return { message };
+    return { message: "Internal Server Error" };
   });
 
   // An attacker could search for valid URLs if your 404 error handling is not rate limited.
@@ -84,4 +81,20 @@ export default async function serviceApp(
 
     return { message: "Not Found" };
   });
+
+    // We setup the SPA
+    await fastify.register(fastifyVite, function (fastify) {
+      return {
+        root: path.resolve(import.meta.dirname, '../'),
+        dev: fastify.config.FASTIFY_VITE_DEV_MODE,
+        spa: true
+      }
+    });
+    
+    // Route must match vite "base": https://vitejs.dev/config/shared-options.html#base
+    fastify.get('/', (req, reply) => {
+      return reply.html();
+    });
+  
+    await fastify.vite.ready();
 }

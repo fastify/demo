@@ -8,13 +8,15 @@
     "test": "test"
   },
   "scripts": {
-    "build": "rm -rf dist && tsc",
-    "watch": "npm run build -- --watch",
+    "start": "npm run build && npm run build:client && fastify start -l info dist/app.js",
+    "build": "tsc",
+    "build:client": "vite build",
+    "watch": "tsc -w",
+    "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch\" \"npm:dev:start\"",
+    "dev:start": "fastify start --ignore-watch=.ts$ -l info -P dist/app.js",
     "test": "npm run db:seed && tap --jobs=1 test/**/*",
-    "start": "fastify start -l info dist/app.js",
-    "dev": "fastify start -w -l info -P dist/app.js",
     "standalone": "node --env-file=.env dist/server.js",
-    "lint": "eslint --ignore-pattern=dist",
+    "lint": "eslint src --ignore-pattern='src/client/dist'",
     "lint:fix": "npm run lint -- --fix",
     "db:migrate": "node --env-file=.env scripts/migrate.js",
     "db:seed": "node --env-file=.env scripts/seed-database.js"
@@ -35,19 +37,26 @@
     "@fastify/swagger-ui": "^4.0.1",
     "@fastify/type-provider-typebox": "^4.0.0",
     "@fastify/under-pressure": "^8.3.0",
+    "@fastify/vite": "^6.0.7",
     "@sinclair/typebox": "^0.33.7",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^8.2.2",
     "fastify": "^4.26.1",
     "fastify-cli": "^6.1.1",
     "fastify-plugin": "^4.0.0",
-    "postgrator": "^7.2.0"
+    "postgrator": "^7.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/react": "^18.3.4",
+    "@types/react-dom": "^18.3.0",
     "eslint": "^9.4.0",
     "fastify-tsconfig": "^2.0.0",
     "mysql2": "^3.10.1",
     "neostandard": "^0.7.0",
-    "tap": "^19.2.2",
+    "tap": "^21.0.1",
     "typescript": "^5.4.5"
   }
 }
