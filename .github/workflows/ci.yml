@@ -68,4 +68,5 @@ jobs:
           MYSQL_PASSWORD: test_password
           # JWT_SECRET is dynamically generated and loaded from the environment
           RATE_LIMIT_MAX: 4
+          FASTIFY_VITE_DEV_MODE: true
         run: npm run db:migrate && npm run test
