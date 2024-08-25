@@ -5,7 +5,7 @@
 import path from "node:path";
 import fastifyAutoload from "@fastify/autoload";
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
-import fastifyVite from "@fastify/vite";
+// import fastifyVite from "@fastify/vite";
 
 export default async function serviceApp(
   fastify: FastifyInstance,
@@ -83,18 +83,18 @@ export default async function serviceApp(
   });
 
     // We setup the SPA
-    await fastify.register(fastifyVite, function (fastify) {
-      return {
-        root: path.resolve(import.meta.dirname, '../'),
-        dev: fastify.config.FASTIFY_VITE_DEV_MODE,
-        spa: true
-      }
-    });
+    // await fastify.register(fastifyVite, function (fastify) {
+    //   return {
+    //     root: path.resolve(import.meta.dirname, '../'),
+    //     dev: fastify.config.FASTIFY_VITE_DEV_MODE,
+    //     spa: true
+    //   }
+    // });
     
     // Route must match vite "base": https://vitejs.dev/config/shared-options.html#base
     fastify.get('/', (req, reply) => {
-      return reply.html();
+      return "hello";
     });
   
-    await fastify.vite.ready();
+    // await fastify.vite.ready();
 }
