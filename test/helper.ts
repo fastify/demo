@@ -3,6 +3,7 @@ import { FastifyInstance, InjectOptions } from "fastify";
 import { build as buildApplication } from "fastify-cli/helper.js";
 import path from "node:path";
 import { TestContext } from "node:test";
+import { options as serverOptions } from "../src/app.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -10,7 +11,6 @@ declare module "fastify" {
     injectWithLogin: typeof injectWithLogin
   }
 }
-
 
 const AppPath = path.join(import.meta.dirname, "../src/app.ts");
 
@@ -60,7 +60,7 @@ export async function build(t: TestContext) {
   // fastify-plugin ensures that all decorators
   // are exposed for testing purposes, this is
   // different from the production setup
-  const app = await buildApplication(argv, config()) as FastifyInstance;
+  const app = await buildApplication(argv, config(), serverOptions) as FastifyInstance;
 
   app.login = login;
 

@@ -244,7 +244,5 @@ describe('Tasks api (logged user only)', () => {
       const payload = JSON.parse(res.payload);
       assert.strictEqual(payload.message, "Task not found");
     });
-  
   });
-  
 })
