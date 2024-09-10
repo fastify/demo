@@ -4,6 +4,9 @@ import { build } from "../../../helper.js";
 import { Task, TaskStatus } from "../../../../src/schemas/tasks.js";
 import { FastifyInstance } from "fastify";
 
+
+
+
 async function createTask(app: FastifyInstance, taskData: Partial<Task>) {
   return await app.repository.create("tasks", { data: taskData });
 }
@@ -176,4 +179,72 @@ describe('Tasks api (logged user only)', () => {
       assert.strictEqual(payload.message, "Task not found");
     });
   });
+
+  describe('POST /api/tasks/:id/assign', () => {
+
+    it("should assign a task to a user and persist the changes", async (t) => {
+      const app = await build(t);
+      
+      const taskData = {
+        name: "Task to Assign",
+        author_id: 1,
+        status: TaskStatus.New
+      };
+      const newTaskId = await createTask(app, taskData);
+      
+      const res = await app.injectWithLogin("basic", {
+        method: "POST",
+        url: `/api/tasks/${newTaskId}/assign`,
+        payload: {
+          userId: 2
+        }
+      });
+  
+      assert.strictEqual(res.statusCode, 200);
+  
+      const updatedTask = await app.repository.find<Task>("tasks", { where: { id: newTaskId } }) as Task
+      assert.strictEqual(updatedTask.assigned_user_id, 2); 
+    });
+  
+    it("should unassign a task from a user and persist the changes", async (t) => {
+      const app = await build(t);
+      
+      const taskData = {
+        name: "Task to Unassign",
+        author_id: 1,
+        assigned_user_id: 2,
+        status: TaskStatus.New
+      };
+      const newTaskId = await createTask(app, taskData);
+      
+      const res = await app.injectWithLogin("basic", {
+        method: "POST",
+        url: `/api/tasks/${newTaskId}/assign`,
+        payload: {}
+      });
+  
+      assert.strictEqual(res.statusCode, 200);
+  
+      const updatedTask = await app.repository.find<Task>("tasks", { where: { id: newTaskId } }) as Task;
+      assert.strictEqual(updatedTask.assigned_user_id, null); 
+    });
+  
+    it("should return 404 if task is not found", async (t) => {
+      const app = await build(t);
+  
+      const res = await app.injectWithLogin("basic", {
+        method: "POST",
+        url: "/api/tasks/9999/assign",
+        payload: {
+          userId: 2
+        }
+      });
+  
+      assert.strictEqual(res.statusCode, 404);
+      const payload = JSON.parse(res.payload);
+      assert.strictEqual(payload.message, "Task not found");
+    });
+  
+  });
+  
 })
