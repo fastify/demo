@@ -1,7 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import { build } from "../../../helper.js";
-import { Task, TaskStatus, TaskTransitions } from "../../../../src/schemas/tasks.js";
+import { Task, TaskStatus } from "../../../../src/schemas/tasks.js";
 import { FastifyInstance } from "fastify";
 
 async function createTask(app: FastifyInstance, taskData: Partial<Task>) {
@@ -133,69 +133,6 @@ describe('Tasks api (logged user only)', () => {
         method: "PATCH",
         url: "/api/tasks/9999",
         payload: updatedData
-      });
-
-      assert.strictEqual(res.statusCode, 404);
-      const payload = JSON.parse(res.payload);
-      assert.strictEqual(payload.message, "Task not found");
-    });
-  });
-
-  describe('PATCH /api/tasks/:id/transition', () => {
-    it("should apply transition if valid", async (t) => {
-      const app = await build(t);
-
-      const taskData = {
-        name: "Task to Patch",
-        author_id: 1,
-        status: TaskStatus.New
-      };
-      const newTaskId = await createTask(app, taskData);
-
-      const patchData = { transition: TaskTransitions.Start};
-
-      const res = await app.injectWithLogin("basic", {
-        method: "PATCH",
-        url: `/api/tasks/${newTaskId}/transition`,
-        payload: patchData
-      });
-
-      assert.strictEqual(res.statusCode, 200);
-      const message = JSON.parse(res.payload).message;
-      assert.strictEqual(message, "Status changed");
-
-      const patchedTask = await app.repository.find<Task>("tasks", { where: { id: newTaskId } }) as Task;
-      assert.strictEqual(patchedTask.status, TaskStatus.InProgress);
-
-      const res2 = await app.injectWithLogin("basic", {
-        method: "PATCH",
-        url: `/api/tasks/${newTaskId}/transition`,
-        payload: { ...patchData, transition: 'invalid' }
-      });
-
-      assert.strictEqual(res2.statusCode, 400);
-
-      const res3 = await app.injectWithLogin("basic", {
-        method: "PATCH",
-        url: `/api/tasks/${newTaskId}/transition`,
-        payload: { ...patchData, transition: TaskTransitions.Start }
-      });
-
-      assert.strictEqual(res3.statusCode, 400);
-      assert.deepStrictEqual(JSON.parse(res3.body), {
-        message: `Transition "${TaskTransitions.Start}" can not be applied to task with status "in-progress"`
-      })
-    });
-
-    it("should return 404 if task is not found", async (t) => {
-      const app = await build(t);
-
-      const patchData = { transition: TaskTransitions.Start };
-
-      const res = await app.injectWithLogin("basic", {
-        method: "PATCH",
-        url: "/api/tasks/9999/transition",
-        payload: patchData
       });
 
       assert.strictEqual(res.statusCode, 404);

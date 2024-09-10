@@ -7,8 +7,7 @@ import {
   Task,
   CreateTaskSchema,
   UpdateTaskSchema,
-  TaskStatus,
-  PatchTaskTransitionSchema
+  TaskStatus
 } from "../../../schemas/tasks.js";
 import { FastifyReply } from "fastify";
 
@@ -108,49 +107,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const task = await fastify.repository.find<Task>("tasks", { where: { id } });
 
       return task as Task;
-    }
-  );
-
-  fastify.patch(
-    "/:id/transition",
-    {
-      schema: {
-        params: Type.Object({
-          id: Type.Number()
-        }),
-        body: PatchTaskTransitionSchema,
-        response: {
-          200: Type.Object({ message: Type.String() }),
-          404: Type.Object({ message: Type.String() })
-        },
-        tags: ["Tasks"]
-      }
-    },
-    async function (request, reply) {
-      const { id } = request.params;
-      const { transition } = request.body;
-
-      const task = await fastify.repository.find<Task>("tasks", { select: 'status', where: { id } });
-
-      if (!task) {
-        return notFound(reply);
-      }
-      
-      if (!fastify.taskWorkflow.can(transition, task)) {
-        reply.status(400)
-        return { message: `Transition "${transition}" can not be applied to task with status "${task.status}"` }
-      }
-
-      fastify.taskWorkflow.apply(transition, task)
-
-      await fastify.repository.update("tasks", {
-        data: { status: task.status },
-        where: { id }
-      });
-
-      return {
-        message: "Status changed"
-      };
     }
   );
 

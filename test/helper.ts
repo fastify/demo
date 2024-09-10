@@ -1,5 +1,3 @@
-// This file contains code that we reuse
-// between our tests.
 
 import { FastifyInstance, InjectOptions } from "fastify";
 import { build as buildApplication } from "fastify-cli/helper.js";

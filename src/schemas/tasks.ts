@@ -1,14 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
 
-export const TaskTransitions = {
-  Start: "start",
-  Complete: "complete",
-  Hold: "hold",
-  Resume: "resume",
-  Cancel: "cancel",
-  Archive: "archive"
-} as const;
-
 export const TaskStatus = {
   New: 'new',
   InProgress: 'in-progress',
@@ -43,13 +34,3 @@ export const UpdateTaskSchema = Type.Object({
   assigned_user_id: Type.Optional(Type.Number())
 });
 
-export const PatchTaskTransitionSchema = Type.Object({
-  transition: Type.Union([
-    Type.Literal(TaskTransitions.Start),
-    Type.Literal(TaskTransitions.Complete),
-    Type.Literal(TaskTransitions.Hold),
-    Type.Literal(TaskTransitions.Resume),
-    Type.Literal(TaskTransitions.Cancel),
-    Type.Literal(TaskTransitions.Archive)
-  ])
-});
