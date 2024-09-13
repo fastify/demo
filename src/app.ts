@@ -10,8 +10,7 @@ export const options = {
   ajv: {
     customOptions: {
       coerceTypes: "array", 
-      removeAdditional: "all",
-      allErrors: true 
+      removeAdditional: "all"
     }
   }
 };
