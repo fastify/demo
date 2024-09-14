@@ -18,7 +18,8 @@ const AppPath = path.join(import.meta.dirname, "../src/app.ts");
 // needed for testing the application
 export function config() {
   return {
-    skipOverride: "true" // Register our application with fastify-plugin
+    skipOverride: true, // Register our application with fastify-plugin
+    avoidViteRegistration : true
   };
 }
 
