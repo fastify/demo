@@ -71,5 +71,5 @@ jobs:
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_password
           RATE_LIMIT_MAX: 4
-          FASTIFY_VITE_DEV_MODE: false
+          FASTIFY_VITE_DEV_MODE: true
         run: npm run db:migrate && npm run test
