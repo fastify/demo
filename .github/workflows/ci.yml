@@ -50,6 +50,9 @@ jobs:
       - name: Lint Code
         run: npm run lint
 
+      - name: Build Vite
+        run: npm run build:client
+
       - name: Generate JWT Secret
         id: gen-jwt
         run: |
@@ -61,12 +64,12 @@ jobs:
 
       - name: Test
         env:
+          # JWT_SECRET is dynamically generated and loaded from the environment
           MYSQL_HOST: localhost
           MYSQL_PORT: 3306
           MYSQL_DATABASE: test_db
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_password
-          # JWT_SECRET is dynamically generated and loaded from the environment
           RATE_LIMIT_MAX: 4
-          FASTIFY_VITE_DEV_MODE: true
+          FASTIFY_VITE_DEV_MODE: false
         run: npm run db:migrate && npm run test

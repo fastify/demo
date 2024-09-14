@@ -14,7 +14,6 @@
     "watch": "tsc -w",
     "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch\" \"npm:dev:start\"",
     "dev:start": "fastify start --ignore-watch=.ts$ -l info -P dist/app.js",
-
     "test": "npm run db:seed && tap --jobs=1 test/**/*",
     "standalone": "node --env-file=.env dist/server.js",
     "lint": "eslint src --ignore-pattern='src/client/dist'",
