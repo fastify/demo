@@ -41,11 +41,6 @@ To build the project:
 npm run build
 ```
 
-In dev mode, you can use:
-```bash
-npm run watch
-```
-
 ### Start the server
 In dev mode:
 ```bash
