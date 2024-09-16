@@ -181,7 +181,6 @@ describe('Tasks api (logged user only)', () => {
   });
 
   describe('POST /api/tasks/:id/assign', () => {
-
     it("should assign a task to a user and persist the changes", async (t) => {
       const app = await build(t);
       
