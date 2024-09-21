@@ -1,12 +1,12 @@
 import {
   FastifyPluginAsyncTypebox,
   Type
-} from "@fastify/type-provider-typebox";
-import { CredentialsSchema, Auth } from "../../../schemas/auth.js";
+} from '@fastify/type-provider-typebox'
+import { CredentialsSchema, Auth } from '../../../schemas/auth.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
-    "/login",
+    '/login',
     {
       schema: {
         body: CredentialsSchema,
@@ -18,11 +18,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             message: Type.String()
           })
         },
-        tags: ["Authentication"]
+        tags: ['Authentication']
       }
     },
     async function (request, reply) {
-      const { username, password } = request.body;
+      const { username, password } = request.body
 
       const user = await fastify.repository.find<Auth>('users', {
         select: 'username, password',
@@ -30,19 +30,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       })
 
       if (user) {
-        const isPasswordValid = await fastify.compare(password, user.password);
+        const isPasswordValid = await fastify.compare(password, user.password)
         if (isPasswordValid) {
-          const token = fastify.jwt.sign({ username: user.username });
+          const token = fastify.jwt.sign({ username: user.username })
 
-          return { token };
+          return { token }
         }
       }
 
-      reply.status(401);
-      
-      return { message: "Invalid username or password." };
-    }
-  );
-};
+      reply.status(401)
 
-export default plugin;
+      return { message: 'Invalid username or password.' }
+    }
+  )
+}
+
+export default plugin
