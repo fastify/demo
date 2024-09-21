@@ -30,7 +30,7 @@ async function doMigration (): Promise<void> {
 
   await postgrator.migrate()
 
-  console.log("Migration completed!")
+  console.log('Migration completed!')
 
   await new Promise<void>((resolve, reject) => {
     connection.end((err: unknown) => {
@@ -44,4 +44,4 @@ async function doMigration (): Promise<void> {
 }
 
 doMigration()
-.catch(err => console.error(err))
+  .catch(err => console.error(err))
