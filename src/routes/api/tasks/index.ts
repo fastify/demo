@@ -1,36 +1,36 @@
 import {
   FastifyPluginAsyncTypebox,
   Type
-} from "@fastify/type-provider-typebox";
+} from '@fastify/type-provider-typebox'
 import {
   TaskSchema,
   Task,
   CreateTaskSchema,
   UpdateTaskSchema,
   TaskStatus
-} from "../../../schemas/tasks.js";
-import { FastifyReply } from "fastify";
+} from '../../../schemas/tasks.js'
+import { FastifyReply } from 'fastify'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
-    "/",
+    '/',
     {
       schema: {
         response: {
           200: Type.Array(TaskSchema)
         },
-        tags: ["Tasks"]
+        tags: ['Tasks']
       }
     },
     async function () {
-      const tasks = await fastify.repository.findMany<Task>("tasks");
+      const tasks = await fastify.repository.findMany<Task>('tasks')
 
-      return tasks;
+      return tasks
     }
-  );
+  )
 
   fastify.get(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: Type.Object({
@@ -40,23 +40,23 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           200: TaskSchema,
           404: Type.Object({ message: Type.String() })
         },
-        tags: ["Tasks"]
+        tags: ['Tasks']
       }
     },
     async function (request, reply) {
-      const { id } = request.params;
-      const task = await fastify.repository.find<Task>("tasks", { where: { id } });
+      const { id } = request.params
+      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
 
       if (!task) {
-        return notFound(reply);
+        return notFound(reply)
       }
 
-      return task;
+      return task
     }
-  );
+  )
 
   fastify.post(
-    "/",
+    '/',
     {
       schema: {
         body: CreateTaskSchema,
@@ -65,21 +65,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             id: Type.Number()
           }
         },
-        tags: ["Tasks"]
+        tags: ['Tasks']
       }
     },
     async function (request, reply) {
-      const id = await fastify.repository.create("tasks", { data: {...request.body, status: TaskStatus.New} });
-      reply.code(201);
+      const id = await fastify.repository.create('tasks', { data: { ...request.body, status: TaskStatus.New } })
+      reply.code(201)
 
       return {
         id
-      };
+      }
     }
-  );
+  )
 
   fastify.patch(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: Type.Object({
@@ -90,28 +90,28 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           200: TaskSchema,
           404: Type.Object({ message: Type.String() })
         },
-        tags: ["Tasks"]
+        tags: ['Tasks']
       }
     },
     async function (request, reply) {
-      const { id } = request.params;
-      const affectedRows = await fastify.repository.update("tasks", {
+      const { id } = request.params
+      const affectedRows = await fastify.repository.update('tasks', {
         data: request.body,
         where: { id }
-      });
+      })
 
       if (affectedRows === 0) {
         return notFound(reply)
       }
 
-      const task = await fastify.repository.find<Task>("tasks", { where: { id } });
+      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
 
-      return task as Task;
+      return task as Task
     }
-  );
+  )
 
   fastify.delete(
-    "/:id",
+    '/:id',
     {
       schema: {
         params: Type.Object({
@@ -121,24 +121,24 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           204: Type.Null(),
           404: Type.Object({ message: Type.String() })
         },
-        tags: ["Tasks"]
+        tags: ['Tasks']
       },
       preHandler: fastify.isAdmin
     },
     async function (request, reply) {
-      const { id } = request.params;
-      const affectedRows = await fastify.repository.delete("tasks", { id });
+      const { id } = request.params
+      const affectedRows = await fastify.repository.delete('tasks', { id })
 
       if (affectedRows === 0) {
         return notFound(reply)
       }
 
-      reply.code(204).send(null);
+      reply.code(204).send(null)
     }
-  );
+  )
 
   fastify.post(
-    "/:id/assign",
+    '/:id/assign',
     {
       schema: {
         params: Type.Object({
@@ -151,34 +151,34 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           200: TaskSchema,
           404: Type.Object({ message: Type.String() })
         },
-        tags: ["Tasks"]
+        tags: ['Tasks']
       },
       preHandler: fastify.isModerator
     },
     async function (request, reply) {
-      const { id } = request.params;
-      const { userId } = request.body;
-  
-      const task = await fastify.repository.find<Task>("tasks", { where: { id } });
+      const { id } = request.params
+      const { userId } = request.body
+
+      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
       if (!task) {
-        return notFound(reply);
+        return notFound(reply)
       }
-  
-      await fastify.repository.update("tasks", {
+
+      await fastify.repository.update('tasks', {
         data: { assigned_user_id: userId },
         where: { id }
-      });
+      })
 
       task.assigned_user_id = userId
 
-      return task;
+      return task
     }
   )
-};
-
-function notFound(reply: FastifyReply) {
-  reply.code(404)
-  return { message: "Task not found" }
 }
 
-export default plugin;
+function notFound (reply: FastifyReply) {
+  reply.code(404)
+  return { message: 'Task not found' }
+}
+
+export default plugin

@@ -18,7 +18,7 @@ async function doMigration (): Promise<void> {
   })
 
   const postgrator = new Postgrator({
-    migrationPattern: path.join(import.meta.dirname, '../migrations', '*'), 
+    migrationPattern: path.join(import.meta.dirname, '../migrations', '*'),
     driver: 'mysql',
     database: process.env.MYSQL_DATABASE,
     execQuery: async (query: string): Promise<PostgratorResult> => {
