@@ -122,7 +122,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           404: Type.Object({ message: Type.String() })
         },
         tags: ["Tasks"]
-      }
+      },
+      preHandler: fastify.isAdmin
     },
     async function (request, reply) {
       const { id } = request.params;
@@ -151,7 +152,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           404: Type.Object({ message: Type.String() })
         },
         tags: ["Tasks"]
-      }
+      },
+      preHandler: fastify.isModerator
     },
     async function (request, reply) {
       const { id } = request.params;

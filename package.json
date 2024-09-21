@@ -17,8 +17,8 @@
     "standalone": "node --env-file=.env dist/server.js",
     "lint": "eslint --ignore-pattern=dist",
     "lint:fix": "npm run lint -- --fix",
-    "db:migrate": "node --env-file=.env scripts/migrate.js",
-    "db:seed": "node --env-file=.env scripts/seed-database.js"
+    "db:migrate": "node --loader ts-node/esm --env-file=.env src/scripts/migrate.ts",
+    "db:seed": "node --loader ts-node/esm --env-file=.env src/scripts/seed-database.ts"
   },
   "keywords": [],
   "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",

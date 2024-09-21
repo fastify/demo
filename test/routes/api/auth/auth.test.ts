@@ -10,7 +10,7 @@ test("POST /api/auth/login with valid credentials", async (t) => {
     url: "/api/auth/login",
     payload: {
       username: "basic",
-      password: "password"
+      password: "password123$"
     }
   });
 

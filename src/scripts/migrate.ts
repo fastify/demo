@@ -1,24 +1,28 @@
-import mysql from 'mysql2/promise'
+import mysql, { Connection } from 'mysql2/promise'
 import path from 'path'
 import Postgrator from 'postgrator'
 
-async function doMigration () {
-  const connection = await mysql.createConnection({
+interface PostgratorResult {
+  rows: any
+  fields: any
+}
+
+async function doMigration (): Promise<void> {
+  const connection: Connection = await mysql.createConnection({
     multipleStatements: true,
     host: process.env.MYSQL_HOST,
-    port: process.env.MYSQL_PORT,
+    port: Number(process.env.MYSQL_PORT),
     database: process.env.MYSQL_DATABASE,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD
   })
 
   const postgrator = new Postgrator({
-    migrationPattern: path.join(import.meta.dirname, '../migrations', '*'),
+    migrationPattern: path.join(import.meta.dirname, '../migrations', '*'), 
     driver: 'mysql',
     database: process.env.MYSQL_DATABASE,
-    execQuery: async (query) => {
+    execQuery: async (query: string): Promise<PostgratorResult> => {
       const [rows, fields] = await connection.query(query)
-
       return { rows, fields }
     },
     schemaTable: 'schemaversion'
@@ -26,8 +30,8 @@ async function doMigration () {
 
   await postgrator.migrate()
 
-  await new Promise((resolve, reject) => {
-    connection.end((err) => {
+  await new Promise<void>((resolve, reject) => {
+    connection.end((err: unknown) => {
       if (err) {
         return reject(err)
       }

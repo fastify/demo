@@ -16,6 +16,11 @@ type QuerySeparator = 'AND' | ',';
 type QueryOptions = {
   select?: string;
   where?: Record<string, any>;
+  join?: {
+    table: string;
+    on: string;
+    type?: 'INNER' | 'LEFT' | 'RIGHT'; 
+  }[];
 };
 
 type WriteOptions = {
@@ -32,13 +37,27 @@ function createRepository(fastify: FastifyInstance) {
     return [clause, values] as const;
   };
 
+  const buildJoinClause = (joins: QueryOptions['join']) => {
+    if (!joins || joins.length === 0) {
+      return '';
+    }
+
+    return joins
+      .map((join) => {
+        const joinType = join.type ?? 'INNER'; // Default to INNER join
+        return `${joinType} JOIN ${join.table} ON ${join.on}`;
+      })
+      .join(' ');
+  };
+
   const repository = {
     ...fastify.mysql,
     find: async <T>(table: string, opts: QueryOptions): Promise<T | null> => {
-      const { select = '*', where = {1:1} } = opts;
+      const { select = '*', where = {1:1}, join } = opts;
       const [clause, values] = processAssignmentRecord(where, 'AND');
+      const joinClause = buildJoinClause(join);
 
-      const query = `SELECT ${select} FROM ${table} WHERE ${clause} LIMIT 1`;
+      const query = `SELECT ${select} FROM ${table} ${joinClause} WHERE ${clause} LIMIT 1`;
       const [rows] = await fastify.mysql.query<RowDataPacket[]>(query, values);
       if (rows.length < 1) {
         return null;
@@ -48,10 +67,11 @@ function createRepository(fastify: FastifyInstance) {
     },
 
     findMany: async <T>(table: string, opts: QueryOptions = {}): Promise<T[]> => {
-      const { select = '*', where = {1:1} } = opts;
+      const { select = '*', where = {1:1}, join } = opts;
       const [clause, values] = processAssignmentRecord(where, 'AND');
+      const joinClause = buildJoinClause(join);
 
-      const query = `SELECT ${select} FROM ${table} WHERE ${clause}`;
+      const query = `SELECT ${select} FROM ${table} ${joinClause} WHERE ${clause}`;
       const [rows] = await fastify.mysql.query<RowDataPacket[]>(query, values);
 
       return rows as T[];

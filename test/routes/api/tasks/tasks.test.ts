@@ -145,17 +145,17 @@ describe('Tasks api (logged user only)', () => {
   });
 
   describe('DELETE /api/tasks/:id', () => {
+    const taskData = {
+      name: "Task to Delete",
+      author_id: 1,
+      status: TaskStatus.New
+    };
+
     it("should delete an existing task", async (t) => {
       const app = await build(t);
-
-      const taskData = {
-        name: "Task to Delete",
-        author_id: 1,
-        status: TaskStatus.New
-      };
       const newTaskId = await createTask(app, taskData);
 
-      const res = await app.injectWithLogin("basic", {
+      const res = await app.injectWithLogin("admin", {
         method: "DELETE",
         url: `/api/tasks/${newTaskId}`
       });
@@ -169,7 +169,7 @@ describe('Tasks api (logged user only)', () => {
     it("should return 404 if task is not found for deletion", async (t) => {
       const app = await build(t);
 
-      const res = await app.injectWithLogin("basic", {
+      const res = await app.injectWithLogin("admin", {
         method: "DELETE",
         url: "/api/tasks/9999"
       });
@@ -181,7 +181,6 @@ describe('Tasks api (logged user only)', () => {
   });
 
   describe('POST /api/tasks/:id/assign', () => {
-
     it("should assign a task to a user and persist the changes", async (t) => {
       const app = await build(t);
       
@@ -192,7 +191,7 @@ describe('Tasks api (logged user only)', () => {
       };
       const newTaskId = await createTask(app, taskData);
       
-      const res = await app.injectWithLogin("basic", {
+      const res = await app.injectWithLogin("moderator", {
         method: "POST",
         url: `/api/tasks/${newTaskId}/assign`,
         payload: {
@@ -217,7 +216,7 @@ describe('Tasks api (logged user only)', () => {
       };
       const newTaskId = await createTask(app, taskData);
       
-      const res = await app.injectWithLogin("basic", {
+      const res = await app.injectWithLogin("moderator", {
         method: "POST",
         url: `/api/tasks/${newTaskId}/assign`,
         payload: {}
@@ -228,11 +227,24 @@ describe('Tasks api (logged user only)', () => {
       const updatedTask = await app.repository.find<Task>("tasks", { where: { id: newTaskId } }) as Task;
       assert.strictEqual(updatedTask.assigned_user_id, null); 
     });
+
+    it("should return 403 not moderator", async (t) => {
+      const app = await build(t);
+  
+      const res = await app.injectWithLogin("basic", {
+        method: "POST",
+        url: "/api/tasks/1/assign",
+        payload: {
+        }
+      });
+  
+      assert.strictEqual(res.statusCode, 403);
+    });
   
     it("should return 404 if task is not found", async (t) => {
       const app = await build(t);
   
-      const res = await app.injectWithLogin("basic", {
+      const res = await app.injectWithLogin("moderator", {
         method: "POST",
         url: "/api/tasks/9999/assign",
         payload: {

@@ -1,4 +1,4 @@
-CREATE TABLE user_tasks (
+CREATE TABLE IF NOT EXISTS user_tasks (
   user_id INT NOT NULL,
   task_id INT NOT NULL,
   PRIMARY KEY (user_id, task_id),
