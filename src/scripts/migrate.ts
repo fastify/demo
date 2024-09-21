@@ -18,7 +18,7 @@ async function doMigration (): Promise<void> {
   })
 
   const postgrator = new Postgrator({
-    migrationPattern: path.join(import.meta.dirname, '../migrations', '*'),
+    migrationPattern: path.join(import.meta.dirname, '../../migrations', '*'),
     driver: 'mysql',
     database: process.env.MYSQL_DATABASE,
     execQuery: async (query: string): Promise<PostgratorResult> => {
@@ -30,14 +30,18 @@ async function doMigration (): Promise<void> {
 
   await postgrator.migrate()
 
+  console.log("Migration completed!")
+
   await new Promise<void>((resolve, reject) => {
     connection.end((err: unknown) => {
       if (err) {
         return reject(err)
       }
+
       resolve()
     })
   })
 }
 
-doMigration().catch(err => console.error(err))
+doMigration()
+.catch(err => console.error(err))
