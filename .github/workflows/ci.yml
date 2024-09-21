@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - "docs/**"
       - "*.md"
+      - "*.example"
   pull_request:
     paths-ignore:
       - "docs/**"

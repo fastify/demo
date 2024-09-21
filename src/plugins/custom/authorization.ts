@@ -37,8 +37,8 @@ export default fp(
   async function (fastify) {
     fastify.decorate('isModerator', isModerator)
     fastify.decorate('isAdmin', isAdmin)
-    // You should name your plugins if you want to avoid name collisions
-    // and/or to perform dependency checks.
   },
+  // You should name your plugins if you want to avoid name collisions
+  // and/or to perform dependency checks.
   { name: 'authorization' }
 )
