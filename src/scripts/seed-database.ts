@@ -49,7 +49,10 @@ async function seedUsers (connection: Connection) {
   const usernames = ['basic', 'moderator', 'admin']
   const hash = await scryptHash('password123$')
 
-  const roleAccumulator: number[] = []
+  // The goal here is to create a role hierarchy
+  // E.g. an admin should have all the roles
+  const rolesAccumulator: number[] = []
+  
   for (const username of usernames) {
     const [userResult]: any[] = await connection.execute(`
       INSERT INTO users (username, password)
@@ -65,9 +68,9 @@ async function seedUsers (connection: Connection) {
 
     const newRoleId = (roleResult as { insertId: number }).insertId
 
-    roleAccumulator.push(newRoleId)
+    rolesAccumulator.push(newRoleId)
 
-    for (const roleId of roleAccumulator) {
+    for (const roleId of rolesAccumulator) {
       await connection.execute(`
         INSERT INTO user_roles (user_id, role_id)
         VALUES (?, ?)
