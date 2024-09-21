@@ -20,5 +20,4 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["**/*"],
-  "exclude": ["dist"]
 }

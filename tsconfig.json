@@ -5,5 +5,4 @@
     "rootDir": "src"
   },
   "include": ["@types", "src/**/*.ts"],
-  "exclude": ["src/client/**/*"]
 }

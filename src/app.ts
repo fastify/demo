@@ -20,7 +20,7 @@ export default async function serviceApp (
   fastify: FastifyInstance,
   opts: FastifyPluginOptions
 ) {
-  const { avoidViteRegistration = true } = opts
+  const { registerVite = true } = opts
 
   // This loads all external plugins defined in plugins/external
   // those should be registered first as your custom plugins might depend on them
@@ -93,38 +93,27 @@ export default async function serviceApp (
     }
   )
 
-  await handleVite(fastify, {
-    register: !avoidViteRegistration
-  })
-}
+  if (registerVite) {
+    /* c8 ignore start - We don't launch the spa tests with the api tests */
+    // We setup the SPA
+    await fastify.register(fastifyVite, function (fastify) {
+      return {
+        root: path.resolve(import.meta.dirname, '../'),
+        dev: fastify.config.FASTIFY_VITE_DEV_MODE,
+        spa: true
+      }
+    })
 
-async function handleVite (
-  fastify: FastifyInstance,
-  { register }: { register: boolean }
-) {
-  if (!register) {
     // Route must match vite "base": https://vitejs.dev/config/shared-options.html#base
+    fastify.get('/', (req, reply) => {
+      return reply.html()
+    })
+
+    await fastify.vite.ready()
+    /* c8 ignore end */
+  } else {
     fastify.get('/', () => {
       return 'Vite is not registered.'
     })
-
-    return
   }
-  /* c8 ignore start - We don't launch the spa tests with the api tests */
-  // We setup the SPA
-  await fastify.register(fastifyVite, function (fastify) {
-    return {
-      root: path.resolve(import.meta.dirname, '../'),
-      dev: fastify.config.FASTIFY_VITE_DEV_MODE,
-      spa: true
-    }
-  })
-
-  // Route must match vite "base": https://vitejs.dev/config/shared-options.html#base
-  fastify.get('/', (req, reply) => {
-    return reply.html()
-  })
-
-  await fastify.vite.ready()
-  /* c8 ignore end */
 }
