@@ -52,7 +52,7 @@ async function seedUsers (connection: Connection) {
   // The goal here is to create a role hierarchy
   // E.g. an admin should have all the roles
   const rolesAccumulator: number[] = []
-  
+
   for (const username of usernames) {
     const [userResult]: any[] = await connection.execute(`
       INSERT INTO users (username, password)

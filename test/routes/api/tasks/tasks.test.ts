@@ -181,51 +181,55 @@ describe('Tasks api (logged user only)', () => {
     it('should assign a task to a user and persist the changes', async (t) => {
       const app = await build(t)
 
-      const taskData = {
-        name: 'Task to Assign',
-        author_id: 1,
-        status: TaskStatus.New
-      }
-      const newTaskId = await createTask(app, taskData)
-
-      const res = await app.injectWithLogin('moderator', {
-        method: 'POST',
-        url: `/api/tasks/${newTaskId}/assign`,
-        payload: {
-          userId: 2
+      for (const username of ['moderator', 'admin']) {
+        const taskData = {
+          name: 'Task to Assign',
+          author_id: 1,
+          status: TaskStatus.New
         }
-      })
+        const newTaskId = await createTask(app, taskData)
 
-      assert.strictEqual(res.statusCode, 200)
+        const res = await app.injectWithLogin(username, {
+          method: 'POST',
+          url: `/api/tasks/${newTaskId}/assign`,
+          payload: {
+            userId: 2
+          }
+        })
 
-      const updatedTask = await app.repository.find<Task>('tasks', { where: { id: newTaskId } }) as Task
-      assert.strictEqual(updatedTask.assigned_user_id, 2)
+        assert.strictEqual(res.statusCode, 200)
+
+        const updatedTask = await app.repository.find<Task>('tasks', { where: { id: newTaskId } }) as Task
+        assert.strictEqual(updatedTask.assigned_user_id, 2)
+      }
     })
 
     it('should unassign a task from a user and persist the changes', async (t) => {
       const app = await build(t)
 
-      const taskData = {
-        name: 'Task to Unassign',
-        author_id: 1,
-        assigned_user_id: 2,
-        status: TaskStatus.New
+      for (const username of ['moderator', 'admin']) {
+        const taskData = {
+          name: 'Task to Unassign',
+          author_id: 1,
+          assigned_user_id: 2,
+          status: TaskStatus.New
+        }
+        const newTaskId = await createTask(app, taskData)
+
+        const res = await app.injectWithLogin(username, {
+          method: 'POST',
+          url: `/api/tasks/${newTaskId}/assign`,
+          payload: {}
+        })
+
+        assert.strictEqual(res.statusCode, 200)
+
+        const updatedTask = await app.repository.find<Task>('tasks', { where: { id: newTaskId } }) as Task
+        assert.strictEqual(updatedTask.assigned_user_id, null)
       }
-      const newTaskId = await createTask(app, taskData)
-
-      const res = await app.injectWithLogin('moderator', {
-        method: 'POST',
-        url: `/api/tasks/${newTaskId}/assign`,
-        payload: {}
-      })
-
-      assert.strictEqual(res.statusCode, 200)
-
-      const updatedTask = await app.repository.find<Task>('tasks', { where: { id: newTaskId } }) as Task
-      assert.strictEqual(updatedTask.assigned_user_id, null)
     })
 
-    it('should return 403 not moderator', async (t) => {
+    it('should return 403 if not a moderator', async (t) => {
       const app = await build(t)
 
       const res = await app.injectWithLogin('basic', {

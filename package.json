@@ -41,7 +41,8 @@
     "fastify": "^5.0.0",
     "fastify-cli": "^7.0.0",
     "fastify-plugin": "^5.0.1",
-    "postgrator": "^7.3.0"
+    "postgrator": "^7.3.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/node": "^22.5.5",
