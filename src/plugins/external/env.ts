@@ -1,6 +1,6 @@
-import env from "@fastify/env";
+import env from '@fastify/env'
 
-declare module "fastify" {
+declare module 'fastify' {
   export interface FastifyInstance {
     config: {
       PORT: number;
@@ -17,56 +17,56 @@ declare module "fastify" {
 }
 
 const schema = {
-  type: "object",
+  type: 'object',
   required: [
-    "MYSQL_HOST",
-    "MYSQL_PORT",
-    "MYSQL_USER",
-    "MYSQL_PASSWORD",
-    "MYSQL_DATABASE",
-    "JWT_SECRET"
+    'MYSQL_HOST',
+    'MYSQL_PORT',
+    'MYSQL_USER',
+    'MYSQL_PASSWORD',
+    'MYSQL_DATABASE',
+    'JWT_SECRET'
   ],
   properties: {
     // Database
     MYSQL_HOST: {
-      type: "string",
-      default: "localhost"
+      type: 'string',
+      default: 'localhost'
     },
     MYSQL_PORT: {
-      type: "number",
+      type: 'number',
       default: 3306
     },
     MYSQL_USER: {
-      type: "string"
+      type: 'string'
     },
     MYSQL_PASSWORD: {
-      type: "string"
+      type: 'string'
     },
     MYSQL_DATABASE: {
-      type: "string"
+      type: 'string'
     },
 
     // Security
     JWT_SECRET: {
-      type: "string"
+      type: 'string'
     },
     RATE_LIMIT_MAX: {
-      type: "number",
+      type: 'number',
       default: 100
     },
 
     // Frontend
     FASTIFY_VITE_DEV_MODE: {
-      type: "boolean",
+      type: 'boolean',
       default: true
     }
   }
-};
+}
 
 export const autoConfig = {
   // Decorate Fastify instance with `config` key
   // Optional, default: 'config'
-  confKey: "config",
+  confKey: 'config',
 
   // Schema to validate
   schema,
@@ -82,11 +82,11 @@ export const autoConfig = {
   // Source for the configuration data
   // Optional, default: process.env
   data: process.env
-};
+}
 
 /**
  * This plugins helps to check environment variables.
  *
  * @see {@link https://github.com/fastify/fastify-env}
  */
-export default env;
+export default env

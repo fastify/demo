@@ -1,6 +1,6 @@
-import { FastifyInstance } from "fastify";
-import fastifyUnderPressure from "@fastify/under-pressure";
-import fp from "fastify-plugin";
+import { FastifyInstance } from 'fastify'
+import fastifyUnderPressure from '@fastify/under-pressure'
+import fp from 'fastify-plugin'
 
 export const autoConfig = (fastify: FastifyInstance) => {
   return {
@@ -8,26 +8,26 @@ export const autoConfig = (fastify: FastifyInstance) => {
     maxHeapUsedBytes: 100_000_000,
     maxRssBytes: 1_000_000_000,
     maxEventLoopUtilization: 0.98,
-    message: "The server is under pressure, retry later!",
+    message: 'The server is under pressure, retry later!',
     retryAfter: 50,
     healthCheck: async () => {
-      let connection;
+      let connection
       try {
-        connection = await fastify.mysql.getConnection();
-        await connection.query("SELECT 1;");
-        return true;
+        connection = await fastify.mysql.getConnection()
+        await connection.query('SELECT 1;')
+        return true
         /* c8 ignore start */
       } catch (err) {
-        fastify.log.error(err, "healthCheck has failed");
-        throw new Error("Database connection is not available");
+        fastify.log.error(err, 'healthCheck has failed')
+        throw new Error('Database connection is not available')
       } finally {
-        connection?.release();
+        connection?.release()
       }
       /* c8 ignore stop */
     },
     healthCheckInterval: 5000
-  };
-};
+  }
+}
 
 /**
  * A Fastify plugin for mesuring process load and automatically
@@ -39,5 +39,5 @@ export const autoConfig = (fastify: FastifyInstance) => {
  * @see {@link https://www.youtube.com/watch?v=VI29mUA8n9w}
  */
 export default fp(fastifyUnderPressure, {
-  dependencies: ["mysql"]
-});
+  dependencies: ['mysql']
+})
