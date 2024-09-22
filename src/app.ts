@@ -60,10 +60,14 @@ export default async function serviceApp (
       'Unhandled error occurred'
     )
 
-    const statusCode = err.statusCode ?? 500
-    reply.code(statusCode)
+    reply.code(err.statusCode ?? 500)
 
-    return { message: 'Internal Server Error' }
+    let message = 'Internal Server Error'
+    if (err.statusCode === 401) {
+      message = err.message
+    }
+
+    return { message }
   })
 
   // An attacker could search for valid URLs if your 404 error handling is not rate limited.

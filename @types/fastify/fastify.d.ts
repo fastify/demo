@@ -1,7 +1,7 @@
-import { Auth } from "../../src/schemas/auth.ts";
+import { Auth } from '../../src/schemas/auth.ts'
 
-declare module "fastify" {
-    export interface FastifyRequest {
-        user: Auth
-    }
+declare module 'fastify' {
+  export interface FastifyRequest {
+    user: Auth
+  }
 }
