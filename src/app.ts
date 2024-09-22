@@ -5,6 +5,7 @@
 import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import fastifyVite from '@fastify/vite'
 
 export const options = {
   ajv: {
@@ -19,29 +20,30 @@ export default async function serviceApp (
   fastify: FastifyInstance,
   opts: FastifyPluginOptions
 ) {
-  delete opts.skipOverride // This option only serves testing purpose
+  const { registerVite = true } = opts
+
   // This loads all external plugins defined in plugins/external
   // those should be registered first as your custom plugins might depend on them
   await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, 'plugins/external'),
-    options: { ...opts }
+    options: {}
   })
 
   // This loads all your custom plugins defined in plugins/custom
   // those should be support plugins that are reused
   // through your application
-  fastify.register(fastifyAutoload, {
+  await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, 'plugins/custom'),
-    options: { ...opts }
+    options: {}
   })
 
   // This loads all plugins defined in routes
   // define your routes in one of these
-  fastify.register(fastifyAutoload, {
+  await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, 'routes'),
     autoHooks: true,
     cascadeHooks: true,
-    options: { ...opts }
+    options: {}
   })
 
   fastify.setErrorHandler((err, request, reply) => {
@@ -58,11 +60,12 @@ export default async function serviceApp (
       'Unhandled error occurred'
     )
 
-    reply.code(err.statusCode ?? 500)
-
     let message = 'Internal Server Error'
-    if (err.statusCode === 401) {
-      message = err.message
+    const statusCode = err.statusCode ?? 500
+    reply.code(statusCode)
+
+    if (statusCode === 429) {
+      message = 'Rate limit exceeded'
     }
 
     return { message }
@@ -92,5 +95,30 @@ export default async function serviceApp (
       reply.code(404)
 
       return { message: 'Not Found' }
+    }
+  )
+
+  if (registerVite) {
+    /* c8 ignore start - We don't launch the spa tests with the api tests */
+    // We setup the SPA
+    await fastify.register(fastifyVite, function (fastify) {
+      return {
+        root: path.resolve(import.meta.dirname, '../'),
+        dev: fastify.config.FASTIFY_VITE_DEV_MODE,
+        spa: true
+      }
     })
+
+    // Route must match vite "base": https://vitejs.dev/config/shared-options.html#base
+    fastify.get('/', (req, reply) => {
+      return reply.html()
+    })
+
+    await fastify.vite.ready()
+    /* c8 ignore end */
+  } else {
+    fastify.get('/', () => {
+      return 'Vite is not registered.'
+    })
+  }
 }
