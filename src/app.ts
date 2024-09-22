@@ -60,11 +60,12 @@ export default async function serviceApp (
       'Unhandled error occurred'
     )
 
-    reply.code(err.statusCode ?? 500)
-
     let message = 'Internal Server Error'
-    if (err.statusCode === 401) {
-      message = err.message
+    const statusCode = err.statusCode ?? 500
+    reply.code(statusCode)
+
+    if (statusCode === 429) {
+      message = 'Rate limit exceeded'
     }
 
     return { message }
