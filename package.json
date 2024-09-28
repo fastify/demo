@@ -17,6 +17,8 @@
     "standalone": "node --env-file=.env dist/server.js",
     "lint": "eslint --ignore-pattern=dist",
     "lint:fix": "npm run lint -- --fix",
+    "db:create": "node --loader ts-node/esm --env-file=.env src/scripts/create-database.ts",
+    "db:drop": "node --loader ts-node/esm --env-file=.env src/scripts/drop-database.ts",
     "db:migrate": "node --loader ts-node/esm --env-file=.env src/scripts/migrate.ts",
     "db:seed": "node --loader ts-node/esm --env-file=.env src/scripts/seed-database.ts"
   },
@@ -29,7 +31,6 @@
     "@fastify/env": "^5.0.1",
     "@fastify/helmet": "^12.0.0",
     "@fastify/jwt": "^9.0.0",
-    "@fastify/mysql": "^5.0.1",
     "@fastify/rate-limit": "^10.0.1",
     "@fastify/sensible": "^6.0.1",
     "@fastify/swagger": "^9.0.0",
@@ -41,6 +42,7 @@
     "fastify": "^5.0.0",
     "fastify-cli": "^7.0.0",
     "fastify-plugin": "^5.0.1",
+    "knex": "^3.1.0",
     "postgrator": "^7.3.0",
     "ts-node": "^10.9.2"
   },
@@ -48,7 +50,6 @@
     "@types/node": "^22.5.5",
     "eslint": "^9.11.0",
     "fastify-tsconfig": "^2.0.0",
-    "mysql2": "^3.11.3",
     "neostandard": "^0.11.5",
     "tap": "^21.0.1",
     "typescript": "^5.6.2"

@@ -1,14 +1,5 @@
-import {
-  FastifyPluginAsyncTypebox,
-  Type
-} from '@fastify/type-provider-typebox'
-import {
-  TaskSchema,
-  Task,
-  CreateTaskSchema,
-  UpdateTaskSchema,
-  TaskStatus
-} from '../../../schemas/tasks.js'
+import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox'
+import { TaskSchema, Task, CreateTaskSchema, UpdateTaskSchema, TaskStatus } from '../../../schemas/tasks.js'
 import { FastifyReply } from 'fastify'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
@@ -23,8 +14,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function () {
-      const tasks = await fastify.repository.findMany<Task>('tasks')
-
+      const tasks = await fastify.knex<Task>('tasks').select('*')
       return tasks
     }
   )
@@ -45,7 +35,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
+      const task = await fastify.knex<Task>('tasks').where({ id }).first()
 
       if (!task) {
         return notFound(reply)
@@ -69,12 +59,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const id = await fastify.repository.create('tasks', { data: { ...request.body, status: TaskStatus.New } })
-      reply.code(201)
+      const newTask = { ...request.body, status: TaskStatus.New }
+      const [id] = await fastify.knex<Task>('tasks').insert(newTask)
 
-      return {
-        id
-      }
+      reply.code(201)
+      return { id }
     }
   )
 
@@ -95,18 +84,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const affectedRows = await fastify.repository.update('tasks', {
-        data: request.body,
-        where: { id }
-      })
+      const affectedRows = await fastify.knex<Task>('tasks')
+        .where({ id })
+        .update(request.body)
 
       if (affectedRows === 0) {
         return notFound(reply)
       }
 
-      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
-
-      return task as Task
+      const updatedTask = await fastify.knex<Task>('tasks').where({ id }).first()
+      return updatedTask
     }
   )
 
@@ -127,7 +114,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const affectedRows = await fastify.repository.delete('tasks', { id })
+      const affectedRows = await fastify.knex<Task>('tasks').where({ id }).delete()
 
       if (affectedRows === 0) {
         return notFound(reply)
@@ -159,15 +146,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { id } = request.params
       const { userId } = request.body
 
-      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
+      const task = await fastify.knex<Task>('tasks').where({ id }).first()
       if (!task) {
         return notFound(reply)
       }
 
-      await fastify.repository.update('tasks', {
-        data: { assigned_user_id: userId },
-        where: { id }
-      })
+      await fastify.knex('tasks')
+        .where({ id })
+        .update({ assigned_user_id: userId ?? null })
 
       task.assigned_user_id = userId
 
