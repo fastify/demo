@@ -22,7 +22,7 @@ export function config () {
 }
 
 const tokens: Record<string, string> = {}
-// @See src/scripts/seed-database.ts
+// @See /scripts/seed-database.ts
 async function login (this: FastifyInstance, username: string) {
   if (tokens[username]) {
     return tokens[username]
