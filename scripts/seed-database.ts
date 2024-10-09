@@ -1,5 +1,5 @@
 import { createConnection, Connection } from 'mysql2/promise'
-import { scryptHash } from '../plugins/custom/scrypt.js'
+import { scryptHash } from '../src/plugins/custom/scrypt.js'
 
 async function seed () {
   const connection: Connection = await createConnection({

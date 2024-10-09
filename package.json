@@ -17,10 +17,10 @@
     "standalone": "node --env-file=.env dist/server.js",
     "lint": "eslint --ignore-pattern=dist",
     "lint:fix": "npm run lint -- --fix",
-    "db:create": "node --loader ts-node/esm --env-file=.env src/scripts/create-database.ts",
-    "db:drop": "node --loader ts-node/esm --env-file=.env src/scripts/drop-database.ts",
-    "db:migrate": "node --loader ts-node/esm --env-file=.env src/scripts/migrate.ts",
-    "db:seed": "node --loader ts-node/esm --env-file=.env src/scripts/seed-database.ts"
+    "db:create": "node --import ./imports/ts-node.js --env-file=.env ./scripts/create-database.ts",
+    "db:drop": "node --import ./imports/ts-node.js --env-file=.env ./scripts/drop-database.ts",
+    "db:migrate": "node --import ./imports/ts-node.js --env-file=.env ./scripts/migrate.ts",
+    "db:seed": "node --import ./imports/ts-node.js --env-file=.env ./scripts/seed-database.ts"
   },
   "keywords": [],
   "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",
@@ -43,6 +43,7 @@
     "fastify-cli": "^7.0.0",
     "fastify-plugin": "^5.0.1",
     "knex": "^3.1.0",
+    "mysql2": "^3.11.3",
     "postgrator": "^7.3.0",
     "ts-node": "^10.9.2"
   },
