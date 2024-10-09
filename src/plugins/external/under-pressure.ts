@@ -11,17 +11,13 @@ export const autoConfig = (fastify: FastifyInstance) => {
     message: 'The server is under pressure, retry later!',
     retryAfter: 50,
     healthCheck: async () => {
-      let connection
       try {
-        connection = await fastify.mysql.getConnection()
-        await connection.query('SELECT 1;')
+        await fastify.knex.raw('SELECT 1')
         return true
         /* c8 ignore start */
       } catch (err) {
         fastify.log.error(err, 'healthCheck has failed')
         throw new Error('Database connection is not available')
-      } finally {
-        connection?.release()
       }
       /* c8 ignore stop */
     },
@@ -39,5 +35,5 @@ export const autoConfig = (fastify: FastifyInstance) => {
  * @see {@link https://www.youtube.com/watch?v=VI29mUA8n9w}
  */
 export default fp(fastifyUnderPressure, {
-  dependencies: ['mysql']
+  dependencies: ['knex']
 })

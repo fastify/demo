@@ -22,7 +22,7 @@ export function config () {
 }
 
 const tokens: Record<string, string> = {}
-// We will create different users with different roles
+// @See /scripts/seed-database.ts
 async function login (this: FastifyInstance, username: string) {
   if (tokens[username]) {
     return tokens[username]
@@ -33,7 +33,7 @@ async function login (this: FastifyInstance, username: string) {
     url: '/api/auth/login',
     payload: {
       username,
-      password: 'password'
+      password: 'password123$'
     }
   })
 

@@ -14,7 +14,7 @@ const SCRYPT_BLOCK_SIZE = 8
 const SCRYPT_PARALLELIZATION = 2
 const SCRYPT_MAXMEM = 128 * SCRYPT_COST * SCRYPT_BLOCK_SIZE * 2
 
-async function scryptHash (value: string): Promise<string> {
+export async function scryptHash (value: string): Promise<string> {
   return new Promise((resolve, reject) => {
     const salt = randomBytes(Math.min(16, SCRYPT_KEYLEN / 2))
 
