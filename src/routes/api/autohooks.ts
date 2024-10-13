@@ -7,9 +7,7 @@ export default async function (fastify: FastifyInstance) {
     }
 
     if (!request.session.user) {
-      reply.status(401).send({
-        message: 'You must be authenticated to access this route.'
-      })
+      reply.unauthorized('You must be authenticated to access this route.')
     }
   })
 }

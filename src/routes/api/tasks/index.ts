@@ -1,6 +1,5 @@
 import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox'
 import { TaskSchema, Task, CreateTaskSchema, UpdateTaskSchema, TaskStatus } from '../../../schemas/tasks.js'
-import { FastifyReply } from 'fastify'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
@@ -38,7 +37,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const task = await fastify.knex<Task>('tasks').where({ id }).first()
 
       if (!task) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
       return task
@@ -89,7 +88,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         .update(request.body)
 
       if (affectedRows === 0) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
       const updatedTask = await fastify.knex<Task>('tasks').where({ id }).first()
@@ -117,7 +116,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const affectedRows = await fastify.knex<Task>('tasks').where({ id }).delete()
 
       if (affectedRows === 0) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
       reply.code(204).send(null)
@@ -148,7 +147,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const task = await fastify.knex<Task>('tasks').where({ id }).first()
       if (!task) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
       await fastify.knex('tasks')
@@ -160,11 +159,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return task
     }
   )
-}
-
-function notFound (reply: FastifyReply) {
-  reply.code(404)
-  return { message: 'Task not found' }
 }
 
 export default plugin

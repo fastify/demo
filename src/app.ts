@@ -61,7 +61,7 @@ export default async function serviceApp (
     reply.code(err.statusCode ?? 500)
 
     let message = 'Internal Server Error'
-    if (err.statusCode === 401) {
+    if (err.statusCode && err.statusCode < 500) {
       message = err.message
     }
 
