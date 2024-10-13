@@ -9,8 +9,7 @@ declare module 'fastify' {
 }
 
 function verifyAccess (request: FastifyRequest, reply: FastifyReply, role: string) {
-  const userRoles = request.session.user?.roles || []
-  if (!userRoles.includes(role)) {
+  if (!request.session.user.roles.includes(role)) {
     reply.status(403).send('You are not authorized to access this resource.')
   }
 }
