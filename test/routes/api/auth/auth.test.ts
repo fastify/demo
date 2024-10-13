@@ -15,7 +15,7 @@ test('POST /api/auth/login with valid credentials', async (t) => {
   })
 
   assert.strictEqual(res.statusCode, 200)
-  assert.ok(JSON.parse(res.payload).token)
+  assert.ok(res.cookies.some(cookie => cookie.name === app.config.COOKIE_NAME))
 })
 
 test('POST /api/auth/login with invalid credentials', async (t) => {

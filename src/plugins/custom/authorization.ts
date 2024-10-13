@@ -1,6 +1,5 @@
 import fp from 'fastify-plugin'
 import { FastifyReply, FastifyRequest } from 'fastify'
-import { Auth } from '../../schemas/auth.js'
 
 declare module 'fastify' {
   export interface FastifyInstance {
@@ -9,12 +8,9 @@ declare module 'fastify' {
   }
 }
 
-function verifyAccess (
-  request: FastifyRequest,
-  reply: FastifyReply,
-  role: string
-) {
-  if (!request.user || !(request.user as Auth).roles.includes(role)) {
+function verifyAccess (request: FastifyRequest, reply: FastifyReply, role: string) {
+  const userRoles = request.session.user?.roles || []
+  if (!userRoles.includes(role)) {
     reply.status(403).send('You are not authorized to access this resource.')
   }
 }

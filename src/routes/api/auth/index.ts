@@ -9,7 +9,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         body: CredentialsSchema,
         response: {
           200: Type.Object({
-            token: Type.String()
+            success: Type.Boolean(),
+            message: Type.Optional(Type.String())
           }),
           401: Type.Object({
             message: Type.String()
@@ -35,12 +36,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             .join('users', 'user_roles.user_id', '=', 'users.id')
             .where('users.username', username)
 
-          const token = fastify.jwt.sign({
-            username: user.username,
-            roles: roles.map((role) => role.name)
-          })
+          request.session.user = { username, roles: roles.map(role => role.name) }
 
-          return { token }
+          await request.session.save()
+
+          return { success: true }
         }
       }
 
