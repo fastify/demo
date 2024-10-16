@@ -60,7 +60,7 @@ async function injectWithLogin (
 }
 
 // automatically build and tear down our instance
-export async function build (t: TestContext) {
+export async function build (t?: TestContext) {
   // you can set all the options supported by the fastify CLI command
   const argv = [AppPath]
 
@@ -77,8 +77,10 @@ export async function build (t: TestContext) {
   app.login = login
   app.injectWithLogin = injectWithLogin
 
-  // close the app after we are done
-  t.after(() => app.close())
+  // If we pass the test contest, it will close the app after we are done
+  if (t) {
+    t.after(() => app.close())
+  }
 
   return app
 }

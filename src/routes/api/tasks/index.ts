@@ -1,20 +1,50 @@
 import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox'
-import { TaskSchema, Task, CreateTaskSchema, UpdateTaskSchema, TaskStatus } from '../../../schemas/tasks.js'
+import { TaskSchema, Task, CreateTaskSchema, UpdateTaskSchema, TaskStatusEnum, QueryTaskPaginationSchema, TaskPaginationResultSchema } from '../../../schemas/tasks.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/',
     {
       schema: {
+        querystring: QueryTaskPaginationSchema,
         response: {
-          200: Type.Array(TaskSchema)
+          200: TaskPaginationResultSchema
         },
         tags: ['Tasks']
       }
     },
-    async function () {
-      const tasks = await fastify.knex<Task>('tasks').select('*')
-      return tasks
+    async function (request) {
+      const q = request.query
+
+      const offset = (q.page - 1) * q.limit
+
+      const baseQuery = fastify.knex('tasks')
+
+      if (q.author_id !== undefined) {
+        baseQuery.where({ author_id: q.author_id })
+      }
+
+      if (q.assigned_user_id !== undefined) {
+        baseQuery.where({ assigned_user_id: q.assigned_user_id })
+      }
+
+      if (q.status !== undefined) {
+        baseQuery.where({ status: q.status })
+      }
+
+      const tasksQuery = baseQuery.clone()
+        .select('*')
+        .limit(q.limit).offset(offset).orderBy('created_at', q.order)
+
+      const [tasks, [{ count }]] = await Promise.all([
+        tasksQuery,
+        baseQuery.clone().count({ count: '*' })
+      ])
+
+      return {
+        tasks,
+        total: Number(count)
+      }
     }
   )
 
@@ -58,10 +88,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const newTask = { ...request.body, status: TaskStatus.New }
+      const newTask = { ...request.body, status: TaskStatusEnum.New }
       const [id] = await fastify.knex<Task>('tasks').insert(newTask)
 
       reply.code(201)
+
       return { id }
     }
   )
@@ -91,8 +122,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return reply.notFound('Task not found')
       }
 
-      const updatedTask = await fastify.knex<Task>('tasks').where({ id }).first()
-      return updatedTask
+      return fastify.knex<Task>('tasks').where({ id }).first()
     }
   )
 
