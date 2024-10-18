@@ -124,6 +124,23 @@ describe('Tasks api (logged user only)', () => {
       assert.strictEqual(tasks[0].author_id, userId1)
       assert.strictEqual(tasks[0].status, TaskStatusEnum.OnHold)
     })
+
+    it('should return empty array and total = 0 if no tasks', async (t) => {
+      app = await build(t)
+
+      await app.knex<Task>('tasks').delete()
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'GET',
+        url: '/api/tasks'
+      })
+
+      assert.strictEqual(res.statusCode, 200)
+      const { tasks, total } = JSON.parse(res.payload) as Static<typeof TaskPaginationResultSchema>
+
+      assert.strictEqual(total, 0)
+      assert.strictEqual(tasks.length, 0)
+    })
   })
 
   describe('GET /api/tasks/:id', () => {

@@ -1,5 +1,16 @@
-import { FastifyPluginAsyncTypebox, Type } from '@fastify/type-provider-typebox'
-import { TaskSchema, Task, CreateTaskSchema, UpdateTaskSchema, TaskStatusEnum, QueryTaskPaginationSchema, TaskPaginationResultSchema } from '../../../schemas/tasks.js'
+import {
+  FastifyPluginAsyncTypebox,
+  Type
+} from '@fastify/type-provider-typebox'
+import {
+  TaskSchema,
+  Task,
+  CreateTaskSchema,
+  UpdateTaskSchema,
+  TaskStatusEnum,
+  QueryTaskPaginationSchema,
+  TaskPaginationResultSchema
+} from '../../../schemas/tasks.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
@@ -18,32 +29,31 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       const offset = (q.page - 1) * q.limit
 
-      const baseQuery = fastify.knex('tasks')
+      const query = fastify
+        .knex<Task & { total: number }>('tasks')
+        .select('*')
+        .select(fastify.knex.raw('count(*) OVER() as total'))
 
       if (q.author_id !== undefined) {
-        baseQuery.where({ author_id: q.author_id })
+        query.where({ author_id: q.author_id })
       }
 
       if (q.assigned_user_id !== undefined) {
-        baseQuery.where({ assigned_user_id: q.assigned_user_id })
+        query.where({ assigned_user_id: q.assigned_user_id })
       }
 
       if (q.status !== undefined) {
-        baseQuery.where({ status: q.status })
+        query.where({ status: q.status })
       }
 
-      const tasksQuery = baseQuery.clone()
-        .select('*')
-        .limit(q.limit).offset(offset).orderBy('created_at', q.order)
-
-      const [tasks, [{ count }]] = await Promise.all([
-        tasksQuery,
-        baseQuery.clone().count({ count: '*' })
-      ])
+      const tasks = await query
+        .limit(q.limit)
+        .offset(offset)
+        .orderBy('created_at', q.order)
 
       return {
         tasks,
-        total: Number(count)
+        total: tasks.length > 0 ? Number(tasks[0].total) : 0
       }
     }
   )
@@ -114,7 +124,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const affectedRows = await fastify.knex<Task>('tasks')
+      const affectedRows = await fastify
+        .knex<Task>('tasks')
         .where({ id })
         .update(request.body)
 
@@ -143,7 +154,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const affectedRows = await fastify.knex<Task>('tasks').where({ id }).delete()
+      const affectedRows = await fastify
+        .knex<Task>('tasks')
+        .where({ id })
+        .delete()
 
       if (affectedRows === 0) {
         return reply.notFound('Task not found')
@@ -180,7 +194,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return reply.notFound('Task not found')
       }
 
-      await fastify.knex('tasks')
+      await fastify
+        .knex('tasks')
         .where({ id })
         .update({ assigned_user_id: userId ?? null })
 
