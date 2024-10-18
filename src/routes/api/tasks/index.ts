@@ -150,7 +150,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         tags: ['Tasks']
       },
-      preHandler: fastify.isAdmin
+      preHandler: (request, reply) => request.isAdmin(reply)
     },
     async function (request, reply) {
       const { id } = request.params
@@ -183,7 +183,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         tags: ['Tasks']
       },
-      preHandler: fastify.isModerator
+      preHandler: (request, reply) => request.isModerator(reply)
     },
     async function (request, reply) {
       const { id } = request.params

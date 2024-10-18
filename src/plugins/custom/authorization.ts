@@ -2,24 +2,25 @@ import fp from 'fastify-plugin'
 import { FastifyReply, FastifyRequest } from 'fastify'
 
 declare module 'fastify' {
-  export interface FastifyInstance {
+  export interface FastifyRequest {
+    verifyAccess: typeof verifyAccess;
     isModerator: typeof isModerator;
     isAdmin: typeof isAdmin;
   }
 }
 
-function verifyAccess (request: FastifyRequest, reply: FastifyReply, role: string) {
-  if (!request.session.user.roles.includes(role)) {
+function verifyAccess (this: FastifyRequest, reply: FastifyReply, role: string) {
+  if (!this.session.user.roles.includes(role)) {
     reply.status(403).send('You are not authorized to access this resource.')
   }
 }
 
-async function isModerator (request: FastifyRequest, reply: FastifyReply) {
-  verifyAccess(request, reply, 'moderator')
+async function isModerator (this: FastifyRequest, reply: FastifyReply) {
+  this.verifyAccess(reply, 'moderator')
 }
 
-async function isAdmin (request: FastifyRequest, reply: FastifyReply) {
-  verifyAccess(request, reply, 'admin')
+async function isAdmin (this: FastifyRequest, reply: FastifyReply) {
+  this.verifyAccess(reply, 'admin')
 }
 
 /**
@@ -30,8 +31,9 @@ async function isAdmin (request: FastifyRequest, reply: FastifyReply) {
  */
 export default fp(
   async function (fastify) {
-    fastify.decorate('isModerator', isModerator)
-    fastify.decorate('isAdmin', isAdmin)
+    fastify.decorateRequest('verifyAccess', verifyAccess)
+    fastify.decorateRequest('isModerator', isModerator)
+    fastify.decorateRequest('isAdmin', isAdmin)
   },
   // You should name your plugins if you want to avoid name collisions
   // and/or to perform dependency checks.
