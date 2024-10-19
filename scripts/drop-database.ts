@@ -1,5 +1,9 @@
 import { createConnection, Connection } from 'mysql2/promise'
 
+if (Number(process.env.CAN_DROP_DATABASE) !== 1) {
+  throw new Error("You can't drop the database. Set `CAN_DROP_DATABASE=1` environment variable to allow this operation.")
+}
+
 async function dropDatabase () {
   const connection = await createConnection({
     host: process.env.MYSQL_HOST,

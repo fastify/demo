@@ -69,4 +69,5 @@ jobs:
           # COOKIE_SECRET is dynamically generated and loaded from the environment
           COOKIE_NAME: 'sessid'
           RATE_LIMIT_MAX: 4
+          CAN_SEED_DATABASE: 1
         run: npm run db:migrate && npm run test

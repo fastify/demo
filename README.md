@@ -2,8 +2,6 @@
 
 ![CI](https://github.com/fastify/demo/workflows/CI/badge.svg)
 
-> :warning: **Please note:** This repository is still under active development.
-
 The aim of this repository is to provide a concrete example of a Fastify application using what are considered best practices by the Fastify community.
 
 **Prerequisites:** You need to have Node.js version 22 or higher installed.
