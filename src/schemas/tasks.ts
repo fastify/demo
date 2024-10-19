@@ -30,7 +30,9 @@ export const TaskSchema = Type.Object({
   updated_at: Type.String({ format: 'date-time' })
 })
 
-export interface Task extends Static<typeof TaskSchema> {}
+export interface Task extends Static<typeof TaskSchema> {
+  filename?: string
+}
 
 export const CreateTaskSchema = Type.Object({
   name: Type.String(),

@@ -11,6 +11,11 @@ import {
   QueryTaskPaginationSchema,
   TaskPaginationResultSchema
 } from '../../../schemas/tasks.js'
+import path from 'node:path'
+import { pipeline } from 'node:stream/promises'
+import fs from 'node:fs'
+
+const TASKS_DIRNAME = 'tasks'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
@@ -202,6 +207,100 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       task.assigned_user_id = userId
 
       return task
+    }
+  )
+
+  fastify.post(
+    '/:id/upload',
+    {
+      schema: {
+        params: Type.Object({
+          id: Type.Number()
+        }),
+        consumes: ['multipart/form-data'],
+        response: {
+          200: Type.Object({
+            path: Type.String(),
+            message: Type.String()
+          }),
+          404: Type.Object({ message: Type.String() }),
+          400: Type.Object({ message: Type.String() })
+        },
+        tags: ['Tasks']
+      }
+    },
+    async function (request, reply) {
+      const { id } = request.params
+
+      return fastify.knex.transaction(async (trx) => {
+        const task = await trx<Task>('tasks').where({ id }).first()
+        if (!task) {
+          return reply.notFound('Task not found')
+        }
+
+        const file = await request.file()
+
+        if (!file) {
+          return reply.notFound('File not found')
+        }
+
+        const allowedMimeTypes = ['image/jpeg', 'image/png']
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return reply.badRequest('Invalid file type')
+        }
+
+        if (file.file.truncated) {
+          return reply.badRequest('File size limit exceeded')
+        }
+
+        const filename = `${id}_${file.filename}`
+        const filePath = path.join(
+          import.meta.dirname,
+          '../../../..',
+          fastify.config.UPLOAD_DIRNAME,
+          TASKS_DIRNAME,
+          filename
+        )
+
+        await pipeline(file.file, fs.createWriteStream(filePath))
+
+        await trx<Task>('tasks')
+          .where({ id })
+          .update({ filename })
+
+        return { path: filePath, message: 'File uploaded successfully' }
+      }).catch(() => {
+        reply.internalServerError('Transaction failed.')
+      })
+    }
+  )
+
+  fastify.get(
+    '/:filename/image',
+    {
+      schema: {
+        params: Type.Object({
+          filename: Type.String()
+        }),
+        response: {
+          200: { type: 'string', contentMediaType: 'image/*' },
+          404: Type.Object({ message: Type.String() })
+        },
+        tags: ['Tasks']
+      }
+    },
+    async function (request, reply) {
+      const { filename } = request.params
+
+      const task = await fastify.knex<Task>('tasks').select('filename').where({ filename }).first()
+      if (!task) {
+        return reply.notFound(`No task has filename "${filename}"`)
+      }
+
+      return reply.sendFile(
+        task.filename as string,
+        path.join(fastify.config.UPLOAD_DIRNAME, TASKS_DIRNAME)
+      )
     }
   )
 }

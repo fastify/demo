@@ -23,7 +23,7 @@ it('should be rate limited', async (t) => {
       url: '/this-route-does-not-exist'
     })
 
-    assert.strictEqual(res.statusCode, 404)
+    assert.strictEqual(res.statusCode, 404, `Iteration ${i}`)
   }
 
   const res = await app.inject({
@@ -31,5 +31,5 @@ it('should be rate limited', async (t) => {
     url: '/this-route-does-not-exist'
   })
 
-  assert.strictEqual(res.statusCode, 429)
+  assert.strictEqual(res.statusCode, 429, 'Expected 429')
 })

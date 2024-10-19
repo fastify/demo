@@ -55,6 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         reply.status(401)
+
         return { message: 'Invalid username or password.' }
       }).catch(() => {
         reply.internalServerError('Transaction failed.')

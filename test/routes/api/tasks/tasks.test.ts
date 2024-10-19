@@ -1,9 +1,13 @@
-import { before, describe, it } from 'node:test'
+import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 import { Task, TaskStatusEnum, TaskPaginationResultSchema } from '../../../../src/schemas/tasks.js'
 import { FastifyInstance } from 'fastify'
 import { Static } from '@sinclair/typebox'
+import fs from 'node:fs'
+import path from 'node:path'
+import FormData from 'form-data'
+import os from 'os'
 
 async function createUser (app: FastifyInstance, userData: Partial<{ username: string; password: string }>) {
   const [id] = await app.knex('users').insert(userData)
@@ -361,6 +365,197 @@ describe('Tasks api (logged user only)', () => {
       assert.strictEqual(res.statusCode, 404)
       const payload = JSON.parse(res.payload)
       assert.strictEqual(payload.message, 'Task not found')
+    })
+  })
+
+  describe('Task image upload and retrieval', () => {
+    let app: FastifyInstance
+    let taskId: number
+    const filename = 'short-logo.png'
+    const fixturesDir = path.join(import.meta.dirname, './fixtures')
+    const testImagePath = path.join(fixturesDir, filename)
+    const testCsvPath = path.join(fixturesDir, 'one_line.csv')
+    let uploadedImagePath: string
+
+    before(async () => {
+      app = await build()
+
+      // Ensure the directory exists
+      if (!fs.existsSync(fixturesDir)) {
+        fs.mkdirSync(fixturesDir, { recursive: true })
+      }
+
+      // Create a sample task to associate with image uploads
+      taskId = await createTask(app, { name: 'Task with image', author_id: 1, status: TaskStatusEnum.New })
+
+      app.close()
+    })
+
+    after(() => {
+      fs.unlinkSync(uploadedImagePath)
+    })
+
+    it('should upload a valid image for a task', async (t) => {
+      app = await build(t)
+
+      const form = new FormData()
+      form.append('file', fs.createReadStream(testImagePath))
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: `/api/tasks/${taskId}/upload`,
+        payload: form,
+        headers: form.getHeaders()
+      })
+
+      assert.strictEqual(res.statusCode, 200)
+
+      const { path: uploadedImagePath_, message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'File uploaded successfully')
+
+      uploadedImagePath = uploadedImagePath_
+      assert.ok(fs.existsSync(uploadedImagePath_))
+    })
+
+    it('should return 404 if task not found', async (t) => {
+      app = await build(t)
+
+      const form = new FormData()
+      form.append('file', fs.createReadStream(testImagePath))
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: '/api/tasks/100000/upload',
+        payload: form,
+        headers: form.getHeaders()
+      })
+
+      assert.strictEqual(res.statusCode, 404)
+
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'Task not found')
+    })
+
+    it('should return 404 if file not found', async (t) => {
+      app = await build(t)
+
+      const form = new FormData()
+      form.append('file', fs.createReadStream(testImagePath))
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: `/api/tasks/${taskId}/upload`,
+        payload: undefined,
+        headers: form.getHeaders()
+      })
+
+      assert.strictEqual(res.statusCode, 404)
+
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'File not found')
+    })
+
+    it('should reject an invalid file type', async (t) => {
+      app = await build(t)
+
+      const form = new FormData()
+      form.append('file', fs.createReadStream(testCsvPath))
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: `/api/tasks/${taskId}/upload`,
+        payload: form,
+        headers: form.getHeaders()
+      })
+
+      assert.strictEqual(res.statusCode, 400)
+
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'Invalid file type')
+    })
+
+    it('should reject if file size exceeds limit (truncated)', async (t) => {
+      app = await build(t)
+
+      const tmpDir = os.tmpdir()
+      const largeTestImagePath = path.join(tmpDir, 'large-test-image.jpg')
+
+      const largeBuffer = Buffer.alloc(1024 * 1024 * 1.5, 'a') // Max file size in bytes is 1 MB
+      fs.writeFileSync(largeTestImagePath, largeBuffer)
+
+      const form = new FormData()
+      form.append('file', fs.createReadStream(largeTestImagePath))
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: `/api/tasks/${taskId}/upload`,
+        payload: form,
+        headers: form.getHeaders()
+      })
+
+      assert.strictEqual(res.statusCode, 400)
+
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'File size limit exceeded')
+    })
+
+    it('File upload transaction should rollback on error', async (t) => {
+      const app = await build(t)
+
+      const { mock: mockPipeline } = t.mock.method(fs, 'createWriteStream')
+      mockPipeline.mockImplementationOnce(() => {
+        throw new Error()
+      })
+
+      const { mock: mockLogError } = t.mock.method(app.log, 'error')
+
+      const form = new FormData()
+      form.append('file', fs.createReadStream(testImagePath))
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: `/api/tasks/${taskId}/upload`,
+        payload: form,
+        headers: form.getHeaders()
+      })
+
+      assert.strictEqual(res.statusCode, 500)
+      assert.strictEqual(mockLogError.callCount(), 1)
+
+      const arg = mockLogError.calls[0].arguments[0] as unknown as {
+        err: Error
+      }
+
+      assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+    })
+
+    it('should retrieve the uploaded image based on task ID', async (t) => {
+      app = await build(t)
+
+      const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
+      const res = await app.injectWithLogin('basic', {
+        method: 'GET',
+        url: `/api/tasks/${taskFilename}/image`
+      })
+
+      assert.strictEqual(res.statusCode, 200)
+      assert.strictEqual(res.headers['content-type'], 'image/png')
+
+      const originalFile = fs.readFileSync(testImagePath)
+
+      assert.deepStrictEqual(originalFile, res.rawPayload)
+    })
+
+    it('should return 404 error for non-existant filename', async (t) => {
+      app = await build(t)
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'GET',
+        url: '/api/tasks/non-existant/image'
+      })
+
+      assert.strictEqual(res.statusCode, 404)
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'No task has filename "non-existant"')
     })
   })
 })
