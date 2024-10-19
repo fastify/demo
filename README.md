@@ -14,6 +14,9 @@ Install the dependencies:
 npm install
 ```
 
+Configure a `.env` file, see [.env.example](/.env.example) at root of the project.
+
+
 ### Database
 You can run a MySQL instance with Docker:
 ```bash
