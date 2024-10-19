@@ -2,6 +2,28 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 
+test('Transaction should rollback on error', async (t) => {
+  const app = await build(t)
+
+  app.compare = (value: string, hash: string) => {
+    throw new Error()
+  }
+
+  const res = await app.inject({
+    method: 'POST',
+    url: '/api/auth/login',
+    payload: {
+      username: 'basic',
+      password: 'password123$'
+    }
+  })
+
+  assert.strictEqual(res.statusCode, 500)
+  assert.deepStrictEqual(JSON.parse(res.body), {
+    message: 'Internal Server Error'
+  })
+})
+
 test('POST /api/auth/login with valid credentials', async (t) => {
   const app = await build(t)
 
@@ -15,7 +37,9 @@ test('POST /api/auth/login with valid credentials', async (t) => {
   })
 
   assert.strictEqual(res.statusCode, 200)
-  assert.ok(res.cookies.some(cookie => cookie.name === app.config.COOKIE_NAME))
+  assert.ok(
+    res.cookies.some((cookie) => cookie.name === app.config.COOKIE_NAME)
+  )
 })
 
 test('POST /api/auth/login with invalid credentials', async (t) => {

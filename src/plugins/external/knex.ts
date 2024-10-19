@@ -22,14 +22,10 @@ export const autoConfig = (fastify: FastifyInstance) => {
   }
 }
 
-const knexPlugin = async (fastify: FastifyInstance) => {
-  const db = knex(autoConfig(fastify))
-
-  fastify.decorate('knex', db)
+export default fp(async (fastify: FastifyInstance, opts) => {
+  fastify.decorate('knex', knex(opts))
 
   fastify.addHook('onClose', async (instance) => {
     await instance.knex.destroy()
   })
-}
-
-export default fp(knexPlugin, { name: 'knex' })
+}, { name: 'knex' })
