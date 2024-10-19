@@ -239,7 +239,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         const file = await request.file()
-
         if (!file) {
           return reply.notFound('File not found')
         }
