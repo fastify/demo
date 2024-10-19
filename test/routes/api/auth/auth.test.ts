@@ -5,10 +5,12 @@ import { build } from '../../../helper.js'
 test('Transaction should rollback on error', async (t) => {
   const app = await build(t)
 
-  const { mock } = t.mock.method(app, 'compare')
-  mock.mockImplementationOnce((value: string, hash: string) => {
+  const { mock: mockCompare } = t.mock.method(app, 'compare')
+  mockCompare.mockImplementationOnce((value: string, hash: string) => {
     throw new Error()
   })
+
+  const { mock: mockHello } = t.mock.method(app.log, 'error')
 
   const res = await app.inject({
     method: 'POST',
@@ -19,10 +21,14 @@ test('Transaction should rollback on error', async (t) => {
     }
   })
 
+  assert.strictEqual(mockCompare.callCount(), 1)
+
+  const arg = mockHello.calls[0].arguments[0] as unknown as {
+    err: Error
+  }
+
   assert.strictEqual(res.statusCode, 500)
-  assert.deepStrictEqual(JSON.parse(res.body), {
-    message: 'Internal Server Error'
-  })
+  assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
 })
 
 test('POST /api/auth/login with valid credentials', async (t) => {
