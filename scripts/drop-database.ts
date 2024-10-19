@@ -1,7 +1,7 @@
 import { createConnection, Connection } from 'mysql2/promise'
 
 async function dropDatabase () {
-  const connection: Connection = await createConnection({
+  const connection = await createConnection({
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT),
     user: process.env.MYSQL_USER,

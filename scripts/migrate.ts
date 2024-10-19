@@ -1,15 +1,15 @@
-import mysql, { Connection } from 'mysql2/promise'
+import mysql, { FieldPacket } from 'mysql2/promise'
 import path from 'node:path'
 import fs from 'node:fs'
 import Postgrator from 'postgrator'
 
 interface PostgratorResult {
   rows: any;
-  fields: any;
+  fields: FieldPacket[];
 }
 
 async function doMigration (): Promise<void> {
-  const connection: Connection = await mysql.createConnection({
+  const connection = await mysql.createConnection({
     multipleStatements: true,
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT),
@@ -41,20 +41,10 @@ async function doMigration (): Promise<void> {
     await postgrator.migrate()
 
     console.log('Migration completed!')
-
-    await new Promise<void>((resolve, reject) => {
-      connection.end((err: unknown) => {
-        if (err) {
-          return reject(err)
-        }
-
-        resolve()
-      })
-    })
-  } catch (error) {
-    console.error(error)
+  } catch (err) {
+    console.error(err)
   } finally {
-    await connection.end()
+    await connection.end().catch(err => console.error(err))
   }
 }
 

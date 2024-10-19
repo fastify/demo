@@ -26,7 +26,7 @@ async function truncateTables (connection: Connection) {
 
   if (tables.length > 0) {
     const tableNames = tables.map(
-      (row: { [key: string]: string }) => row[`Tables_in_${process.env.MYSQL_DATABASE}`]
+      (row: Record<string, string>) => row[`Tables_in_${process.env.MYSQL_DATABASE}`]
     )
     const truncateQueries = tableNames
       .map((tableName: string) => `TRUNCATE TABLE \`${tableName}\``)
@@ -51,14 +51,14 @@ async function seedUsers (connection: Connection) {
   const rolesAccumulator: number[] = []
 
   for (const username of usernames) {
-    const [userResult]: any[] = await connection.execute(`
+    const [userResult] = await connection.execute(`
       INSERT INTO users (username, password)
       VALUES (?, ?)
     `, [username, hash])
 
     const userId = (userResult as { insertId: number }).insertId
 
-    const [roleResult]: any[] = await connection.execute(`
+    const [roleResult] = await connection.execute(`
       INSERT INTO roles (name)
       VALUES (?)
     `, [username])
