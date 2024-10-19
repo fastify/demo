@@ -5,9 +5,10 @@ import { build } from '../../../helper.js'
 test('Transaction should rollback on error', async (t) => {
   const app = await build(t)
 
-  app.compare = (value: string, hash: string) => {
+  const { mock } = t.mock.method(app, 'compare')
+  mock.mockImplementationOnce((value: string, hash: string) => {
     throw new Error()
-  }
+  })
 
   const res = await app.inject({
     method: 'POST',

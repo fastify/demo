@@ -45,7 +45,7 @@ export default async function serviceApp (
   })
 
   fastify.setErrorHandler((err, request, reply) => {
-    request.log.error(
+    fastify.log.error(
       {
         err,
         request: {
