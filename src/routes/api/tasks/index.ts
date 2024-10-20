@@ -243,13 +243,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.notFound('File not found')
         }
 
+        if (file.file.truncated) {
+          return reply.badRequest('File size limit exceeded')
+        }
+
         const allowedMimeTypes = ['image/jpeg', 'image/png']
         if (!allowedMimeTypes.includes(file.mimetype)) {
           return reply.badRequest('Invalid file type')
-        }
-
-        if (file.file.truncated) {
-          return reply.badRequest('File size limit exceeded')
         }
 
         const filename = `${id}_${file.filename}`
