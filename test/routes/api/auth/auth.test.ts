@@ -10,7 +10,7 @@ test('Transaction should rollback on error', async (t) => {
     throw new Error()
   })
 
-  const { mock: mockHello } = t.mock.method(app.log, 'error')
+  const { mock: mockLogError } = t.mock.method(app.log, 'error')
 
   const res = await app.inject({
     method: 'POST',
@@ -23,7 +23,7 @@ test('Transaction should rollback on error', async (t) => {
 
   assert.strictEqual(mockCompare.callCount(), 1)
 
-  const arg = mockHello.calls[0].arguments[0] as unknown as {
+  const arg = mockLogError.calls[0].arguments[0] as unknown as {
     err: Error
   }
 
