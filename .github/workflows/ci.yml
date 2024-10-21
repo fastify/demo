@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - "docs/**"
       - "*.md"
+      - "*.example"
   pull_request:
     paths-ignore:
       - "docs/**"
@@ -50,11 +51,10 @@ jobs:
       - name: Lint Code
         run: npm run lint
 
-      - name: Generate JWT Secret
-        id: gen-jwt
+      - name: Generate COOKIE Secret
         run: |
-          JWT_SECRET=$(openssl rand -hex 32)
-          echo "JWT_SECRET=$JWT_SECRET" >> $GITHUB_ENV
+          COOKIE_SECRET=$(openssl rand -hex 32)
+          echo "COOKIE_SECRET=$COOKIE_SECRET" >> $GITHUB_ENV
 
       - name: Generate dummy .env for scripts using -env-file=.env flag
         run: touch .env
@@ -66,6 +66,8 @@ jobs:
           MYSQL_DATABASE: test_db
           MYSQL_USER: test_user
           MYSQL_PASSWORD: test_password
-          # JWT_SECRET is dynamically generated and loaded from the environment
+          # COOKIE_SECRET is dynamically generated and loaded from the environment
+          COOKIE_NAME: 'sessid'
           RATE_LIMIT_MAX: 4
+          CAN_SEED_DATABASE: 1
         run: npm run db:migrate && npm run test

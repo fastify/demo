@@ -7,25 +7,57 @@ import {
   Task,
   CreateTaskSchema,
   UpdateTaskSchema,
-  TaskStatus
+  TaskStatusEnum,
+  QueryTaskPaginationSchema,
+  TaskPaginationResultSchema
 } from '../../../schemas/tasks.js'
-import { FastifyReply } from 'fastify'
+import path from 'node:path'
+import { pipeline } from 'node:stream/promises'
+import fs from 'node:fs'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/',
     {
       schema: {
+        querystring: QueryTaskPaginationSchema,
         response: {
-          200: Type.Array(TaskSchema)
+          200: TaskPaginationResultSchema
         },
         tags: ['Tasks']
       }
     },
-    async function () {
-      const tasks = await fastify.repository.findMany<Task>('tasks')
+    async function (request) {
+      const q = request.query
 
-      return tasks
+      const offset = (q.page - 1) * q.limit
+
+      const query = fastify
+        .knex<Task & { total: number }>('tasks')
+        .select('*')
+        .select(fastify.knex.raw('count(*) OVER() as total'))
+
+      if (q.author_id !== undefined) {
+        query.where({ author_id: q.author_id })
+      }
+
+      if (q.assigned_user_id !== undefined) {
+        query.where({ assigned_user_id: q.assigned_user_id })
+      }
+
+      if (q.status !== undefined) {
+        query.where({ status: q.status })
+      }
+
+      const tasks = await query
+        .limit(q.limit)
+        .offset(offset)
+        .orderBy('created_at', q.order)
+
+      return {
+        tasks,
+        total: tasks.length > 0 ? Number(tasks[0].total) : 0
+      }
     }
   )
 
@@ -45,10 +77,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
+      const task = await fastify.knex<Task>('tasks').where({ id }).first()
 
       if (!task) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
       return task
@@ -69,12 +101,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const id = await fastify.repository.create('tasks', { data: { ...request.body, status: TaskStatus.New } })
+      const newTask = { ...request.body, status: TaskStatusEnum.New }
+      const [id] = await fastify.knex<Task>('tasks').insert(newTask)
+
       reply.code(201)
 
-      return {
-        id
-      }
+      return { id }
     }
   )
 
@@ -95,18 +127,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const affectedRows = await fastify.repository.update('tasks', {
-        data: request.body,
-        where: { id }
-      })
+      const affectedRows = await fastify
+        .knex<Task>('tasks')
+        .where({ id })
+        .update(request.body)
 
       if (affectedRows === 0) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
-      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
-
-      return task as Task
+      return fastify.knex<Task>('tasks').where({ id }).first()
     }
   )
 
@@ -122,14 +152,18 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           404: Type.Object({ message: Type.String() })
         },
         tags: ['Tasks']
-      }
+      },
+      preHandler: (request, reply) => request.isAdmin(reply)
     },
     async function (request, reply) {
       const { id } = request.params
-      const affectedRows = await fastify.repository.delete('tasks', { id })
+      const affectedRows = await fastify
+        .knex<Task>('tasks')
+        .where({ id })
+        .delete()
 
       if (affectedRows === 0) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
       reply.code(204).send(null)
@@ -151,32 +185,121 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           404: Type.Object({ message: Type.String() })
         },
         tags: ['Tasks']
-      }
+      },
+      preHandler: (request, reply) => request.isModerator(reply)
     },
     async function (request, reply) {
       const { id } = request.params
       const { userId } = request.body
 
-      const task = await fastify.repository.find<Task>('tasks', { where: { id } })
+      const task = await fastify.knex<Task>('tasks').where({ id }).first()
       if (!task) {
-        return notFound(reply)
+        return reply.notFound('Task not found')
       }
 
-      await fastify.repository.update('tasks', {
-        data: { assigned_user_id: userId },
-        where: { id }
-      })
+      await fastify
+        .knex('tasks')
+        .where({ id })
+        .update({ assigned_user_id: userId ?? null })
 
       task.assigned_user_id = userId
 
       return task
     }
   )
-}
 
-function notFound (reply: FastifyReply) {
-  reply.code(404)
-  return { message: 'Task not found' }
+  fastify.post(
+    '/:id/upload',
+    {
+      schema: {
+        params: Type.Object({
+          id: Type.Number()
+        }),
+        consumes: ['multipart/form-data'],
+        response: {
+          200: Type.Object({
+            path: Type.String(),
+            message: Type.String()
+          }),
+          404: Type.Object({ message: Type.String() }),
+          400: Type.Object({ message: Type.String() })
+        },
+        tags: ['Tasks']
+      }
+    },
+    async function (request, reply) {
+      const { id } = request.params
+
+      return fastify.knex.transaction(async (trx) => {
+        const task = await trx<Task>('tasks').where({ id }).first()
+        if (!task) {
+          return reply.notFound('Task not found')
+        }
+
+        const file = await request.file()
+        if (!file) {
+          return reply.notFound('File not found')
+        }
+
+        if (file.file.truncated) {
+          return reply.badRequest('File size limit exceeded')
+        }
+
+        const allowedMimeTypes = ['image/jpeg', 'image/png']
+        if (!allowedMimeTypes.includes(file.mimetype)) {
+          return reply.badRequest('Invalid file type')
+        }
+
+        const filename = `${id}_${file.filename}`
+        const filePath = path.join(
+          import.meta.dirname,
+          '../../../..',
+          fastify.config.UPLOAD_DIRNAME,
+          fastify.config.UPLOAD_TASKS_DIRNAME,
+          filename
+        )
+
+        await pipeline(file.file, fs.createWriteStream(filePath))
+
+        await trx<Task>('tasks')
+          .where({ id })
+          .update({ filename })
+
+        return { path: filePath, message: 'File uploaded successfully' }
+      }).catch(() => {
+        reply.internalServerError('Transaction failed.')
+      })
+    }
+  )
+
+  fastify.get(
+    '/:filename/image',
+    {
+      schema: {
+        params: Type.Object({
+          filename: Type.String()
+        }),
+        response: {
+          200: { type: 'string', contentMediaType: 'image/*' },
+          404: Type.Object({ message: Type.String() })
+        },
+        tags: ['Tasks']
+      }
+    },
+    async function (request, reply) {
+      const { filename } = request.params
+
+      const task = await fastify.knex<Task>('tasks').select('filename').where({ filename }).first()
+      if (!task) {
+        return reply.notFound(`No task has filename "${filename}"`)
+      }
+
+      return reply.sendFile(
+        task.filename as string,
+        path.join(fastify.config.UPLOAD_DIRNAME, fastify.config.UPLOAD_TASKS_DIRNAME)
+      )
+    }
+  )
 }
 
 export default plugin

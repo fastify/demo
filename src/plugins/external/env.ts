@@ -9,8 +9,12 @@ declare module 'fastify' {
       MYSQL_USER: string;
       MYSQL_PASSWORD: string;
       MYSQL_DATABASE: string;
-      JWT_SECRET: string;
+      COOKIE_SECRET: string;
+      COOKIE_NAME: string;
+      COOKIE_SECURED: boolean;
       RATE_LIMIT_MAX: number;
+      UPLOAD_DIRNAME: string;
+      UPLOAD_TASKS_DIRNAME: string;
     };
   }
 }
@@ -23,7 +27,9 @@ const schema = {
     'MYSQL_USER',
     'MYSQL_PASSWORD',
     'MYSQL_DATABASE',
-    'JWT_SECRET'
+    'COOKIE_SECRET',
+    'COOKIE_NAME',
+    'COOKIE_SECURED'
   ],
   properties: {
     // Database
@@ -46,12 +52,29 @@ const schema = {
     },
 
     // Security
-    JWT_SECRET: {
+    COOKIE_SECRET: {
       type: 'string'
+    },
+    COOKIE_NAME: {
+      type: 'string'
+    },
+    COOKIE_SECURED: {
+      type: 'boolean',
+      default: true
     },
     RATE_LIMIT_MAX: {
       type: 'number',
-      default: 100
+      default: 100 // Put it to 4 in your .env file for tests
+    },
+
+    // Files
+    UPLOAD_DIRNAME: {
+      type: 'string',
+      default: 'uploads'
+    },
+    UPLOAD_TASKS_DIRNAME: {
+      type: 'string',
+      default: 'tasks'
     }
   }
 }

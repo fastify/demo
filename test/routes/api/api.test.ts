@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../helper.js'
 
-test('GET /api without authorization header', async (t) => {
+test('GET /api with no login', async (t) => {
   const app = await build(t)
 
   const res = await app.inject({
@@ -10,27 +10,11 @@ test('GET /api without authorization header', async (t) => {
   })
 
   assert.deepStrictEqual(JSON.parse(res.payload), {
-    message: 'No Authorization was found in request.headers'
+    message: 'You must be authenticated to access this route.'
   })
 })
 
-test('GET /api without JWT Token', async (t) => {
-  const app = await build(t)
-
-  const res = await app.inject({
-    method: 'GET',
-    url: '/api',
-    headers: {
-      Authorization: 'Bearer invalidtoken'
-    }
-  })
-
-  assert.deepStrictEqual(JSON.parse(res.payload), {
-    message: 'Authorization token is invalid: The token is malformed.'
-  })
-})
-
-test('GET /api with JWT Token', async (t) => {
+test('GET /api with cookie', async (t) => {
   const app = await build(t)
 
   const res = await app.injectWithLogin('basic', {
