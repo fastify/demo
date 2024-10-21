@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "npm run build && fastify start -l info dist/app.js",
-    "build": "rm -rf ./dist && tsc",
+    "build": "tsc",
     "watch": "tsc -w",
     "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch\" \"npm:dev:start\"",
     "dev:start": "npm run build && fastify start --ignore-watch=.ts$ -w -l info -P dist/app.js",
