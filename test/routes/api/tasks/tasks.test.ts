@@ -1,7 +1,11 @@
 import { after, before, describe, it } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
-import { Task, TaskStatusEnum, TaskPaginationResultSchema } from '../../../../src/schemas/tasks.js'
+import {
+  Task,
+  TaskStatusEnum,
+  TaskPaginationResultSchema
+} from '../../../../src/schemas/tasks.js'
 import { FastifyInstance } from 'fastify'
 import { Static } from '@sinclair/typebox'
 import fs from 'node:fs'
@@ -9,7 +13,10 @@ import path from 'node:path'
 import FormData from 'form-data'
 import os from 'os'
 
-async function createUser (app: FastifyInstance, userData: Partial<{ username: string; password: string }>) {
+async function createUser (
+  app: FastifyInstance,
+  userData: Partial<{ username: string; password: string }>
+) {
   const [id] = await app.knex('users').insert(userData)
   return id
 }
@@ -31,13 +38,37 @@ describe('Tasks api (logged user only)', () => {
     before(async () => {
       app = await build()
 
-      userId1 = await createUser(app, { username: 'user1', password: 'password1' })
-      userId2 = await createUser(app, { username: 'user2', password: 'password2' })
+      userId1 = await createUser(app, {
+        username: 'user1',
+        password: 'password1'
+      })
+      userId2 = await createUser(app, {
+        username: 'user2',
+        password: 'password2'
+      })
 
-      firstTaskId = await createTask(app, { name: 'Task 1', author_id: userId1, status: TaskStatusEnum.New })
-      await createTask(app, { name: 'Task 2', author_id: userId1, assigned_user_id: userId2, status: TaskStatusEnum.InProgress })
-      await createTask(app, { name: 'Task 3', author_id: userId2, status: TaskStatusEnum.Completed })
-      await createTask(app, { name: 'Task 4', author_id: userId1, assigned_user_id: userId1, status: TaskStatusEnum.OnHold })
+      firstTaskId = await createTask(app, {
+        name: 'Task 1',
+        author_id: userId1,
+        status: TaskStatusEnum.New
+      })
+      await createTask(app, {
+        name: 'Task 2',
+        author_id: userId1,
+        assigned_user_id: userId2,
+        status: TaskStatusEnum.InProgress
+      })
+      await createTask(app, {
+        name: 'Task 3',
+        author_id: userId2,
+        status: TaskStatusEnum.Completed
+      })
+      await createTask(app, {
+        name: 'Task 4',
+        author_id: userId1,
+        assigned_user_id: userId1,
+        status: TaskStatusEnum.OnHold
+      })
 
       app.close()
     })
@@ -51,7 +82,9 @@ describe('Tasks api (logged user only)', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const { tasks, total } = JSON.parse(res.payload) as Static<typeof TaskPaginationResultSchema>
+      const { tasks, total } = JSON.parse(res.payload) as Static<
+        typeof TaskPaginationResultSchema
+      >
       const firstTask = tasks.find((task) => task.id === firstTaskId)
 
       assert.ok(firstTask, 'Created task should be in the response')
@@ -71,7 +104,9 @@ describe('Tasks api (logged user only)', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const { tasks, total } = JSON.parse(res.payload) as Static<typeof TaskPaginationResultSchema>
+      const { tasks, total } = JSON.parse(res.payload) as Static<
+        typeof TaskPaginationResultSchema
+      >
 
       assert.strictEqual(total, 4)
       assert.strictEqual(tasks.length, 1)
@@ -90,10 +125,14 @@ describe('Tasks api (logged user only)', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const { tasks, total } = JSON.parse(res.payload) as Static<typeof TaskPaginationResultSchema>
+      const { tasks, total } = JSON.parse(res.payload) as Static<
+        typeof TaskPaginationResultSchema
+      >
 
       assert.strictEqual(total, 1)
-      tasks.forEach(task => assert.strictEqual(task.assigned_user_id, userId2))
+      tasks.forEach((task) =>
+        assert.strictEqual(task.assigned_user_id, userId2)
+      )
     })
 
     it('should filter tasks by status', async (t) => {
@@ -105,10 +144,14 @@ describe('Tasks api (logged user only)', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const { tasks, total } = JSON.parse(res.payload) as Static<typeof TaskPaginationResultSchema>
+      const { tasks, total } = JSON.parse(res.payload) as Static<
+        typeof TaskPaginationResultSchema
+      >
 
       assert.strictEqual(total, 1)
-      tasks.forEach(task => assert.strictEqual(task.status, TaskStatusEnum.Completed))
+      tasks.forEach((task) =>
+        assert.strictEqual(task.status, TaskStatusEnum.Completed)
+      )
     })
 
     it('should paginate and filter tasks by author_id and status', async (t) => {
@@ -116,11 +159,18 @@ describe('Tasks api (logged user only)', () => {
       const res = await app.injectWithLogin('basic', {
         method: 'GET',
         url: '/api/tasks',
-        query: { author_id: userId1.toString(), status: TaskStatusEnum.OnHold, page: '1', limit: '1' }
+        query: {
+          author_id: userId1.toString(),
+          status: TaskStatusEnum.OnHold,
+          page: '1',
+          limit: '1'
+        }
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const { tasks, total } = JSON.parse(res.payload) as Static<typeof TaskPaginationResultSchema>
+      const { tasks, total } = JSON.parse(res.payload) as Static<
+        typeof TaskPaginationResultSchema
+      >
 
       assert.strictEqual(total, 1)
       assert.strictEqual(tasks.length, 1)
@@ -140,7 +190,9 @@ describe('Tasks api (logged user only)', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const { tasks, total } = JSON.parse(res.payload) as Static<typeof TaskPaginationResultSchema>
+      const { tasks, total } = JSON.parse(res.payload) as Static<
+        typeof TaskPaginationResultSchema
+      >
 
       assert.strictEqual(total, 0)
       assert.strictEqual(tasks.length, 0)
@@ -228,7 +280,10 @@ describe('Tasks api (logged user only)', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const updatedTask = await app.knex<Task>('tasks').where({ id: newTaskId }).first()
+      const updatedTask = await app
+        .knex<Task>('tasks')
+        .where({ id: newTaskId })
+        .first()
       assert.equal(updatedTask?.name, updatedData.name)
     })
 
@@ -269,7 +324,10 @@ describe('Tasks api (logged user only)', () => {
 
       assert.strictEqual(res.statusCode, 204)
 
-      const deletedTask = await app.knex<Task>('tasks').where({ id: newTaskId }).first()
+      const deletedTask = await app
+        .knex<Task>('tasks')
+        .where({ id: newTaskId })
+        .first()
       assert.strictEqual(deletedTask, undefined)
     })
 
@@ -309,7 +367,10 @@ describe('Tasks api (logged user only)', () => {
 
         assert.strictEqual(res.statusCode, 200)
 
-        const updatedTask = await app.knex<Task>('tasks').where({ id: newTaskId }).first()
+        const updatedTask = await app
+          .knex<Task>('tasks')
+          .where({ id: newTaskId })
+          .first()
         assert.strictEqual(updatedTask?.assigned_user_id, 2)
       }
     })
@@ -334,7 +395,10 @@ describe('Tasks api (logged user only)', () => {
 
         assert.strictEqual(res.statusCode, 200)
 
-        const updatedTask = await app.knex<Task>('tasks').where({ id: newTaskId }).first()
+        const updatedTask = await app
+          .knex<Task>('tasks')
+          .where({ id: newTaskId })
+          .first()
         assert.strictEqual(updatedTask?.assigned_user_id, null)
       }
     })
@@ -375,24 +439,40 @@ describe('Tasks api (logged user only)', () => {
     const fixturesDir = path.join(import.meta.dirname, './fixtures')
     const testImagePath = path.join(fixturesDir, filename)
     const testCsvPath = path.join(fixturesDir, 'one_line.csv')
-    let uploadedImagePath: string
+    let uploadDir: string
+    let uploadDirTask: string
 
     before(async () => {
       app = await build()
+      uploadDir = path.join(import.meta.dirname, '../../../../', app.config.UPLOAD_DIRNAME)
+      uploadDirTask = path.join(uploadDir, app.config.UPLOAD_TASKS_DIRNAME)
+      assert.ok(fs.existsSync(uploadDir))
 
-      // Ensure the directory exists
-      if (!fs.existsSync(fixturesDir)) {
-        fs.mkdirSync(fixturesDir, { recursive: true })
-      }
-
-      // Create a sample task to associate with image uploads
-      taskId = await createTask(app, { name: 'Task with image', author_id: 1, status: TaskStatusEnum.New })
+      taskId = await createTask(app, {
+        name: 'Task with image',
+        author_id: 1,
+        status: TaskStatusEnum.New
+      })
 
       app.close()
     })
 
     after(() => {
-      fs.unlinkSync(uploadedImagePath)
+      const files = fs.readdirSync(uploadDirTask)
+      files.forEach((file) => {
+        const filePath = path.join(uploadDirTask, file)
+        fs.rmSync(filePath, { recursive: true })
+      })
+    })
+
+    it('should create upload directories at boot if not exist', async (t) => {
+      fs.rmSync(uploadDir, { recursive: true })
+      assert.ok(!fs.existsSync(uploadDir))
+
+      app = await build(t)
+
+      assert.ok(fs.existsSync(uploadDir))
+      assert.ok(fs.existsSync(uploadDirTask))
     })
 
     it('should upload a valid image for a task', async (t) => {
@@ -410,11 +490,8 @@ describe('Tasks api (logged user only)', () => {
 
       assert.strictEqual(res.statusCode, 200)
 
-      const { path: uploadedImagePath_, message } = JSON.parse(res.payload)
+      const { message } = JSON.parse(res.payload)
       assert.strictEqual(message, 'File uploaded successfully')
-
-      uploadedImagePath = uploadedImagePath_
-      assert.ok(fs.existsSync(uploadedImagePath_))
     })
 
     it('should return 404 if task not found', async (t) => {
@@ -522,13 +599,13 @@ describe('Tasks api (logged user only)', () => {
       assert.strictEqual(mockLogError.callCount(), 1)
 
       const arg = mockLogError.calls[0].arguments[0] as unknown as {
-        err: Error
+        err: Error;
       }
 
       assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
     })
 
-    it('should retrieve the uploaded image based on task ID', async (t) => {
+    it('should retrieve the uploaded image based on task id and filename', async (t) => {
       app = await build(t)
 
       const taskFilename = encodeURIComponent(`${taskId}_${filename}`)

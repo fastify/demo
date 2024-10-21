@@ -15,8 +15,6 @@ import path from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import fs from 'node:fs'
 
-const TASKS_DIRNAME = 'tasks'
-
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
     '/',
@@ -257,7 +255,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           import.meta.dirname,
           '../../../..',
           fastify.config.UPLOAD_DIRNAME,
-          TASKS_DIRNAME,
+          fastify.config.UPLOAD_TASKS_DIRNAME,
           filename
         )
 
@@ -298,7 +296,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
       return reply.sendFile(
         task.filename as string,
-        path.join(fastify.config.UPLOAD_DIRNAME, TASKS_DIRNAME)
+        path.join(fastify.config.UPLOAD_DIRNAME, fastify.config.UPLOAD_TASKS_DIRNAME)
       )
     }
   )
