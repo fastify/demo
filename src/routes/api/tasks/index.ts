@@ -218,7 +218,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         consumes: ['multipart/form-data'],
         response: {
           200: Type.Object({
-            path: Type.String(),
             message: Type.String()
           }),
           404: Type.Object({ message: Type.String() }),
@@ -265,7 +264,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           .where({ id })
           .update({ filename })
 
-        return { path: filePath, message: 'File uploaded successfully' }
+        return { message: 'File uploaded successfully' }
       }).catch(() => {
         reply.internalServerError('Transaction failed.')
       })
