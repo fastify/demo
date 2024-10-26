@@ -299,6 +299,50 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       )
     }
   )
+
+  fastify.delete(
+    '/:filename/image',
+    {
+      schema: {
+        params: Type.Object({
+          filename: Type.String()
+        }),
+        response: {
+          204: Type.Null(),
+          404: Type.Object({ message: Type.String() })
+        },
+        tags: ['Tasks']
+      }
+    },
+    async function (request, reply) {
+      const { filename } = request.params
+
+      return fastify.knex.transaction(async (trx) => {
+        const task = await trx<Task>('tasks').select('filename').where({ filename }).first()
+        if (!task) {
+          return reply.notFound(`No task has filename "${filename}"`)
+        }
+
+        const filePath = path.join(
+          import.meta.dirname,
+          '../../../..',
+          fastify.config.UPLOAD_DIRNAME,
+          fastify.config.UPLOAD_TASKS_DIRNAME,
+          task.filename!
+        )
+
+        await fs.promises.unlink(filePath)
+
+        await trx<Task>('tasks')
+          .where({ filename })
+          .update({ filename: null })
+
+        reply.code(204).send(null)
+      }).catch(() => {
+        reply.internalServerError('Transaction failed.')
+      })
+    }
+  )
 }
 
 export default plugin

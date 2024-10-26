@@ -31,7 +31,7 @@ export const TaskSchema = Type.Object({
 })
 
 export interface Task extends Static<typeof TaskSchema> {
-  filename?: string
+  filename?: string | null
 }
 
 export const CreateTaskSchema = Type.Object({

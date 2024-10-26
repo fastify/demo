@@ -432,7 +432,7 @@ describe('Tasks api (logged user only)', () => {
     })
   })
 
-  describe('Task image upload and retrieval', () => {
+  describe('Task image upload and retrieval and delete', () => {
     let app: FastifyInstance
     let taskId: number
     const filename = 'short-logo.png'
@@ -627,6 +627,34 @@ describe('Tasks api (logged user only)', () => {
 
       const res = await app.injectWithLogin('basic', {
         method: 'GET',
+        url: '/api/tasks/non-existant/image'
+      })
+
+      assert.strictEqual(res.statusCode, 404)
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'No task has filename "non-existant"')
+    })
+
+    it('should remove an existing image for a task', async (t) => {
+      app = await build(t)
+
+      const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
+      const resDelete = await app.injectWithLogin('basic', {
+        method: 'DELETE',
+        url: `/api/tasks/${taskFilename}/image`
+      })
+
+      assert.strictEqual(resDelete.statusCode, 204)
+
+      const files = fs.readdirSync(uploadDirTask)
+      assert.strictEqual(files.length, 0)
+    })
+
+    it('should return 404 for non-existant filename for deletion', async (t) => {
+      app = await build(t)
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'DELETE',
         url: '/api/tasks/non-existant/image'
       })
 
