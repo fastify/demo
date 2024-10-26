@@ -230,11 +230,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { id } = request.params
 
       return fastify.knex.transaction(async (trx) => {
-        const task = await trx<Task>('tasks').where({ id }).first()
-        if (!task) {
-          return reply.notFound('Task not found')
-        }
-
         const file = await request.file()
         if (!file) {
           return reply.notFound('File not found')
@@ -249,7 +244,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.badRequest('Invalid file type')
         }
 
+
         const filename = `${id}_${file.filename}`
+
+        const numberOfRowUpdated = await trx<Task>('tasks')
+          .where({ id })
+          .update({ filename })
+
+        if (numberOfRowUpdated === 0) {
+          return reply.notFound('Task not found')
+        }
+
+
+
         const filePath = path.join(
           import.meta.dirname,
           '../../../..',
@@ -260,9 +267,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         await pipeline(file.file, fs.createWriteStream(filePath))
 
-        await trx<Task>('tasks')
-          .where({ id })
-          .update({ filename })
 
         return { message: 'File uploaded successfully' }
       }).catch(() => {
@@ -318,24 +322,24 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { filename } = request.params
 
       return fastify.knex.transaction(async (trx) => {
-        const task = await trx<Task>('tasks').select('filename').where({ filename }).first()
-        if (!task) {
+        const numberOfRowUpdated = await trx<Task>('tasks')
+          .where({ filename })
+          .update({ filename: null })
+
+        if (numberOfRowUpdated === 0) {
           return reply.notFound(`No task has filename "${filename}"`)
         }
+
 
         const filePath = path.join(
           import.meta.dirname,
           '../../../..',
           fastify.config.UPLOAD_DIRNAME,
           fastify.config.UPLOAD_TASKS_DIRNAME,
-          task.filename!
+          filename
         )
 
         await fs.promises.unlink(filePath)
-
-        await trx<Task>('tasks')
-          .where({ filename })
-          .update({ filename: null })
 
         reply.code(204).send(null)
       }).catch(() => {
