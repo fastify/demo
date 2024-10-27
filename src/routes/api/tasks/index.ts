@@ -244,7 +244,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.badRequest('Invalid file type')
         }
 
-
         const filename = `${id}_${file.filename}`
 
         const affectedRows = await trx<Task>('tasks')
@@ -255,8 +254,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.notFound('Task not found')
         }
 
-
-
         const filePath = path.join(
           import.meta.dirname,
           '../../../..',
@@ -266,7 +263,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         )
 
         await pipeline(file.file, fs.createWriteStream(filePath))
-
 
         return { message: 'File uploaded successfully' }
       }).catch(() => {
@@ -330,7 +326,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.notFound(`No task has filename "${filename}"`)
         }
 
-
         const filePath = path.join(
           import.meta.dirname,
           '../../../..',
@@ -340,8 +335,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         )
 
         await fs.promises.unlink(filePath)
-
-
 
         reply.code(204)
 

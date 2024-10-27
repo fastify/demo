@@ -28,7 +28,7 @@ async function createTask (app: FastifyInstance, taskData: Partial<Task>) {
   return id
 }
 
-async function uploadImageForTask(app: FastifyInstance , taskId: number, filePath: string, uploadDir: string) {
+async function uploadImageForTask (app: FastifyInstance, taskId: number, filePath: string, uploadDir: string) {
   await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: `${taskId}_short-logo.png` })
 
   const file = fs.createReadStream(filePath)
@@ -38,8 +38,6 @@ async function uploadImageForTask(app: FastifyInstance , taskId: number, filePat
 
   await pipeline(file, writeStream)
 }
-
-
 
 describe('Tasks api (logged user only)', () => {
   describe('GET /api/tasks', () => {
@@ -481,9 +479,7 @@ describe('Tasks api (logged user only)', () => {
       await app.close()
     })
 
-    describe('Upload', () => { 
-
-
+    describe('Upload', () => {
       it('should create upload directories at boot if not exist', async (t) => {
         fs.rmSync(uploadDir, { recursive: true })
         assert.ok(!fs.existsSync(uploadDir))
@@ -624,7 +620,7 @@ describe('Tasks api (logged user only)', () => {
         assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
       })
     })
-    
+
     describe('Retrieval', () => {
       it('should retrieve the uploaded image based on task id and filename', async (t) => {
         app = await build(t)
@@ -658,16 +654,16 @@ describe('Tasks api (logged user only)', () => {
     })
 
     describe('Deletion', () => {
-      before(async () => { 
+      before(async () => {
         app = await build()
 
-        await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null})
-        
+        await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
+
         const files = fs.readdirSync(uploadDirTask)
         files.forEach((file) => {
           const filePath = path.join(uploadDirTask, file)
           fs.rmSync(filePath, { recursive: true })
-        })       
+        })
 
         await app.close()
       })
@@ -714,6 +710,25 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(message, 'No task has filename "non-existant"')
       })
 
+      it('should return 404 for non-existant file in upload dir', async (t) => {
+        const app = await build(t)
+
+        await createTask(app, {
+          name: 'Task with image',
+          author_id: 1,
+          status: TaskStatusEnum.New,
+          filename: 'does_not_exist.png'
+        })
+
+        const resDelete = await app.injectWithLogin('basic', {
+          method: 'DELETE',
+          url: '/api/tasks/does_not_exist.png/image'
+        })
+
+        assert.strictEqual(resDelete.statusCode, 404)
+        const { message } = JSON.parse(resDelete.payload)
+        assert.strictEqual(message, 'File "does_not_exist.png" not found')
+      })
 
       it('File deletion transaction should rollback on error', async (t) => {
         const app = await build(t)
@@ -723,7 +738,6 @@ describe('Tasks api (logged user only)', () => {
         })
 
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
-
 
         const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
         const resDelete = await app.injectWithLogin('basic', {
