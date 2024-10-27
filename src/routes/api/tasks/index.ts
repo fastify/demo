@@ -341,7 +341,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         return { message: 'File deleted successfully' }
       }).catch((err) => {
         if (err.code === 'ENOENT') {
-          reply.notFound(`File "${filename}" not found`)
+          return reply.notFound(`File "${filename}" not found`)
         }
 
         reply.internalServerError('Transaction failed.')

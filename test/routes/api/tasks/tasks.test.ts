@@ -444,7 +444,7 @@ describe('Tasks api (logged user only)', () => {
     })
   })
 
-  describe('Task image upload, retrieval and delete', (context) => {
+  describe('Task image upload, retrieval and delete', () => {
     let app: FastifyInstance
     let taskId: number
     const filename = 'short-logo.png'
@@ -686,12 +686,12 @@ describe('Tasks api (logged user only)', () => {
         app = await build(t)
 
         const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
-        const resDelete = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic', {
           method: 'DELETE',
           url: `/api/tasks/${taskFilename}/image`
         })
 
-        assert.strictEqual(resDelete.statusCode, 204)
+        assert.strictEqual(res.statusCode, 204)
 
         const files = fs.readdirSync(uploadDirTask)
         assert.strictEqual(files.length, 0)
@@ -720,13 +720,13 @@ describe('Tasks api (logged user only)', () => {
           filename: 'does_not_exist.png'
         })
 
-        const resDelete = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic', {
           method: 'DELETE',
           url: '/api/tasks/does_not_exist.png/image'
         })
 
-        assert.strictEqual(resDelete.statusCode, 404)
-        const { message } = JSON.parse(resDelete.payload)
+        assert.strictEqual(res.statusCode, 404)
+        const { message } = JSON.parse(res.payload)
         assert.strictEqual(message, 'File "does_not_exist.png" not found')
       })
 
@@ -740,12 +740,12 @@ describe('Tasks api (logged user only)', () => {
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
 
         const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
-        const resDelete = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic', {
           method: 'DELETE',
           url: `/api/tasks/${taskFilename}/image`
         })
 
-        assert.strictEqual(resDelete.statusCode, 500)
+        assert.strictEqual(res.statusCode, 500)
         assert.strictEqual(mockLogError.callCount(), 1)
 
         const arg = mockLogError.calls[0].arguments[0] as unknown as {
