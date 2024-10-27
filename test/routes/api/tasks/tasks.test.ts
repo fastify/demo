@@ -1,4 +1,4 @@
-import { after, before, describe, it } from 'node:test'
+import { after, before, beforeEach, describe, it } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 import {
@@ -9,6 +9,7 @@ import {
 import { FastifyInstance } from 'fastify'
 import { Static } from '@sinclair/typebox'
 import fs from 'node:fs'
+import { pipeline } from 'node:stream/promises'
 import path from 'node:path'
 import FormData from 'form-data'
 import os from 'os'
@@ -26,6 +27,19 @@ async function createTask (app: FastifyInstance, taskData: Partial<Task>) {
 
   return id
 }
+
+async function uploadImageForTask(app: FastifyInstance , taskId: number, filePath: string, uploadDir: string) {
+  await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: `${taskId}_short-logo.png` })
+
+  const file = fs.createReadStream(filePath)
+  const filename = `${taskId}_short-logo.png`
+
+  const writeStream = fs.createWriteStream(path.join(uploadDir, filename))
+
+  await pipeline(file, writeStream)
+}
+
+
 
 describe('Tasks api (logged user only)', () => {
   describe('GET /api/tasks', () => {
@@ -432,7 +446,7 @@ describe('Tasks api (logged user only)', () => {
     })
   })
 
-  describe('Task image upload and retrieval and delete', () => {
+  describe('Task image upload, retrieval and delete', (context) => {
     let app: FastifyInstance
     let taskId: number
     const filename = 'short-logo.png'
@@ -457,210 +471,277 @@ describe('Tasks api (logged user only)', () => {
       app.close()
     })
 
-    after(() => {
+    after(async () => {
       const files = fs.readdirSync(uploadDirTask)
       files.forEach((file) => {
         const filePath = path.join(uploadDirTask, file)
         fs.rmSync(filePath, { recursive: true })
       })
+
+      await app.close()
     })
 
-    it('should create upload directories at boot if not exist', async (t) => {
-      fs.rmSync(uploadDir, { recursive: true })
-      assert.ok(!fs.existsSync(uploadDir))
+    describe('Upload', () => { 
 
-      app = await build(t)
 
-      assert.ok(fs.existsSync(uploadDir))
-      assert.ok(fs.existsSync(uploadDirTask))
+      it('should create upload directories at boot if not exist', async (t) => {
+        fs.rmSync(uploadDir, { recursive: true })
+        assert.ok(!fs.existsSync(uploadDir))
+
+        app = await build(t)
+
+        assert.ok(fs.existsSync(uploadDir))
+        assert.ok(fs.existsSync(uploadDirTask))
+      })
+
+      it('should upload a valid image for a task', async (t) => {
+        app = await build(t)
+
+        const form = new FormData()
+        form.append('file', fs.createReadStream(testImagePath))
+
+        const res = await app.injectWithLogin('basic', {
+          method: 'POST',
+          url: `/api/tasks/${taskId}/upload`,
+          payload: form,
+          headers: form.getHeaders()
+        })
+
+        assert.strictEqual(res.statusCode, 200)
+
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'File uploaded successfully')
+      })
+
+      it('should return 404 if task not found', async (t) => {
+        app = await build(t)
+
+        const form = new FormData()
+        form.append('file', fs.createReadStream(testImagePath))
+
+        const res = await app.injectWithLogin('basic', {
+          method: 'POST',
+          url: '/api/tasks/100000/upload',
+          payload: form,
+          headers: form.getHeaders()
+        })
+
+        assert.strictEqual(res.statusCode, 404)
+
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'Task not found')
+      })
+
+      it('should return 404 if file not found', async (t) => {
+        app = await build(t)
+
+        const form = new FormData()
+        form.append('file', fs.createReadStream(testImagePath))
+
+        const res = await app.injectWithLogin('basic', {
+          method: 'POST',
+          url: `/api/tasks/${taskId}/upload`,
+          payload: undefined,
+          headers: form.getHeaders()
+        })
+
+        assert.strictEqual(res.statusCode, 404)
+
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'File not found')
+      })
+
+      it('should reject an invalid file type', async (t) => {
+        app = await build(t)
+
+        const form = new FormData()
+        form.append('file', fs.createReadStream(testCsvPath))
+
+        const res = await app.injectWithLogin('basic', {
+          method: 'POST',
+          url: `/api/tasks/${taskId}/upload`,
+          payload: form,
+          headers: form.getHeaders()
+        })
+
+        assert.strictEqual(res.statusCode, 400)
+
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'Invalid file type')
+      })
+
+      it('should reject if file size exceeds limit (truncated)', async (t) => {
+        app = await build(t)
+
+        const tmpDir = os.tmpdir()
+        const largeTestImagePath = path.join(tmpDir, 'large-test-image.jpg')
+
+        const largeBuffer = Buffer.alloc(1024 * 1024 * 1.5, 'a') // Max file size in bytes is 1 MB
+        fs.writeFileSync(largeTestImagePath, largeBuffer)
+
+        const form = new FormData()
+        form.append('file', fs.createReadStream(largeTestImagePath))
+
+        const res = await app.injectWithLogin('basic', {
+          method: 'POST',
+          url: `/api/tasks/${taskId}/upload`,
+          payload: form,
+          headers: form.getHeaders()
+        })
+
+        assert.strictEqual(res.statusCode, 400)
+
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'File size limit exceeded')
+      })
+
+      it('File upload transaction should rollback on error', async (t) => {
+        const app = await build(t)
+
+        const { mock: mockPipeline } = t.mock.method(fs, 'createWriteStream')
+        mockPipeline.mockImplementationOnce(() => {
+          throw new Error()
+        })
+
+        const { mock: mockLogError } = t.mock.method(app.log, 'error')
+
+        const form = new FormData()
+        form.append('file', fs.createReadStream(testImagePath))
+        const res = await app.injectWithLogin('basic', {
+          method: 'POST',
+          url: `/api/tasks/${taskId}/upload`,
+          payload: form,
+          headers: form.getHeaders()
+        })
+
+        assert.strictEqual(res.statusCode, 500)
+        assert.strictEqual(mockLogError.callCount(), 1)
+
+        const arg = mockLogError.calls[0].arguments[0] as unknown as {
+          err: Error;
+        }
+
+        assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+      })
+    })
+    
+    describe('Retrieval', () => {
+      it('should retrieve the uploaded image based on task id and filename', async (t) => {
+        app = await build(t)
+
+        const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
+        const res = await app.injectWithLogin('basic', {
+          method: 'GET',
+          url: `/api/tasks/${taskFilename}/image`
+        })
+
+        assert.strictEqual(res.statusCode, 200)
+        assert.strictEqual(res.headers['content-type'], 'image/png')
+
+        const originalFile = fs.readFileSync(testImagePath)
+
+        assert.deepStrictEqual(originalFile, res.rawPayload)
+      })
+
+      it('should return 404 error for non-existant filename', async (t) => {
+        app = await build(t)
+
+        const res = await app.injectWithLogin('basic', {
+          method: 'GET',
+          url: '/api/tasks/non-existant/image'
+        })
+
+        assert.strictEqual(res.statusCode, 404)
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'No task has filename "non-existant"')
+      })
     })
 
-    it('should upload a valid image for a task', async (t) => {
-      app = await build(t)
+    describe('Deletion', () => {
+      before(async () => { 
+        app = await build()
 
-      const form = new FormData()
-      form.append('file', fs.createReadStream(testImagePath))
+        await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null})
+        
+        const files = fs.readdirSync(uploadDirTask)
+        files.forEach((file) => {
+          const filePath = path.join(uploadDirTask, file)
+          fs.rmSync(filePath, { recursive: true })
+        })       
 
-      const res = await app.injectWithLogin('basic', {
-        method: 'POST',
-        url: `/api/tasks/${taskId}/upload`,
-        payload: form,
-        headers: form.getHeaders()
+        await app.close()
       })
 
-      assert.strictEqual(res.statusCode, 200)
-
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'File uploaded successfully')
-    })
-
-    it('should return 404 if task not found', async (t) => {
-      app = await build(t)
-
-      const form = new FormData()
-      form.append('file', fs.createReadStream(testImagePath))
-
-      const res = await app.injectWithLogin('basic', {
-        method: 'POST',
-        url: '/api/tasks/100000/upload',
-        payload: form,
-        headers: form.getHeaders()
+      beforeEach(async () => {
+        app = await build()
+        await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
+        await app.close()
       })
 
-      assert.strictEqual(res.statusCode, 404)
+      after(async () => {
+        app = await build()
+        const files = fs.readdirSync(uploadDirTask)
+        files.forEach((file) => {
+          const filePath = path.join(uploadDirTask, file)
+          fs.rmSync(filePath, { recursive: true })
+        })
 
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'Task not found')
-    })
-
-    it('should return 404 if file not found', async (t) => {
-      app = await build(t)
-
-      const form = new FormData()
-      form.append('file', fs.createReadStream(testImagePath))
-
-      const res = await app.injectWithLogin('basic', {
-        method: 'POST',
-        url: `/api/tasks/${taskId}/upload`,
-        payload: undefined,
-        headers: form.getHeaders()
+        await app.close()
       })
 
-      assert.strictEqual(res.statusCode, 404)
+      it('should remove an existing image for a task', async (t) => {
+        app = await build(t)
 
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'File not found')
-    })
+        const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
+        const resDelete = await app.injectWithLogin('basic', {
+          method: 'DELETE',
+          url: `/api/tasks/${taskFilename}/image`
+        })
 
-    it('should reject an invalid file type', async (t) => {
-      app = await build(t)
+        assert.strictEqual(resDelete.statusCode, 204)
 
-      const form = new FormData()
-      form.append('file', fs.createReadStream(testCsvPath))
-
-      const res = await app.injectWithLogin('basic', {
-        method: 'POST',
-        url: `/api/tasks/${taskId}/upload`,
-        payload: form,
-        headers: form.getHeaders()
+        const files = fs.readdirSync(uploadDirTask)
+        assert.strictEqual(files.length, 0)
       })
 
-      assert.strictEqual(res.statusCode, 400)
+      it('should return 404 for non-existant filename for deletion', async (t) => {
+        app = await build(t)
 
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'Invalid file type')
-    })
+        const res = await app.injectWithLogin('basic', {
+          method: 'DELETE',
+          url: '/api/tasks/non-existant/image'
+        })
 
-    it('should reject if file size exceeds limit (truncated)', async (t) => {
-      app = await build(t)
-
-      const tmpDir = os.tmpdir()
-      const largeTestImagePath = path.join(tmpDir, 'large-test-image.jpg')
-
-      const largeBuffer = Buffer.alloc(1024 * 1024 * 1.5, 'a') // Max file size in bytes is 1 MB
-      fs.writeFileSync(largeTestImagePath, largeBuffer)
-
-      const form = new FormData()
-      form.append('file', fs.createReadStream(largeTestImagePath))
-
-      const res = await app.injectWithLogin('basic', {
-        method: 'POST',
-        url: `/api/tasks/${taskId}/upload`,
-        payload: form,
-        headers: form.getHeaders()
+        assert.strictEqual(res.statusCode, 404)
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'No task has filename "non-existant"')
       })
 
-      assert.strictEqual(res.statusCode, 400)
+      it('File deletion transaction should rollback on error', async (t) => {
+        const app = await build(t)
+        const { mock: mockPipeline } = t.mock.method(fs.promises, 'unlink')
+        mockPipeline.mockImplementationOnce(() => {
+          throw new Error()
+        })
 
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'File size limit exceeded')
-    })
+        const { mock: mockLogError } = t.mock.method(app.log, 'error')
 
-    it('File upload transaction should rollback on error', async (t) => {
-      const app = await build(t)
 
-      const { mock: mockPipeline } = t.mock.method(fs, 'createWriteStream')
-      mockPipeline.mockImplementationOnce(() => {
-        throw new Error()
+        const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
+        const resDelete = await app.injectWithLogin('basic', {
+          method: 'DELETE',
+          url: `/api/tasks/${taskFilename}/image`
+        })
+
+        assert.strictEqual(resDelete.statusCode, 500)
+        assert.strictEqual(mockLogError.callCount(), 1)
+
+        const arg = mockLogError.calls[0].arguments[0] as unknown as {
+          err: Error;
+        }
+
+        assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
       })
-
-      const { mock: mockLogError } = t.mock.method(app.log, 'error')
-
-      const form = new FormData()
-      form.append('file', fs.createReadStream(testImagePath))
-      const res = await app.injectWithLogin('basic', {
-        method: 'POST',
-        url: `/api/tasks/${taskId}/upload`,
-        payload: form,
-        headers: form.getHeaders()
-      })
-
-      assert.strictEqual(res.statusCode, 500)
-      assert.strictEqual(mockLogError.callCount(), 1)
-
-      const arg = mockLogError.calls[0].arguments[0] as unknown as {
-        err: Error;
-      }
-
-      assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
-    })
-
-    it('should retrieve the uploaded image based on task id and filename', async (t) => {
-      app = await build(t)
-
-      const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
-      const res = await app.injectWithLogin('basic', {
-        method: 'GET',
-        url: `/api/tasks/${taskFilename}/image`
-      })
-
-      assert.strictEqual(res.statusCode, 200)
-      assert.strictEqual(res.headers['content-type'], 'image/png')
-
-      const originalFile = fs.readFileSync(testImagePath)
-
-      assert.deepStrictEqual(originalFile, res.rawPayload)
-    })
-
-    it('should return 404 error for non-existant filename', async (t) => {
-      app = await build(t)
-
-      const res = await app.injectWithLogin('basic', {
-        method: 'GET',
-        url: '/api/tasks/non-existant/image'
-      })
-
-      assert.strictEqual(res.statusCode, 404)
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'No task has filename "non-existant"')
-    })
-
-    it('should remove an existing image for a task', async (t) => {
-      app = await build(t)
-
-      const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
-      const resDelete = await app.injectWithLogin('basic', {
-        method: 'DELETE',
-        url: `/api/tasks/${taskFilename}/image`
-      })
-
-      assert.strictEqual(resDelete.statusCode, 204)
-
-      const files = fs.readdirSync(uploadDirTask)
-      assert.strictEqual(files.length, 0)
-    })
-
-    it('should return 404 for non-existant filename for deletion', async (t) => {
-      app = await build(t)
-
-      const res = await app.injectWithLogin('basic', {
-        method: 'DELETE',
-        url: '/api/tasks/non-existant/image'
-      })
-
-      assert.strictEqual(res.statusCode, 404)
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'No task has filename "non-existant"')
     })
   })
 })
