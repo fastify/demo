@@ -247,11 +247,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         const filename = `${id}_${file.filename}`
 
-        const numberOfRowUpdated = await trx<Task>('tasks')
+        const affectedRows = await trx<Task>('tasks')
           .where({ id })
           .update({ filename })
 
-        if (numberOfRowUpdated === 0) {
+        if (affectedRows === 0) {
           return reply.notFound('Task not found')
         }
 
@@ -322,11 +322,11 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { filename } = request.params
 
       return fastify.knex.transaction(async (trx) => {
-        const numberOfRowUpdated = await trx<Task>('tasks')
+        const affectedRows = await trx<Task>('tasks')
           .where({ filename })
           .update({ filename: null })
 
-        if (numberOfRowUpdated === 0) {
+        if (affectedRows === 0) {
           return reply.notFound(`No task has filename "${filename}"`)
         }
 
@@ -341,8 +341,16 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         await fs.promises.unlink(filePath)
 
-        reply.code(204).send(null)
-      }).catch(() => {
+
+
+        reply.code(204)
+
+        return { message: 'File deleted successfully' }
+      }).catch((err) => {
+        if (err.code === 'ENOENT') {
+          reply.notFound(`File "${filename}" not found`)
+        }
+
         reply.internalServerError('Transaction failed.')
       })
     }

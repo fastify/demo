@@ -679,14 +679,11 @@ describe('Tasks api (logged user only)', () => {
       })
 
       after(async () => {
-        app = await build()
         const files = fs.readdirSync(uploadDirTask)
         files.forEach((file) => {
           const filePath = path.join(uploadDirTask, file)
           fs.rmSync(filePath, { recursive: true })
         })
-
-        await app.close()
       })
 
       it('should remove an existing image for a task', async (t) => {
@@ -704,7 +701,7 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(files.length, 0)
       })
 
-      it('should return 404 for non-existant filename for deletion', async (t) => {
+      it('should return 404 for non-existant task with filename for deletion', async (t) => {
         app = await build(t)
 
         const res = await app.injectWithLogin('basic', {
@@ -717,11 +714,12 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(message, 'No task has filename "non-existant"')
       })
 
+
       it('File deletion transaction should rollback on error', async (t) => {
         const app = await build(t)
         const { mock: mockPipeline } = t.mock.method(fs.promises, 'unlink')
         mockPipeline.mockImplementationOnce(() => {
-          throw new Error()
+          return Promise.reject(new Error())
         })
 
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
