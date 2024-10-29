@@ -722,9 +722,6 @@ describe('Tasks api (logged user only)', () => {
 
         const { mock: mockLogWarn } = t.mock.method(app.log, 'warn')
 
-
-
-
         const res = await app.injectWithLogin('basic', {
           method: 'DELETE',
           url: '/api/tasks/does_not_exist.png/image'
@@ -733,9 +730,9 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(res.statusCode, 204)
 
         const arg = mockLogWarn.calls[0].arguments[0]
-        
+
         assert.strictEqual(mockLogWarn.callCount(), 1)
-        assert.deepStrictEqual(arg, `File path 'does_not_exist.png' not found`)
+        assert.deepStrictEqual(arg, 'File path \'does_not_exist.png\' not found')
       })
 
       it('File deletion transaction should rollback on error', async (t) => {

@@ -334,15 +334,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           filename
         )
 
-        await fs.promises.unlink(filePath).catch((err) => {
-          // Just warn if file not found as file deletion 
-          // should be treated as successful if the database operation succeeds,
-          if (err.code === 'ENOENT') {
+        try {
+          await fs.promises.unlink(filePath)
+        } catch (err) {
+          if (isErrnoException(err) && err.code === 'ENOENT') {
+            // A file could have been deleted by an external actor, e.g. system administrator.
+            // We log the error to keep a record of the failure, but consider that the operation was successful.
             fastify.log.warn(`File path '${filename}' not found`)
           } else {
             throw err
           }
-        })
+        }
 
         reply.code(204)
 
@@ -352,6 +354,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       })
     }
   )
+}
+
+function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error;
 }
 
 export default plugin
