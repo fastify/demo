@@ -2,7 +2,7 @@ import {
   FastifyPluginAsyncTypebox,
   Type
 } from '@fastify/type-provider-typebox'
-import { CredentialsSchema, UpdateCredentialsSchema, Credentials, Auth } from '../../../schemas/auth.js'
+import { CredentialsSchema, Credentials } from '../../../schemas/auth.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
@@ -36,6 +36,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             password,
             user.password
           )
+
           if (isPasswordValid) {
             const roles = await trx<{ name: string }>('roles')
               .select('roles.name')
@@ -55,53 +56,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         reply.status(401)
-
         return { message: 'Invalid username or password.' }
       }).catch(() => {
         reply.internalServerError('Transaction failed.')
       })
-    }
-  )
-  fastify.post(
-    '/update',
-    {
-      schema: {
-        body: UpdateCredentialsSchema,
-        response: {
-          200: Type.Object({
-            message: Type.String()
-          }),
-          401: Type.Object({
-            message: Type.String()
-          })
-        },
-        tags: ['Authentication']
-      }
-    },
-    async function (request, reply) {
-      const { username } = request.body
-      const user = await fastify.repository.find<Auth>('users', {
-        select: 'username, password',
-        where: { username }
-      })
-
-      if (user) {
-        const isPasswordValid = await fastify.compare(request.body.password, user.password)
-
-        if (isPasswordValid) {
-          const hashedPassword = await fastify.hash(request.body.newPassword || request.body.password)
-          await fastify.repository.update('users', {
-            data: { password: hashedPassword, username: request.body.newUsername || request.body.username },
-            where: { username }
-          })
-
-          return { message: 'Password updated successfully' }
-        }
-      }
-
-      reply.status(401)
-
-      return { message: 'Invalid username or password.' }
     }
   )
 }
