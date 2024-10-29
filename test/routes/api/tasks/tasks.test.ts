@@ -710,7 +710,7 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(message, 'No task has filename "non-existant"')
       })
 
-      it('should return 404 for non-existant file in upload dir', async (t) => {
+      it('should return 204 for non-existant file in upload dir', async (t) => {
         const app = await build(t)
 
         await createTask(app, {
@@ -720,14 +720,22 @@ describe('Tasks api (logged user only)', () => {
           filename: 'does_not_exist.png'
         })
 
+        const { mock: mockLogWarn } = t.mock.method(app.log, 'warn')
+
+
+
+
         const res = await app.injectWithLogin('basic', {
           method: 'DELETE',
           url: '/api/tasks/does_not_exist.png/image'
         })
 
-        assert.strictEqual(res.statusCode, 404)
-        const { message } = JSON.parse(res.payload)
-        assert.strictEqual(message, 'File "does_not_exist.png" not found')
+        assert.strictEqual(res.statusCode, 204)
+
+        const arg = mockLogWarn.calls[0].arguments[0]
+        
+        assert.strictEqual(mockLogWarn.callCount(), 1)
+        assert.deepStrictEqual(arg, `File path 'does_not_exist.png' not found`)
       })
 
       it('File deletion transaction should rollback on error', async (t) => {

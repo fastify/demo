@@ -334,16 +334,20 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           filename
         )
 
-        await fs.promises.unlink(filePath)
+        await fs.promises.unlink(filePath).catch((err) => {
+          // Just warn if file not found as file deletion 
+          // should be treated as successful if the database operation succeeds,
+          if (err.code === 'ENOENT') {
+            fastify.log.warn(`File path '${filename}' not found`)
+          } else {
+            throw err
+          }
+        })
 
         reply.code(204)
 
         return { message: 'File deleted successfully' }
-      }).catch((err) => {
-        if (err.code === 'ENOENT') {
-          return reply.notFound(`File "${filename}" not found`)
-        }
-
+      }).catch(() => {
         reply.internalServerError('Transaction failed.')
       })
     }
