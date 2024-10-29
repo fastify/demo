@@ -39,7 +39,7 @@ async function uploadImageForTask (app: FastifyInstance, taskId: number, filePat
   await pipeline(file, writeStream)
 }
 
-describe('Tasks api (logged user only)', () => {
+describe('Tasks api (logged user)', () => {
   describe('GET /api/tasks', () => {
     let app: FastifyInstance
     let userId1: number
@@ -509,6 +509,31 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(message, 'File uploaded successfully')
       })
 
+      it('should delete existing image for a task before uploading a new one', async (t) => {
+        app = await build(t)
+
+        await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
+
+        const { mock: mockUnlink } = t.mock.method(fs.promises, 'unlink')
+
+        const form = new FormData()
+        form.append('file', fs.createReadStream(testImagePath))
+
+        const res = await app.injectWithLogin('basic', {
+          method: 'POST',
+          url: `/api/tasks/${taskId}/upload`,
+          payload: form,
+          headers: form.getHeaders()
+        })
+
+        assert.strictEqual(res.statusCode, 200)
+
+        const { message } = JSON.parse(res.payload)
+        assert.strictEqual(message, 'File uploaded successfully')
+
+        assert.strictEqual(mockUnlink.callCount(), 1)
+      })
+
       it('should return 404 if task not found', async (t) => {
         app = await build(t)
 
@@ -622,6 +647,34 @@ describe('Tasks api (logged user only)', () => {
     })
 
     describe('Retrieval', () => {
+      before(async () => {
+        app = await build()
+
+        await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
+
+        const files = fs.readdirSync(uploadDirTask)
+        files.forEach((file) => {
+          const filePath = path.join(uploadDirTask, file)
+          fs.rmSync(filePath, { recursive: true })
+        })
+
+        await app.close()
+      })
+
+      beforeEach(async () => {
+        app = await build()
+        await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
+        await app.close()
+      })
+
+      after(async () => {
+        const files = fs.readdirSync(uploadDirTask)
+        files.forEach((file) => {
+          const filePath = path.join(uploadDirTask, file)
+          fs.rmSync(filePath, { recursive: true })
+        })
+      })
+
       it('should retrieve the uploaded image based on task id and filename', async (t) => {
         app = await build(t)
 
@@ -737,8 +790,8 @@ describe('Tasks api (logged user only)', () => {
 
       it('File deletion transaction should rollback on error', async (t) => {
         const app = await build(t)
-        const { mock: mockPipeline } = t.mock.method(fs.promises, 'unlink')
-        mockPipeline.mockImplementationOnce(() => {
+        const { mock: mockUnlink } = t.mock.method(fs.promises, 'unlink')
+        mockUnlink.mockImplementationOnce(() => {
           return Promise.reject(new Error())
         })
 
