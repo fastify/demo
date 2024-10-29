@@ -36,7 +36,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             password,
             user.password
           )
-
           if (isPasswordValid) {
             const roles = await trx<{ name: string }>('roles')
               .select('roles.name')
@@ -56,6 +55,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         reply.status(401)
+
         return { message: 'Invalid username or password.' }
       }).catch(() => {
         reply.internalServerError('Transaction failed.')
