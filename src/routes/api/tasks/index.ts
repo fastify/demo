@@ -357,7 +357,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 }
 
 function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
-  return error instanceof Error && 'code' in error;
+  return error instanceof Error && 'code' in error
 }
 
 export default plugin
