@@ -26,8 +26,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { newPassword, currentPassword } = request.body
       const username = request.session.user.username
 
-      return fastify.knex.transaction(async (trx) => {
-        const user = await trx<Auth>('users')
+      try {
+        const user = await fastify.knex<Auth>('users')
           .select('username', 'password')
           .where({ username })
           .first()
@@ -36,9 +36,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           const isPasswordValid = await fastify.compare(currentPassword, user.password)
 
           if (isPasswordValid) {
-            const hashedPassword = await fastify.hash(newPassword || currentPassword)
+            const hashedPassword = await fastify.hash(newPassword)
 
-            await trx('users')
+            await fastify.knex('users')
               .update({
                 password: hashedPassword
               })
@@ -50,9 +50,9 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         reply.status(401)
         return { message: 'Invalid username or password.' }
-      }).catch(() => {
-        reply.internalServerError('Transaction failed.')
-      })
+      } catch (error) {
+        reply.internalServerError('An error occurred while updating the password.')
+      }
     }
   )
 }
