@@ -230,11 +230,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { id } = request.params
 
       return fastify.knex.transaction(async (trx) => {
-        const task = await trx<Task>('tasks').where({ id }).first()
-        if (!task) {
-          return reply.notFound('Task not found')
-        }
-
         const file = await request.file()
         if (!file) {
           return reply.notFound('File not found')
@@ -250,6 +245,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         const filename = `${id}_${file.filename}`
+
+        const affectedRows = await trx<Task>('tasks')
+          .where({ id })
+          .update({ filename })
+
+        if (affectedRows === 0) {
+          return reply.notFound('Task not found')
+        }
+
         const filePath = path.join(
           import.meta.dirname,
           '../../../..',
@@ -259,10 +263,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         )
 
         await pipeline(file.file, fs.createWriteStream(filePath))
-
-        await trx<Task>('tasks')
-          .where({ id })
-          .update({ filename })
 
         return { message: 'File uploaded successfully' }
       }).catch(() => {
@@ -299,6 +299,65 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       )
     }
   )
+
+  fastify.delete(
+    '/:filename/image',
+    {
+      schema: {
+        params: Type.Object({
+          filename: Type.String()
+        }),
+        response: {
+          204: Type.Null(),
+          404: Type.Object({ message: Type.String() })
+        },
+        tags: ['Tasks']
+      }
+    },
+    async function (request, reply) {
+      const { filename } = request.params
+
+      return fastify.knex.transaction(async (trx) => {
+        const affectedRows = await trx<Task>('tasks')
+          .where({ filename })
+          .update({ filename: null })
+
+        if (affectedRows === 0) {
+          return reply.notFound(`No task has filename "${filename}"`)
+        }
+
+        const filePath = path.join(
+          import.meta.dirname,
+          '../../../..',
+          fastify.config.UPLOAD_DIRNAME,
+          fastify.config.UPLOAD_TASKS_DIRNAME,
+          filename
+        )
+
+        try {
+          await fs.promises.unlink(filePath)
+        } catch (err) {
+          if (isErrnoException(err) && err.code === 'ENOENT') {
+            // A file could have been deleted by an external actor, e.g. system administrator.
+            // We log the error to keep a record of the failure, but consider that the operation was successful.
+            fastify.log.warn(`File path '${filename}' not found`)
+          } else {
+            throw err
+          }
+        }
+
+        reply.code(204)
+
+        return { message: 'File deleted successfully' }
+      }).catch(() => {
+        reply.internalServerError('Transaction failed.')
+      })
+    }
+  )
+}
+
+function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error
 }
 
 export default plugin
