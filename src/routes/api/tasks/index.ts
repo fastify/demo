@@ -327,25 +327,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.notFound(`No task has filename "${filename}"`)
         }
 
-        const filePath = path.join(
-          import.meta.dirname,
-          '../../../..',
-          fastify.config.UPLOAD_DIRNAME,
-          fastify.config.UPLOAD_TASKS_DIRNAME,
-          filename
-        )
-
-        try {
-          await fs.promises.unlink(filePath)
-        } catch (err) {
-          if (isErrnoException(err) && err.code === 'ENOENT') {
-            // A file could have been deleted by an external actor, e.g. system administrator.
-            // We log the error to keep a record of the failure, but consider that the operation was successful.
-            fastify.log.warn(`File path '${filename}' not found`)
-          } else {
-            throw err
-          }
-        }
+        await deleteFile(filename, fastify)
 
         reply.code(204)
 
@@ -378,6 +360,8 @@ async function deleteFile (fileName: string, fastify: FastifyInstance) {
     await fs.promises.unlink(filePath)
   } catch (err) {
     if (isErrnoException(err) && err.code === 'ENOENT') {
+      // A file could have been deleted by an external actor, e.g. system administrator.
+      // We log the error to keep a record of the failure, but consider that the operation was successful.
       fastify.log.warn(`File path '${fileName}' not found`)
     } else {
       throw err
