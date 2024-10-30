@@ -39,6 +39,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { newPassword, currentPassword } = request.body
+
+      if (newPassword === currentPassword) {
+        reply.status(400)
+        return { message: 'New password cannot be the same as the current password.' }
+      }
+
       const username = request.session.user.username
 
       try {
