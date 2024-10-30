@@ -39,12 +39,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { newPassword, currentPassword } = request.body
-
-      if (newPassword === currentPassword) {
-        reply.status(400)
-        return { message: 'New password cannot be the same as the current password.' }
-      }
-
       const username = request.session.user.username
 
       try {
@@ -52,10 +46,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           .select('username', 'password')
           .where({ username })
           .first()
-        const isPasswordValid = await fastify.compare(currentPassword, user.password)
 
         if (!user) {
           return reply.unauthorized()
+        }
+
+        if (newPassword === currentPassword) {
+          reply.status(400)
+          return { message: 'New password cannot be the same as the current password.' }
         }
 
         const hashedPassword = await fastify.hash(newPassword)
