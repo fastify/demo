@@ -12,9 +12,6 @@ import {
   TaskPaginationResultSchema
 } from '../../../schemas/tasks.js'
 import path from 'node:path'
-import { pipeline } from 'node:stream/promises'
-import fs from 'node:fs'
-import { FastifyInstance } from 'fastify'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.get(
@@ -258,13 +255,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           .update({ filename })
 
         if (task.filename) {
-          await deleteFile(task.filename, fastify)
+          await fastify.fileHandler.remove(fastify.config.UPLOAD_TASKS_DIRNAME, task.filename)
         }
 
-        const filePath = buildFilePath(filename, fastify)
-
-        await pipeline(file.file, fs.createWriteStream(filePath))
-
+        await fastify.fileHandler.upload(fastify.config.UPLOAD_TASKS_DIRNAME, filename, file.file)
         return { message: 'File uploaded successfully' }
       }).catch(() => {
         reply.internalServerError('Transaction failed.')
@@ -327,7 +321,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.notFound(`No task has filename "${filename}"`)
         }
 
-        await deleteFile(filename, fastify)
+        await fastify.fileHandler.remove(fastify.config.UPLOAD_TASKS_DIRNAME, filename)
 
         reply.code(204)
 
@@ -337,36 +331,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       })
     }
   )
-}
-
-function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
-  return error instanceof Error && 'code' in error
-}
-
-function buildFilePath (filename: string, fastify: FastifyInstance) {
-  return path.join(
-    import.meta.dirname,
-    '../../../..',
-    fastify.config.UPLOAD_DIRNAME,
-    fastify.config.UPLOAD_TASKS_DIRNAME,
-    filename
-  )
-}
-
-async function deleteFile (fileName: string, fastify: FastifyInstance) {
-  const filePath = buildFilePath(fileName, fastify)
-
-  try {
-    await fs.promises.unlink(filePath)
-  } catch (err) {
-    if (isErrnoException(err) && err.code === 'ENOENT') {
-      // A file could have been deleted by an external actor, e.g. system administrator.
-      // We log the error to keep a record of the failure, but consider that the operation was successful.
-      fastify.log.warn(`File path '${fileName}' not found`)
-    } else {
-      throw err
-    }
-  }
 }
 
 export default plugin
