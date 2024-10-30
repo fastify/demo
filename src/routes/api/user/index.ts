@@ -54,9 +54,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           .first()
         const isPasswordValid = await fastify.compare(currentPassword, user.password)
 
-        if (!user || !isPasswordValid) {
-          reply.status(401)
-          return { message: 'Invalid username or password.' }
+        if (!user) {
+          return reply.unauthorized()
         }
 
         const hashedPassword = await fastify.hash(newPassword)
