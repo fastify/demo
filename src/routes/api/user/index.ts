@@ -46,25 +46,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           .select('username', 'password')
           .where({ username })
           .first()
+        const isPasswordValid = await fastify.compare(currentPassword, user.password)
 
-        if (user) {
-          const isPasswordValid = await fastify.compare(currentPassword, user.password)
-
-          if (isPasswordValid) {
-            const hashedPassword = await fastify.hash(newPassword)
-
-            await fastify.knex('users')
-              .update({
-                password: hashedPassword
-              })
-              .where({ username })
-
-            return { message: 'Password updated successfully' }
-          }
+        if (!user || !isPasswordValid) {
+          reply.status(401)
+          return { message: 'Invalid username or password.' }
         }
 
-        reply.status(401)
-        return { message: 'Invalid username or password.' }
+        const hashedPassword = await fastify.hash(newPassword)
+        await fastify.knex('users')
+          .update({
+            password: hashedPassword
+          })
+          .where({ username })
+
+        return { message: 'Password updated successfully' }
       } catch (error) {
         reply.internalServerError('An error occurred while updating the password.')
       }
