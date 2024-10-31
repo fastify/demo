@@ -17,8 +17,8 @@ test('Should return 400 if the new password is the same as current password', as
       newPassword: 'Password123$'
     }
   })
-  assert.strictEqual(res.statusCode, 400)
 
+  assert.strictEqual(res.statusCode, 400)
   assert.deepStrictEqual(JSON.parse(res.payload), { message: 'New password cannot be the same as the current password.' })
 })
 
@@ -33,12 +33,12 @@ test('Should return 400 if the newPassword password not match the required patte
       newPassword: 'password123$'
     }
   })
-  assert.strictEqual(res.statusCode, 400)
 
+  assert.strictEqual(res.statusCode, 400)
   assert.deepStrictEqual(JSON.parse(res.payload), { message: 'body/newPassword must match pattern "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$"' })
 })
 
-test('Should return 401 if provided current password is incorrect', async (t) => {
+test('Should return 401 the current password is incorrect', async (t) => {
   const app = await build(t)
 
   const res = await app.injectWithLogin('basic', {
@@ -49,8 +49,8 @@ test('Should return 401 if provided current password is incorrect', async (t) =>
       newPassword: 'Password123$'
     }
   })
-  // assert.strictEqual(res.statusCode, 401)
 
+  assert.strictEqual(res.statusCode, 401)
   assert.deepStrictEqual(JSON.parse(res.payload), { message: 'Invalid current password.' })
 })
 
