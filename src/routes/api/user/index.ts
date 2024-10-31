@@ -48,7 +48,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           .first()
 
         if (!user) {
-          return reply.unauthorized()
+          return reply.code(401).send({ message: 'User does not exist.' })
         }
 
         const isPasswordValid = await fastify.compare(
