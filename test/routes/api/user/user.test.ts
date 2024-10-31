@@ -55,7 +55,19 @@ test('Should return 401 the current password is incorrect', async (t) => {
 })
 
 test('Should update the password successfully', async (t) => {
+  const app = await build(t)
 
+  const res = await app.injectWithLogin('basic', {
+    method: 'PUT',
+    url: '/api/user/update-password',
+    payload: {
+      currentPassword: 'Password123$',
+      newPassword: 'NewPassword123$'
+    }
+  })
+
+  assert.strictEqual(res.statusCode, 200)
+  assert.deepStrictEqual(JSON.parse(res.payload), { message: 'Password updated successfully' })
 })
 
 // test('Transaction should rollback on error', async (t) => {
