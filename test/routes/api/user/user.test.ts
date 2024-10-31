@@ -2,7 +2,11 @@ import { test } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 
-test('Should return 400 and rollback transaction if new password is the same as current password', async (t) => {
+test('Should return 401 if user does not exist in the database', async (t) => {
+  // I should remove the user from the database ?
+})
+
+test('Should return 400 if the new password is the same as current password', async (t) => {
   const app = await build(t)
 
   const res = await app.injectWithLogin('basic', {
@@ -18,8 +22,20 @@ test('Should return 400 and rollback transaction if new password is the same as 
   assert.deepStrictEqual(JSON.parse(res.payload), { message: 'New password cannot be the same as the current password.' })
 })
 
-test('Should return 401 if user does not exist in the database', async (t) => {
-  // I should remove the user from the database ?
+test('Should return 400 if the newPassword password not match the required pattern', async (t) => {
+  const app = await build(t)
+
+  const res = await app.injectWithLogin('basic', {
+    method: 'PUT',
+    url: '/api/user/update-password',
+    payload: {
+      currentPassword: 'Password123$',
+      newPassword: 'password123$'
+    }
+  })
+  assert.strictEqual(res.statusCode, 400)
+
+  assert.deepStrictEqual(JSON.parse(res.payload), { message: 'body/newPassword must match pattern "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).*$"' })
 })
 
 test('Should return 401 if provided current password is incorrect', async (t) => {
