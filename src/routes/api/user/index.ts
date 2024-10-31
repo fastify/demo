@@ -51,6 +51,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.unauthorized()
         }
 
+        const isPasswordValid = await fastify.compare(
+          currentPassword,
+          user.password
+        )
+
+        if (!isPasswordValid) {
+          return reply.code(401).send({ message: 'Invalid current password.' })
+        }
+
         if (newPassword === currentPassword) {
           reply.status(400)
           return { message: 'New password cannot be the same as the current password.' }
