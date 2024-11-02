@@ -14,7 +14,7 @@ declare module 'fastify' {
   }
 }
 
-function buildFilePath (fileDir: string, filename: string, fastify: FastifyInstance) {
+function buildFilePath (fastify: FastifyInstance, fileDir: string, filename: string) {
   return path.join(
     import.meta.dirname,
     '../../../',
@@ -25,13 +25,13 @@ function buildFilePath (fileDir: string, filename: string, fastify: FastifyInsta
 }
 
 async function upload (this: FastifyInstance, fileDir: string, fileName: string, file: BusboyFileStream) {
-  const filePath = buildFilePath(fileDir, fileName, this)
+  const filePath = buildFilePath(this, fileName, fileDir)
 
   await pipeline(file, fs.createWriteStream(filePath))
 }
 
 async function remove (this: FastifyInstance, fileDir: string, fileName: string) {
-  const filePath = buildFilePath(fileDir, fileName, this)
+  const filePath = buildFilePath(this, fileName, fileDir)
 
   try {
     await fs.promises.unlink(filePath)
