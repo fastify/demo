@@ -25,8 +25,6 @@ function fileHandlerFactory (fastify: FastifyInstance) {
   async function upload (fileDir: string, fileName: string, file: BusboyFileStream) {
     const filePath = buildFilePath(fastify, fileDir, fileName)
 
-    console.log(filePath)
-
     await pipeline(file, fs.createWriteStream(filePath))
   }
 
