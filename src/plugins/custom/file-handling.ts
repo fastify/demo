@@ -21,7 +21,7 @@ function buildFilePath (fastify: FastifyInstance, fileDir: string, filename: str
   )
 }
 
-function fileHandlerFactory(fastify: FastifyInstance) {
+function fileHandlerFactory (fastify: FastifyInstance) {
   async function upload (fileDir: string, fileName: string, file: BusboyFileStream) {
     console.log('here')
 
@@ -54,14 +54,10 @@ function fileHandlerFactory(fastify: FastifyInstance) {
   }
 }
 
-
-
 function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && 'code' in error
 }
 
 export default fp(async (fastify) => {
-
-
   fastify.decorate('fileHandler', fileHandlerFactory(fastify))
 }, { name: 'file-handler' })
