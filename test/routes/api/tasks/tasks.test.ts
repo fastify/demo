@@ -470,11 +470,7 @@ describe('Tasks api (logged user)', () => {
     })
 
     after(async () => {
-      const files = fs.readdirSync(uploadDirTask)
-      files.forEach((file) => {
-        const filePath = path.join(uploadDirTask, file)
-        fs.rmSync(filePath, { recursive: true })
-      })
+      clearDir(uploadDir)
 
       await app.close()
     })
@@ -652,12 +648,6 @@ describe('Tasks api (logged user)', () => {
 
         await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
 
-        const files = fs.readdirSync(uploadDirTask)
-        files.forEach((file) => {
-          const filePath = path.join(uploadDirTask, file)
-          fs.rmSync(filePath, { recursive: true })
-        })
-
         await app.close()
       })
 
@@ -668,11 +658,7 @@ describe('Tasks api (logged user)', () => {
       })
 
       after(async () => {
-        const files = fs.readdirSync(uploadDirTask)
-        files.forEach((file) => {
-          const filePath = path.join(uploadDirTask, file)
-          fs.rmSync(filePath, { recursive: true })
-        })
+        clearDir(uploadDirTask)
       })
 
       it('should retrieve the uploaded image based on task id and filename', async (t) => {
@@ -709,15 +695,7 @@ describe('Tasks api (logged user)', () => {
     describe('Deletion', () => {
       before(async () => {
         app = await build()
-
         await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
-
-        const files = fs.readdirSync(uploadDirTask)
-        files.forEach((file) => {
-          const filePath = path.join(uploadDirTask, file)
-          fs.rmSync(filePath, { recursive: true })
-        })
-
         await app.close()
       })
 
@@ -728,11 +706,7 @@ describe('Tasks api (logged user)', () => {
       })
 
       after(async () => {
-        const files = fs.readdirSync(uploadDirTask)
-        files.forEach((file) => {
-          const filePath = path.join(uploadDirTask, file)
-          fs.rmSync(filePath, { recursive: true })
-        })
+        clearDir(uploadDirTask)
       })
 
       it('should remove an existing image for a task', async (t) => {
@@ -815,3 +789,11 @@ describe('Tasks api (logged user)', () => {
     })
   })
 })
+
+function clearDir (dirPath: string) {
+  const files = fs.readdirSync(dirPath)
+  files.forEach((file) => {
+    const filePath = path.join(dirPath, file)
+    fs.rmSync(filePath, { recursive: true })
+  })
+}

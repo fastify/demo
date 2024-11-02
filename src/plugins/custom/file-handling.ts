@@ -23,8 +23,6 @@ function buildFilePath (fastify: FastifyInstance, fileDir: string, filename: str
 
 function fileHandlerFactory (fastify: FastifyInstance) {
   async function upload (fileDir: string, fileName: string, file: BusboyFileStream) {
-    console.log('here')
-
     const filePath = buildFilePath(fastify, fileDir, fileName)
 
     console.log(filePath)
