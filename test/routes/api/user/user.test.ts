@@ -12,7 +12,7 @@ async function deleteUser (app: FastifyInstance, username: string) {
   await app.knex('users').delete().where({ username })
 }
 
-async function injectWithLogin (app: FastifyInstance, username: string, payload: { currentPassword: string; newPassword: string }) {
+async function updatePasswordWithLoginInjection (app: FastifyInstance, username: string, payload: { currentPassword: string; newPassword: string }) {
   return await app.injectWithLogin(username, {
     method: 'PUT',
     url: '/api/user/update-password',
@@ -49,7 +49,7 @@ describe('User API', () => {
 
   it('Should update the password successfully', async () => {
     await createUser(app, { username: 'random-user-0', password: Password123$ })
-    const res = await injectWithLogin(app, 'random-user-0', {
+    const res = await updatePasswordWithLoginInjection(app, 'random-user-0', {
       currentPassword: 'Password123$',
       newPassword: 'NewPassword123$'
     })
@@ -62,7 +62,7 @@ describe('User API', () => {
 
   it('Should return 400 if the new password is the same as current password', async () => {
     await createUser(app, { username: 'random-user-1', password: Password123$ })
-    const res = await injectWithLogin(app, 'random-user-1', {
+    const res = await updatePasswordWithLoginInjection(app, 'random-user-1', {
       currentPassword: 'Password123$',
       newPassword: 'Password123$'
     })
@@ -75,7 +75,7 @@ describe('User API', () => {
 
   it('Should return 400 if the newPassword password not match the required pattern', async () => {
     await createUser(app, { username: 'random-user-2', password: Password123$ })
-    const res = await injectWithLogin(app, 'random-user-2', {
+    const res = await updatePasswordWithLoginInjection(app, 'random-user-2', {
       currentPassword: 'Password123$',
       newPassword: 'password123$'
     })
@@ -88,7 +88,7 @@ describe('User API', () => {
 
   it('Should return 401 the current password is incorrect', async () => {
     await createUser(app, { username: 'random-user-3', password: Password123$ })
-    const res = await injectWithLogin(app, 'random-user-3', {
+    const res = await updatePasswordWithLoginInjection(app, 'random-user-3', {
       currentPassword: 'WrongPassword123$',
       newPassword: 'Password123$'
     })
@@ -103,7 +103,7 @@ describe('User API', () => {
     await createUser(app, { username: 'random-user-5', password: Password123$ })
 
     const updatePassword = async () => {
-      return await injectWithLogin(app, 'random-user-5', {
+      return await updatePasswordWithLoginInjection(app, 'random-user-5', {
         currentPassword: 'WrongPassword123$',
         newPassword: 'Password123$'
       })
