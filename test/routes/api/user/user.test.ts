@@ -1,9 +1,3 @@
-/* TODO
--  Refactor: Extract utility functions from the createUser ?
--  Update: Modify all test files to ensure passwords match the new password pattern.
--  Rename: Update test descriptions for clarity and consistency.
-*/
-
 import { it, describe, before } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
@@ -27,7 +21,8 @@ async function deleteUser (
 describe('User API', () => {
   before(async () => {
     const app = await build()
-    // Fill the password with the hashed value of `Password123$`
+
+    // Hashed value of `Password123$`
     const Password123$ = 'ff57faf149a2bcab41bf7ecbbc8ce491.3ce6b34ea3edb3f0a09f811440885bfeda612832c04bfddc9d4b906019d97fa0'
     const users = ['random-user-0', 'random-user-1', 'random-user-2', 'random-user-3', 'random-user-4', 'random-user-5']
 
