@@ -543,7 +543,6 @@ describe('Tasks api (logged user)', () => {
 
         assert.strictEqual(mockUnlink.callCount(), 1)
 
-
         const files = fs.readdirSync(uploadDirTask)
         assert.strictEqual(files.length, 1)
         assert.strictEqual(files[0], `${taskId}_${newTestImageFileName}`)

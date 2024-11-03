@@ -7,7 +7,7 @@ import fs from 'node:fs'
 
 declare module 'fastify' {
   export interface FastifyInstance {
-    fileHandler: ReturnType<typeof fileHandlerFactory>
+    fileHandler: ReturnType<typeof createFileHandler>
   }
 }
 
