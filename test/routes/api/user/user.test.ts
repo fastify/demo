@@ -24,7 +24,7 @@ async function deleteUser (
   await app.knex('users').delete().where({ username: userData.username })
 }
 
-describe('User API', (t) => {
+describe('User API', () => {
   before(async () => {
     const app = await build()
     // Fill the password with the hashed value of `Password123$`
@@ -52,6 +52,11 @@ describe('User API', (t) => {
 
     await createUser(app, {
       username: 'random-user-4',
+      password: Password123$
+    })
+
+    await createUser(app, {
+      username: 'random-user-5',
       password: Password123$
     })
 
@@ -175,5 +180,35 @@ describe('User API', (t) => {
 
     assert.strictEqual(res.statusCode, 401)
     assert.deepStrictEqual(JSON.parse(res.payload), { message: 'User does not exist.' })
+  })
+
+  it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async (t) => {
+    const app = await build(t)
+
+    const updatePassword = async () => {
+      return await app.injectWithLogin('random-user-5', {
+        method: 'PUT',
+        url: '/api/user/update-password',
+        payload: {
+          currentPassword: 'WrongPassword123$',
+          newPassword: 'Password123$'
+        }
+      })
+    }
+
+    await updatePassword()
+    await updatePassword()
+    await updatePassword()
+    const res = await updatePassword()
+
+    assert.strictEqual(res.statusCode, 429)
+
+    const regex = /You have reached the request limit. Please try again in (\d+) seconds./
+
+    assert.ok(regex.test(res.payload))
+
+    await deleteUser(app, {
+      username: 'random-user-5'
+    })
   })
 })
