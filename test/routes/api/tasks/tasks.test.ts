@@ -348,7 +348,7 @@ describe('Tasks api (logged user)', () => {
 
       const res = await app.injectWithLogin('admin', {
         method: 'DELETE',
-        url: '/api/tasks/9999'
+        url: '/api/tasks/1234'
       })
 
       assert.strictEqual(res.statusCode, 404)
@@ -466,7 +466,15 @@ describe('Tasks api (logged user)', () => {
         status: TaskStatusEnum.New
       })
 
+      await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
+
       app.close()
+    })
+
+    beforeEach(async () => {
+      app = await build()
+      await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
+      await app.close()
     })
 
     after(async () => {
@@ -643,24 +651,6 @@ describe('Tasks api (logged user)', () => {
     })
 
     describe('Retrieval', () => {
-      before(async () => {
-        app = await build()
-
-        await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
-
-        await app.close()
-      })
-
-      beforeEach(async () => {
-        app = await build()
-        await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
-        await app.close()
-      })
-
-      after(async () => {
-        clearDir(uploadDirTask)
-      })
-
       it('should retrieve the uploaded image based on task id and filename', async (t) => {
         app = await build(t)
 
@@ -693,22 +683,6 @@ describe('Tasks api (logged user)', () => {
     })
 
     describe('Deletion', () => {
-      before(async () => {
-        app = await build()
-        await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
-        await app.close()
-      })
-
-      beforeEach(async () => {
-        app = await build()
-        await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
-        await app.close()
-      })
-
-      after(async () => {
-        clearDir(uploadDirTask)
-      })
-
       it('should remove an existing image for a task', async (t) => {
         app = await build(t)
 
