@@ -244,7 +244,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         const filename = `${id}_${file.filename}`
 
-        const task = await trx<Task>('tasks').where({ id }).first()
+        const task = await trx<Task>('tasks').select('filename').where({ id }).first()
 
         if (!task) {
           return reply.notFound('Task not found')

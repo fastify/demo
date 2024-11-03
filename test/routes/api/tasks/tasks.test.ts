@@ -1,4 +1,4 @@
-import { after, before, beforeEach, describe, it } from 'node:test'
+import { after, afterEach, before, beforeEach, describe, it } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 import {
@@ -460,30 +460,34 @@ describe('Tasks api (logged user)', () => {
       uploadDirTask = path.join(uploadDir, app.config.UPLOAD_TASKS_DIRNAME)
       assert.ok(fs.existsSync(uploadDir))
 
+      clearDir(uploadDirTask)
+
+      app.close()
+    })
+
+    beforeEach(async (t) => {
+      app = await build()
       taskId = await createTask(app, {
         name: 'Task with image',
         author_id: 1,
         status: TaskStatusEnum.New
       })
-
-      await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
-
-      app.close()
-    })
-
-    beforeEach(async () => {
-      app = await build()
       await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
       await app.close()
     })
 
-    after(async () => {
-      clearDir(uploadDir)
-
+    afterEach(async () => {
+      app = await build()
+      await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: null })
+      clearDir(uploadDirTask)
       await app.close()
     })
 
-    describe('Upload', () => {
+    after(async () => {
+      await app.close()
+    })
+
+    describe('Upload', (t) => {
       it('should create upload directories at boot if not exist', async (t) => {
         fs.rmSync(uploadDir, { recursive: true })
         assert.ok(!fs.existsSync(uploadDir))
@@ -516,12 +520,14 @@ describe('Tasks api (logged user)', () => {
       it('should delete existing image for a task before uploading a new one', async (t) => {
         app = await build(t)
 
-        await uploadImageForTask(app, taskId, testImagePath, uploadDirTask)
-
         const { mock: mockUnlink } = t.mock.method(fs.promises, 'unlink')
 
+        const newTestImageFileName = 'short-logo-copy.png'
+
+        const newTestImagePath = path.join(fixturesDir, newTestImageFileName)
+
         const form = new FormData()
-        form.append('file', fs.createReadStream(testImagePath))
+        form.append('file', fs.createReadStream(newTestImagePath))
 
         const res = await app.injectWithLogin('basic', {
           method: 'POST',
@@ -536,6 +542,11 @@ describe('Tasks api (logged user)', () => {
         assert.strictEqual(message, 'File uploaded successfully')
 
         assert.strictEqual(mockUnlink.callCount(), 1)
+
+
+        const files = fs.readdirSync(uploadDirTask)
+        assert.strictEqual(files.length, 1)
+        assert.strictEqual(files[0], `${taskId}_${newTestImageFileName}`)
       })
 
       it('should return 404 if task not found', async (t) => {
