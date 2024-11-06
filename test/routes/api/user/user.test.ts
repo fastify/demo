@@ -123,8 +123,6 @@ describe('User API', async () => {
   })
 
   it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
-    await createUser(app, { username: 'random-user-5', password: hash })
-
     const updatePassword = async () => {
       return await updatePasswordWithLoginInjection(app, 'random-user-5', {
         currentPassword: 'WrongPassword123$',
@@ -132,9 +130,18 @@ describe('User API', async () => {
       })
     }
 
-    await updatePassword()
-    await updatePassword()
-    await updatePassword()
+    const performMultiplePasswordUpdates = async () => {
+      for (let i = 0; i < 3; i++) {
+        await updatePassword()
+      }
+
+      return updatePassword()
+    }
+
+    await createUser(app, { username: 'random-user-5', password: hash })
+
+    await performMultiplePasswordUpdates()
+
     const res = await updatePassword()
 
     assert.strictEqual(res.statusCode, 429)
