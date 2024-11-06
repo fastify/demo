@@ -12,16 +12,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       config: {
         rateLimit: {
           max: 3,
-          timeWindow: '1 minute',
-          errorResponseBuilder: function (_, context) {
-            return {
-              statusCode: 429,
-              error: 'Too Many Requests',
-              message: `You have reached the request limit. Please try again in ${Math.floor(context.ttl / 1000)} seconds.`,
-              date: new Date().toISOString(),
-              retryAfter: context.ttl
-            }
-          }
+          timeWindow: '1 minute'
         }
       },
       schema: {
