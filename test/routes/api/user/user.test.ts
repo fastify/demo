@@ -2,6 +2,7 @@ import { it, describe, beforeEach, afterEach, before } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 import { FastifyInstance } from 'fastify'
+import { scryptHash } from '../../../../src/plugins/custom/scrypt.js'
 
 async function createUser (app: FastifyInstance, userData: Partial<{ username: string; password: string }>) {
   const [id] = await app.knex('users').insert(userData)
@@ -20,9 +21,8 @@ async function updatePasswordWithLoginInjection (app: FastifyInstance, username:
   })
 }
 
-describe('User API', () => {
-  // Hashed value of `Password123$`
-  const Password123$ = 'ff57faf149a2bcab41bf7ecbbc8ce491.3ce6b34ea3edb3f0a09f811440885bfeda612832c04bfddc9d4b906019d97fa0'
+describe('User API', async () => {
+  const hash = await scryptHash('Password123$')
   let app: FastifyInstance
 
   before(async () => {
