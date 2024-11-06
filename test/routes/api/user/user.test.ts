@@ -1,4 +1,4 @@
-import { it, describe, beforeEach, afterEach, before } from 'node:test'
+import { it, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 import { FastifyInstance } from 'fastify'
@@ -25,20 +25,6 @@ describe('User API', async () => {
   const hash = await scryptHash('Password123$')
   let app: FastifyInstance
 
-  before(async () => {
-    const app = await build()
-    const users = ['random-user-0', 'random-user-1', 'random-user-2', 'random-user-3', 'random-user-4', 'random-user-5']
-
-    for (const user of users) {
-      await createUser(app, {
-        username: user,
-        password: Password123$
-      })
-    }
-
-    await app.close()
-  })
-
   beforeEach(async () => {
     app = await build()
   })
@@ -48,7 +34,7 @@ describe('User API', async () => {
   })
 
   it('Should update the password successfully', async () => {
-    await createUser(app, { username: 'random-user-0', password: Password123$ })
+    await createUser(app, { username: 'random-user-0', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-0', {
       currentPassword: 'Password123$',
       newPassword: 'NewPassword123$'
@@ -61,7 +47,7 @@ describe('User API', async () => {
   })
 
   it('Should return 400 if the new password is the same as current password', async () => {
-    await createUser(app, { username: 'random-user-1', password: Password123$ })
+    await createUser(app, { username: 'random-user-1', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-1', {
       currentPassword: 'Password123$',
       newPassword: 'Password123$'
@@ -74,7 +60,7 @@ describe('User API', async () => {
   })
 
   it('Should return 400 if the newPassword password not match the required pattern', async () => {
-    await createUser(app, { username: 'random-user-2', password: Password123$ })
+    await createUser(app, { username: 'random-user-2', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-2', {
       currentPassword: 'Password123$',
       newPassword: 'password123$'
@@ -87,7 +73,7 @@ describe('User API', async () => {
   })
 
   it('Should return 401 the current password is incorrect', async () => {
-    await createUser(app, { username: 'random-user-3', password: Password123$ })
+    await createUser(app, { username: 'random-user-3', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-3', {
       currentPassword: 'WrongPassword123$',
       newPassword: 'Password123$'
@@ -99,30 +85,8 @@ describe('User API', async () => {
     await deleteUser(app, 'random-user-3')
   })
 
-  it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
-    await createUser(app, { username: 'random-user-5', password: Password123$ })
-
-    const updatePassword = async () => {
-      return await updatePasswordWithLoginInjection(app, 'random-user-5', {
-        currentPassword: 'WrongPassword123$',
-        newPassword: 'Password123$'
-      })
-    }
-
-    await updatePassword()
-    await updatePassword()
-    await updatePassword()
-    const res = await updatePassword()
-
-    assert.strictEqual(res.statusCode, 429)
-
-    const regex = /You have reached the request limit. Please try again in (\d+) seconds./
-    assert.ok(regex.test(res.payload))
-
-    await deleteUser(app, 'random-user-5')
-  })
-
   it('Should return 401 if user does not exist in the database', async () => {
+    await createUser(app, { username: 'random-user-4', password: hash })
     const loginResponse = await app.injectWithLogin('random-user-4', {
       method: 'POST',
       url: '/api/auth/login',
@@ -155,5 +119,27 @@ describe('User API', async () => {
 
     assert.strictEqual(res.statusCode, 401)
     assert.deepStrictEqual(JSON.parse(res.payload), { message: 'User does not exist.' })
+    await deleteUser(app, 'random-user-4')
+  })
+
+  it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
+    await createUser(app, { username: 'random-user-5', password: hash })
+
+    const updatePassword = async () => {
+      return await updatePasswordWithLoginInjection(app, 'random-user-5', {
+        currentPassword: 'WrongPassword123$',
+        newPassword: 'Password123$'
+      })
+    }
+
+    await updatePassword()
+    await updatePassword()
+    await updatePassword()
+    const res = await updatePassword()
+
+    assert.strictEqual(res.statusCode, 429)
+    assert.equal(res.payload, '{"message":"Rate limit exceeded, retry in 1 minute"}')
+
+    await deleteUser(app, 'random-user-5')
   })
 })
