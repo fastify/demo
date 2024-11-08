@@ -1,5 +1,5 @@
 import { FastifyPluginAsyncTypebox, Type } from "@fastify/type-provider-typebox";
-import createAuthController from '../controllers/index.js'
+import createAuthController from './controllers/index.js'
 
 
 
