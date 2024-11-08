@@ -6,10 +6,9 @@ const controllers = {
 }
 
 const createAuthController = (fastify: FastifyInstance) => {
-  async function login(request: FastifyRequest, reply: FastifyReply) {
+  async function login (request: FastifyRequest, reply: FastifyReply) {
     return controllers.login(fastify, request, reply)
   }
-
 
   return {
     login

@@ -1,6 +1,5 @@
-import { FastifyInstance } from 'fastify';
-import fp from 'fastify-plugin';
-
+import { FastifyInstance } from 'fastify'
+import fp from 'fastify-plugin'
 
 interface AuthService {
   login(): void;
@@ -12,14 +11,13 @@ declare module 'fastify' {
   }
 }
 
-function createAuthService(fastify: FastifyInstance) {
+function createAuthService (fastify: FastifyInstance) {
   return {
-    login() {}
-  };
+    login () {}
+  }
 }
 
 export default fp(
   async function (fastify) {
-  fastify.decorate('authService', createAuthService(fastify));
-}, { name: 'authService' });
-
+    fastify.decorate('authService', createAuthService(fastify))
+  }, { name: 'authService' })
