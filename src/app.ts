@@ -5,13 +5,17 @@
 import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import AjvErrors from 'ajv-errors'
 
 export const options = {
   ajv: {
     customOptions: {
       coerceTypes: 'array',
-      removeAdditional: 'all'
-    }
+      removeAdditional: 'all',
+      strict: false,
+      allErrors: true
+    },
+    plugins: [AjvErrors.default]
   }
 }
 
