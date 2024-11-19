@@ -25,6 +25,14 @@
   "keywords": [],
   "author": "Michelet Jean <jean.antoine.michelet@gmail.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fastify/demo.git"
+  },
+  "homepage": "https://github.com/fastify/demo#readme",
+  "bugs": {
+    "url": "https://github.com/fastify/demo/issues"
+  },
   "dependencies": {
     "@fastify/autoload": "^6.0.0",
     "@fastify/cookie": "^11.0.1",
