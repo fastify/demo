@@ -16,12 +16,12 @@ async function deleteUser (app: FastifyInstance, username: string) {
 async function updatePasswordWithLoginInjection (app: FastifyInstance, username: string, payload: { currentPassword: string; newPassword: string }) {
   return await app.injectWithLogin(username, {
     method: 'PUT',
-    url: '/api/user/update-password',
+    url: '/api/users/update-password',
     payload
   })
 }
 
-describe('User API', async () => {
+describe('Users API', async () => {
   const hash = await scryptHash('Password123$')
   let app: FastifyInstance
 
@@ -107,7 +107,7 @@ describe('User API', async () => {
 
     const res = await app.inject({
       method: 'PUT',
-      url: '/api/user/update-password',
+      url: '/api/users/update-password',
       payload: {
         currentPassword: 'Password123$',
         newPassword: 'NewPassword123$'
