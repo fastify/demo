@@ -134,8 +134,6 @@ describe('User API', async () => {
       for (let i = 0; i < 3; i++) {
         await updatePassword()
       }
-
-      return updatePassword()
     }
 
     await createUser(app, { username: 'random-user-5', password: hash })
