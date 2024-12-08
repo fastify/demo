@@ -17,7 +17,7 @@ test('Transaction should rollback on error', async (t) => {
     url: '/api/auth/login',
     payload: {
       username: 'basic',
-      password: 'password123$'
+      password: 'Password123$'
     }
   })
 
@@ -39,7 +39,7 @@ test('POST /api/auth/login with valid credentials', async (t) => {
     url: '/api/auth/login',
     payload: {
       username: 'basic',
-      password: 'password123$'
+      password: 'Password123$'
     }
   })
 
