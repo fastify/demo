@@ -65,7 +65,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         return { message: 'Password updated successfully' }
       } catch (error) {
-        reply.internalServerError('An error occurred while updating the password.')
+        reply.internalServerError()
       }
     }
   )

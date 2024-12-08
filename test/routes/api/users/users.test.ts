@@ -129,15 +129,8 @@ describe('Users API', async () => {
         newPassword: 'Password123$'
       })
     }
-
-    const performMultiplePasswordUpdates = async () => {
-      for (let i = 0; i < 3; i++) {
-        await updatePassword()
-      }
-    }
-
+    const performMultiplePasswordUpdates = () => Promise.all([updatePassword(), updatePassword(), updatePassword()])
     await createUser(app, { username: 'random-user-5', password: hash })
-
     await performMultiplePasswordUpdates()
 
     const res = await updatePassword()
@@ -146,5 +139,24 @@ describe('Users API', async () => {
     assert.equal(res.payload, '{"message":"Rate limit exceeded, retry in 1 minute"}')
 
     await deleteUser(app, 'random-user-5')
+  })
+
+  it('Should handle errors gracefully and return 500 Internal Server Error when an unexpected error occurs', async (t) => {
+    const { mock: mockKnex } = t.mock.method(app, 'hash')
+    mockKnex.mockImplementation(() => {
+      throw new Error()
+    })
+
+    await createUser(app, { username: 'random-user-6', password: hash })
+
+    const res = await updatePasswordWithLoginInjection(app, 'random-user-6', {
+      currentPassword: 'Password123$',
+      newPassword: 'NewPassword123$'
+    })
+
+    assert.strictEqual(res.statusCode, 500)
+    assert.deepStrictEqual(JSON.parse(res.payload), { message: 'Internal Server Error' })
+
+    await deleteUser(app, 'random-user-6')
   })
 })
