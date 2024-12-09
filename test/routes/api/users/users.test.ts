@@ -14,7 +14,7 @@ async function deleteUser (app: FastifyInstance, username: string) {
 }
 
 async function updatePasswordWithLoginInjection (app: FastifyInstance, username: string, payload: { currentPassword: string; newPassword: string }) {
-  return await app.injectWithLogin(username, {
+  return app.injectWithLogin(username, {
     method: 'PUT',
     url: '/api/users/update-password',
     payload
@@ -124,7 +124,7 @@ describe('Users API', async () => {
 
   it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
     const updatePassword = async () => {
-      return await updatePasswordWithLoginInjection(app, 'random-user-5', {
+      return updatePasswordWithLoginInjection(app, 'random-user-5', {
         currentPassword: 'WrongPassword123$',
         newPassword: 'Password123$'
       })
