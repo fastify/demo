@@ -122,25 +122,6 @@ describe('Users API', async () => {
     await deleteUser(app, 'random-user-4')
   })
 
-  it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
-    const updatePassword = async () => {
-      return updatePasswordWithLoginInjection(app, 'random-user-5', {
-        currentPassword: 'WrongPassword123$',
-        newPassword: 'Password123$'
-      })
-    }
-    const performMultiplePasswordUpdates = () => Promise.all([updatePassword(), updatePassword(), updatePassword()])
-    await createUser(app, { username: 'random-user-5', password: hash })
-    await performMultiplePasswordUpdates()
-
-    const res = await updatePassword()
-
-    assert.strictEqual(res.statusCode, 429)
-    assert.equal(res.payload, '{"message":"Rate limit exceeded, retry in 1 minute"}')
-
-    await deleteUser(app, 'random-user-5')
-  })
-
   it('Should handle errors gracefully and return 500 Internal Server Error when an unexpected error occurs', async (t) => {
     const { mock: mockKnex } = t.mock.method(app, 'hash')
     mockKnex.mockImplementation(() => {
@@ -158,5 +139,38 @@ describe('Users API', async () => {
     assert.deepStrictEqual(JSON.parse(res.payload), { message: 'Internal Server Error' })
 
     await deleteUser(app, 'random-user-6')
+  })
+})
+
+describe('Rate limiting', async () => {
+  const hash = await scryptHash('Password123$')
+  let app: FastifyInstance
+
+  beforeEach(async () => {
+    app = await build()
+  })
+
+  afterEach(async () => {
+    await app.close()
+  })
+  it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
+    const updatePassword = async () => {
+      return updatePasswordWithLoginInjection(app, 'random-user-5', {
+        currentPassword: 'WrongPassword123$',
+        newPassword: 'Password123$'
+      })
+    }
+    const performMultiplePasswordUpdates = () => Promise.all([updatePassword(), updatePassword(), updatePassword()])
+    await createUser(app, { username: 'random-user-5', password: hash })
+    await performMultiplePasswordUpdates()
+
+    const res = await updatePassword()
+
+    assert.strictEqual(res.statusCode, 429)
+    assert.equal(res.payload, '{"message":"Rate limit exceeded, retry in 1 minute"}')
+
+    await deleteUser(app, 'random-user-5')
+
+    await app.close()
   })
 })
