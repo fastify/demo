@@ -18,10 +18,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       schema: {
         body: UpdateCredentialsSchema,
         response: {
-          200: Type.Object({
+          401: Type.Object({
             message: Type.String()
           }),
-          401: Type.Object({
+          200: Type.Object({
             message: Type.String()
           })
         },

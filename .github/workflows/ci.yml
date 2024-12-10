@@ -6,6 +6,7 @@ on:
       - main
       - next
       - "v*"
+      - fix/rate-limit
     paths-ignore:
       - "docs/**"
       - "*.md"
