@@ -16,7 +16,7 @@ import os from 'os'
 
 async function createUser (
   app: FastifyInstance,
-  userData: Partial<{ username: string; password: string }>
+  userData: Partial<{ username: string; email: string; password: string }>
 ) {
   const [id] = await app.knex('users').insert(userData)
   return id
@@ -52,10 +52,12 @@ describe('Tasks api (logged user only)', () => {
 
       userId1 = await createUser(app, {
         username: 'user1',
+        email: 'user1@example.com',
         password: 'password1'
       })
       userId2 = await createUser(app, {
         username: 'user2',
+        email: 'user2@example.com',
         password: 'password2'
       })
 
