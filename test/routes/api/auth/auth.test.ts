@@ -16,7 +16,7 @@ test('Transaction should rollback on error', async (t) => {
     method: 'POST',
     url: '/api/auth/login',
     payload: {
-      username: 'basic',
+      email: 'basic@example.com',
       password: 'password123$'
     }
   })
@@ -38,7 +38,7 @@ test('POST /api/auth/login with valid credentials', async (t) => {
     method: 'POST',
     url: '/api/auth/login',
     payload: {
-      username: 'basic',
+      email: 'basic@example.com',
       password: 'password123$'
     }
   })
@@ -54,17 +54,17 @@ test('POST /api/auth/login with invalid credentials', async (t) => {
 
   const testCases = [
     {
-      username: 'invalid_user',
+      email: 'invalid_email',
       password: 'password',
-      description: 'invalid username'
+      description: 'invalid email'
     },
     {
-      username: 'basic',
+      email: 'basic@example.com',
       password: 'wrong_password',
       description: 'invalid password'
     },
     {
-      username: 'invalid_user',
+      email: 'invalid_user',
       password: 'wrong_password',
       description: 'both invalid'
     }
@@ -75,7 +75,7 @@ test('POST /api/auth/login with invalid credentials', async (t) => {
       method: 'POST',
       url: '/api/auth/login',
       payload: {
-        username: testCase.username,
+        email: testCase.email,
         password: testCase.password
       }
     })
@@ -87,7 +87,7 @@ test('POST /api/auth/login with invalid credentials', async (t) => {
     )
 
     assert.deepStrictEqual(JSON.parse(res.payload), {
-      message: 'Invalid username or password.'
+      message: 'Invalid email or password.'
     })
   }
 })

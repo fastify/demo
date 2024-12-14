@@ -27,6 +27,7 @@ async function login (this: FastifyInstance, username: string) {
     url: '/api/auth/login',
     payload: {
       username,
+      email: `${username}@example.com`,
       password: 'password123$'
     }
   })

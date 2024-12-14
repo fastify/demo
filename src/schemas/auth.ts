@@ -2,6 +2,7 @@ import { Static, Type } from '@sinclair/typebox'
 
 export const CredentialsSchema = Type.Object({
   username: Type.String(),
+  email: Type.String({ format: 'email' }),
   password: Type.String()
 })
 
