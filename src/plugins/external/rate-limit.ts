@@ -11,6 +11,6 @@ export const autoConfig = (fastify: FastifyInstance) => {
 /**
  * This plugins is low overhead rate limiter for your routes.
  *
- * @see {@link https://github.com/fastify/fastify-helmet}
+ * @see {@link https://github.com/fastify/fastify-rate-limit}
  */
 export default fastifyRateLimit
