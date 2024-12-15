@@ -101,7 +101,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const newTask = { ...request.body, status: TaskStatusEnum.New }
+      const newTask = { ...request.body, author_id: request.session.user.id, status: TaskStatusEnum.New }
+
       const [id] = await fastify.knex<Task>('tasks').insert(newTask)
 
       reply.code(201)

@@ -1,93 +1,114 @@
-import { test } from 'node:test'
+import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { build } from '../../../helper.js'
+import { build, expectValidationError } from '../../../helper.js'
 
-test('Transaction should rollback on error', async (t) => {
-  const app = await build(t)
+describe('Auth api', () => {
+  describe('POST /api/auth/login', () => {
+    it('Transaction should rollback on error', async (t) => {
+      const app = await build(t)
 
-  const { mock: mockCompare } = t.mock.method(app, 'compare')
-  mockCompare.mockImplementationOnce((value: string, hash: string) => {
-    throw new Error()
-  })
+      const { mock: mockCompare } = t.mock.method(app, 'compare')
+      mockCompare.mockImplementationOnce((value: string, hash: string) => {
+        throw new Error()
+      })
 
-  const { mock: mockLogError } = t.mock.method(app.log, 'error')
+      const { mock: mockLogError } = t.mock.method(app.log, 'error')
 
-  const res = await app.inject({
-    method: 'POST',
-    url: '/api/auth/login',
-    payload: {
-      username: 'basic',
-      password: 'password123$'
-    }
-  })
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        payload: {
+          username: 'basic',
+          password: 'password123$'
+        }
+      })
 
-  assert.strictEqual(mockCompare.callCount(), 1)
+      assert.strictEqual(mockCompare.callCount(), 1)
 
-  const arg = mockLogError.calls[0].arguments[0] as unknown as {
-    err: Error
-  }
+      const arg = mockLogError.calls[0].arguments[0] as unknown as {
+        err: Error
+      }
 
-  assert.strictEqual(res.statusCode, 500)
-  assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
-})
+      assert.strictEqual(res.statusCode, 500)
+      assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+    })
 
-test('POST /api/auth/login with valid credentials', async (t) => {
-  const app = await build(t)
+    it('should return 400 if credentials payload is invalid', async (t) => {
+      const app = await build(t)
 
-  const res = await app.inject({
-    method: 'POST',
-    url: '/api/auth/login',
-    payload: {
-      username: 'basic',
-      password: 'password123$'
-    }
-  })
+      const invalidPayload = {
+        username: '',
+        password: 'password123$'
+      }
 
-  assert.strictEqual(res.statusCode, 200)
-  assert.ok(
-    res.cookies.some((cookie) => cookie.name === app.config.COOKIE_NAME)
-  )
-})
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: '/api/auth/login',
+        payload: invalidPayload
+      })
 
-test('POST /api/auth/login with invalid credentials', async (t) => {
-  const app = await build(t)
+      expectValidationError(res, 'body/username must NOT have fewer than 1 characters')
+    })
 
-  const testCases = [
-    {
-      username: 'invalid_user',
-      password: 'password',
-      description: 'invalid username'
-    },
-    {
-      username: 'basic',
-      password: 'wrong_password',
-      description: 'invalid password'
-    },
-    {
-      username: 'invalid_user',
-      password: 'wrong_password',
-      description: 'both invalid'
-    }
-  ]
+    it('should authenticate with valid credentials', async (t) => {
+      const app = await build(t)
 
-  for (const testCase of testCases) {
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/auth/login',
-      payload: {
-        username: testCase.username,
-        password: testCase.password
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        payload: {
+          username: 'basic',
+          password: 'password123$'
+        }
+      })
+
+      assert.strictEqual(res.statusCode, 200)
+      assert.ok(
+        res.cookies.some((cookie) => cookie.name === app.config.COOKIE_NAME)
+      )
+    })
+
+    it('should not authneticate with invalid credentials', async (t) => {
+      const app = await build(t)
+
+      const testCases = [
+        {
+          username: 'invalid_user',
+          password: 'password',
+          description: 'invalid username'
+        },
+        {
+          username: 'basic',
+          password: 'wrong_password',
+          description: 'invalid password'
+        },
+        {
+          username: 'invalid_user',
+          password: 'wrong_password',
+          description: 'both invalid'
+        }
+      ]
+
+      for (const testCase of testCases) {
+        const res = await app.inject({
+          method: 'POST',
+          url: '/api/auth/login',
+          payload: {
+            username: testCase.username,
+            password: testCase.password
+          }
+        })
+
+        assert.strictEqual(
+          res.statusCode,
+          401,
+      `Failed for case: ${testCase.description}`
+        )
+
+        assert.deepStrictEqual(JSON.parse(res.payload), {
+          message: 'Invalid username or password.'
+        })
       }
     })
-
-    assert.strictEqual(
-      res.statusCode,
-      401,
-      `Failed for case: ${testCase.description}`
-    )
-
-    assert.deepStrictEqual(JSON.parse(res.payload), {
-      message: 'Invalid username or password.'
-    })
-  }
+  })
 })
