@@ -1,6 +1,6 @@
 import { after, before, beforeEach, describe, it } from 'node:test'
 import assert from 'node:assert'
-import { build } from '../../../helper.js'
+import { build, expectValidationError } from '../../../helper.js'
 import {
   Task,
   TaskStatusEnum,
@@ -261,9 +261,7 @@ describe('Tasks api (logged user only)', () => {
         payload: invalidTaskData
       })
 
-      assert.strictEqual(res.statusCode, 400)
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'body/name must NOT have fewer than 1 characters')
+      expectValidationError(res, 'body/name must NOT have fewer than 1 characters')
     })
 
     it('should create a new task', async (t) => {
@@ -302,9 +300,7 @@ describe('Tasks api (logged user only)', () => {
         payload: invalidUpdateData
       })
 
-      assert.strictEqual(res.statusCode, 400)
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'body/assigned_user_id must be integer')
+      expectValidationError(res, 'body/assigned_user_id must be integer')
     })
 
     it('should update an existing task', async (t) => {
@@ -407,9 +403,7 @@ describe('Tasks api (logged user only)', () => {
         payload: invalidPayload
       })
 
-      assert.strictEqual(res.statusCode, 400)
-      const { message } = JSON.parse(res.payload)
-      assert.strictEqual(message, 'body/userId must be number')
+      expectValidationError(res, 'body/userId must be number')
     })
 
     it('should assign a task to a user and persist the changes', async (t) => {
@@ -614,10 +608,7 @@ describe('Tasks api (logged user only)', () => {
           headers: form.getHeaders()
         })
 
-        assert.strictEqual(res.statusCode, 400)
-
-        const { message } = JSON.parse(res.payload)
-        assert.strictEqual(message, 'Invalid file type')
+        expectValidationError(res, 'Invalid file type')
       })
 
       it('should reject if file size exceeds limit (truncated)', async (t) => {
@@ -639,10 +630,7 @@ describe('Tasks api (logged user only)', () => {
           headers: form.getHeaders()
         })
 
-        assert.strictEqual(res.statusCode, 400)
-
-        const { message } = JSON.parse(res.payload)
-        assert.strictEqual(message, 'File size limit exceeded')
+        expectValidationError(res, 'File size limit exceeded')
       })
 
       it('File upload transaction should rollback on error', async (t) => {
