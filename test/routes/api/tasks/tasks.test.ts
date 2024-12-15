@@ -248,12 +248,29 @@ describe('Tasks api (logged user only)', () => {
   })
 
   describe('POST /api/tasks', () => {
+    it('should return 400 if task creation payload is invalid', async (t) => {
+      const app = await build(t)
+
+      const invalidTaskData = {
+        name: ''
+      }
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: '/api/tasks',
+        payload: invalidTaskData
+      })
+
+      assert.strictEqual(res.statusCode, 400)
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'body/name must NOT have fewer than 1 characters')
+    })
+
     it('should create a new task', async (t) => {
       const app = await build(t)
 
       const taskData = {
-        name: 'New Task',
-        author_id: 1
+        name: 'New Task'
       }
 
       const res = await app.injectWithLogin('basic', {
@@ -271,6 +288,25 @@ describe('Tasks api (logged user only)', () => {
   })
 
   describe('PATCH /api/tasks/:id', () => {
+    it('should return 400 if task update payload is invalid', async (t) => {
+      const app = await build(t)
+
+      const invalidUpdateData = {
+        name: 'Updated task',
+        assigned_user_id: 'abc'
+      }
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'PATCH',
+        url: '/api/tasks/1',
+        payload: invalidUpdateData
+      })
+
+      assert.strictEqual(res.statusCode, 400)
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'body/assigned_user_id must be integer')
+    })
+
     it('should update an existing task', async (t) => {
       const app = await build(t)
 
