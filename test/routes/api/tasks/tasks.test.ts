@@ -394,6 +394,24 @@ describe('Tasks api (logged user only)', () => {
   })
 
   describe('POST /api/tasks/:id/assign', () => {
+    it('should return 400 if task assignment payload is invalid', async (t) => {
+      const app = await build(t)
+
+      const invalidPayload = {
+        userId: 'not-a-number'
+      }
+
+      const res = await app.injectWithLogin('moderator', {
+        method: 'POST',
+        url: '/api/tasks/1/assign',
+        payload: invalidPayload
+      })
+
+      assert.strictEqual(res.statusCode, 400)
+      const { message } = JSON.parse(res.payload)
+      assert.strictEqual(message, 'body/userId must be number')
+    })
+
     it('should assign a task to a user and persist the changes', async (t) => {
       const app = await build(t)
 
