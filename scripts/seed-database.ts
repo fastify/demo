@@ -48,7 +48,7 @@ async function truncateTables (connection: Connection) {
 
 async function seedUsers (connection: Connection) {
   const usernames = ['basic', 'moderator', 'admin']
-  const hash = await scryptHash('password123$')
+  const hash = await scryptHash('Password123$')
 
   // The goal here is to create a role hierarchy
   // E.g. an admin should have all the roles
