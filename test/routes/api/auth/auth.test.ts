@@ -19,14 +19,14 @@ describe('Auth api', () => {
         url: '/api/auth/login',
         payload: {
           username: 'basic',
-          password: 'password123$'
+          password: 'Password123$'
         }
       })
 
       assert.strictEqual(mockCompare.callCount(), 1)
 
       const arg = mockLogError.calls[0].arguments[0] as unknown as {
-        err: Error
+        err: Error;
       }
 
       assert.strictEqual(res.statusCode, 500)
@@ -38,7 +38,7 @@ describe('Auth api', () => {
 
       const invalidPayload = {
         username: '',
-        password: 'password123$'
+        password: 'Password123$'
       }
 
       const res = await app.injectWithLogin('basic', {
@@ -47,7 +47,10 @@ describe('Auth api', () => {
         payload: invalidPayload
       })
 
-      expectValidationError(res, 'body/username must NOT have fewer than 1 characters')
+      expectValidationError(
+        res,
+        'body/username must NOT have fewer than 1 characters'
+      )
     })
 
     it('should authenticate with valid credentials', async (t) => {
@@ -58,7 +61,7 @@ describe('Auth api', () => {
         url: '/api/auth/login',
         payload: {
           username: 'basic',
-          password: 'password123$'
+          password: 'Password123$'
         }
       })
 
@@ -102,7 +105,7 @@ describe('Auth api', () => {
         assert.strictEqual(
           res.statusCode,
           401,
-      `Failed for case: ${testCase.description}`
+          `Failed for case: ${testCase.description}`
         )
 
         assert.deepStrictEqual(JSON.parse(res.payload), {

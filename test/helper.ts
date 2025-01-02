@@ -34,7 +34,7 @@ async function login (this: FastifyInstance, username: string) {
     url: '/api/auth/login',
     payload: {
       username,
-      password: 'password123$'
+      password: 'Password123$'
     }
   })
 
