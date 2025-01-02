@@ -148,7 +148,6 @@ describe('Users API', async () => {
     assert.strictEqual(loginResponse.statusCode, 200)
 
     await deleteUser(app, 'random-user-5')
-    console.log('%c LOG loginResponse.cookies', 'background: #222; color: #bada55', loginResponse.cookies)
     app.config = {
       ...app.config,
       COOKIE_SECRET: loginResponse.cookies[0].value
