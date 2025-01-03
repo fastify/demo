@@ -140,3 +140,6 @@ yarn.lock
 
 # uploaded files
 uploads/tasks/*
+
+# sonnar locally
+.scannerwork
