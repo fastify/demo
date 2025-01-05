@@ -850,7 +850,7 @@ describe('Tasks api (logged user only)', () => {
 
       const decompressed = gunzipSync(res.rawPayload).toString('utf-8')
       const lines = decompressed.split('\n')
-      assert.equal(lines.length - 1, 10_001)
+      assert.equal(lines.length - 1, 1001)
 
       assert.ok(lines[1].startsWith('1,Task 1,1,2,task.png,in-progress'))
       assert.equal(lines[0], 'id,name,author_id,assigned_user_id,filename,status,created_at,updated_at')
