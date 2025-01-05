@@ -2,7 +2,7 @@ import {
   FastifyPluginAsyncTypebox,
   Type
 } from '@fastify/type-provider-typebox'
-import { CredentialsSchema, Credentials } from '../../../schemas/auth.js'
+import { CredentialsSchema, Auth } from '../../../schemas/auth.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.post(
@@ -26,8 +26,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { username, password } = request.body
 
       return fastify.knex.transaction(async (trx) => {
-        const user = await trx<Credentials>('users')
-          .select('username', 'password')
+        const user = await trx<Auth>('users')
+          .select('id', 'username', 'password')
           .where({ username })
           .first()
 
@@ -44,6 +44,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
               .where('users.username', username)
 
             request.session.user = {
+              id: user.id,
               username,
               roles: roles.map((role) => role.name)
             }

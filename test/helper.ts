@@ -1,8 +1,9 @@
-import { FastifyInstance, InjectOptions } from 'fastify'
+import { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify'
 import { build as buildApplication } from 'fastify-cli/helper.js'
 import path from 'node:path'
 import { TestContext } from 'node:test'
 import { options as serverOptions } from '../src/app.js'
+import assert from 'node:assert'
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -17,8 +18,14 @@ const AppPath = path.join(import.meta.dirname, '../src/app.ts')
 // needed for testing the application
 export function config () {
   return {
-    skipOverride: 'true' // Register our application with fastify-plugin
+    skipOverride: true // Register our application with fastify-plugin
   }
+}
+
+export function expectValidationError (res: LightMyRequestResponse, expectedMessage: string) {
+  assert.strictEqual(res.statusCode, 400)
+  const { message } = JSON.parse(res.payload)
+  assert.strictEqual(message, expectedMessage)
 }
 
 async function login (this: FastifyInstance, username: string) {

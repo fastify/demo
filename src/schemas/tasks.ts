@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox'
+import { DateTimeSchema, IdSchema, StringSchema } from './common.js'
 
 export const TaskStatusEnum = {
   New: 'new',
@@ -11,6 +12,10 @@ export const TaskStatusEnum = {
 
 export type TaskStatusType = typeof TaskStatusEnum[keyof typeof TaskStatusEnum]
 
+export interface Task extends Static<typeof TaskSchema> {
+  filename?: string | null
+}
+
 const TaskStatusSchema = Type.Union([
   Type.Literal('new'),
   Type.Literal('in-progress'),
@@ -21,36 +26,30 @@ const TaskStatusSchema = Type.Union([
 ])
 
 export const TaskSchema = Type.Object({
-  id: Type.Number(),
-  name: Type.String(),
-  author_id: Type.Number(),
-  assigned_user_id: Type.Optional(Type.Number()),
+  id: IdSchema,
+  name: StringSchema,
+  author_id: IdSchema,
+  assigned_user_id: Type.Optional(IdSchema),
   status: TaskStatusSchema,
-  created_at: Type.String({ format: 'date-time' }),
-  updated_at: Type.String({ format: 'date-time' })
+  created_at: DateTimeSchema,
+  updated_at: DateTimeSchema
 })
 
-export interface Task extends Static<typeof TaskSchema> {
-  filename?: string | null
-}
-
 export const CreateTaskSchema = Type.Object({
-  name: Type.String(),
-  author_id: Type.Number(),
-  assigned_user_id: Type.Optional(Type.Number())
+  name: StringSchema,
+  assigned_user_id: Type.Optional(IdSchema)
 })
 
 export const UpdateTaskSchema = Type.Object({
-  name: Type.Optional(Type.String()),
-  assigned_user_id: Type.Optional(Type.Number())
+  name: Type.Optional(StringSchema),
+  assigned_user_id: Type.Optional(IdSchema)
 })
 
 export const QueryTaskPaginationSchema = Type.Object({
-  page: Type.Number({ minimum: 1, default: 1 }),
-  limit: Type.Number({ minimum: 1, maximum: 100, default: 10 }),
-
-  author_id: Type.Optional(Type.Number()),
-  assigned_user_id: Type.Optional(Type.Number()),
+  page: Type.Integer({ minimum: 1, default: 1 }),
+  limit: Type.Integer({ minimum: 1, maximum: 100, default: 10 }),
+  author_id: Type.Optional(IdSchema),
+  assigned_user_id: Type.Optional(IdSchema),
   status: Type.Optional(TaskStatusSchema),
   order: Type.Optional(Type.Union([
     Type.Literal('asc'),
@@ -59,6 +58,6 @@ export const QueryTaskPaginationSchema = Type.Object({
 })
 
 export const TaskPaginationResultSchema = Type.Object({
-  total: Type.Number({ minimum: 0, default: 0 }),
+  total: Type.Integer({ minimum: 0, default: 0 }),
   tasks: Type.Array(TaskSchema)
 })

@@ -1,6 +1,6 @@
 import { after, before, beforeEach, describe, it } from 'node:test'
 import assert from 'node:assert'
-import { build } from '../../../helper.js'
+import { build, expectValidationError } from '../../../helper.js'
 import {
   Task,
   TaskStatusEnum,
@@ -248,12 +248,27 @@ describe('Tasks api (logged user only)', () => {
   })
 
   describe('POST /api/tasks', () => {
+    it('should return 400 if task creation payload is invalid', async (t) => {
+      const app = await build(t)
+
+      const invalidTaskData = {
+        name: ''
+      }
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'POST',
+        url: '/api/tasks',
+        payload: invalidTaskData
+      })
+
+      expectValidationError(res, 'body/name must NOT have fewer than 1 characters')
+    })
+
     it('should create a new task', async (t) => {
       const app = await build(t)
 
       const taskData = {
-        name: 'New Task',
-        author_id: 1
+        name: 'New Task'
       }
 
       const res = await app.injectWithLogin('basic', {
@@ -271,6 +286,23 @@ describe('Tasks api (logged user only)', () => {
   })
 
   describe('PATCH /api/tasks/:id', () => {
+    it('should return 400 if task update payload is invalid', async (t) => {
+      const app = await build(t)
+
+      const invalidUpdateData = {
+        name: 'Updated task',
+        assigned_user_id: 'abc'
+      }
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'PATCH',
+        url: '/api/tasks/1',
+        payload: invalidUpdateData
+      })
+
+      expectValidationError(res, 'body/assigned_user_id must be integer')
+    })
+
     it('should update an existing task', async (t) => {
       const app = await build(t)
 
@@ -358,6 +390,22 @@ describe('Tasks api (logged user only)', () => {
   })
 
   describe('POST /api/tasks/:id/assign', () => {
+    it('should return 400 if task assignment payload is invalid', async (t) => {
+      const app = await build(t)
+
+      const invalidPayload = {
+        userId: 'not-a-number'
+      }
+
+      const res = await app.injectWithLogin('moderator', {
+        method: 'POST',
+        url: '/api/tasks/1/assign',
+        payload: invalidPayload
+      })
+
+      expectValidationError(res, 'body/userId must be number')
+    })
+
     it('should assign a task to a user and persist the changes', async (t) => {
       const app = await build(t)
 
@@ -560,10 +608,7 @@ describe('Tasks api (logged user only)', () => {
           headers: form.getHeaders()
         })
 
-        assert.strictEqual(res.statusCode, 400)
-
-        const { message } = JSON.parse(res.payload)
-        assert.strictEqual(message, 'Invalid file type')
+        expectValidationError(res, 'Invalid file type')
       })
 
       it('should reject if file size exceeds limit (truncated)', async (t) => {
@@ -585,10 +630,7 @@ describe('Tasks api (logged user only)', () => {
           headers: form.getHeaders()
         })
 
-        assert.strictEqual(res.statusCode, 400)
-
-        const { message } = JSON.parse(res.payload)
-        assert.strictEqual(message, 'File size limit exceeded')
+        expectValidationError(res, 'File size limit exceeded')
       })
 
       it('File upload transaction should rollback on error', async (t) => {
