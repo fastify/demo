@@ -13,7 +13,8 @@
     "watch": "tsc -w",
     "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch\" \"npm:dev:start\"",
     "dev:start": "npm run build && fastify start --ignore-watch=.ts$ -w -l info -P dist/app.js",
-    "test": "npm run db:seed && tap --jobs=1 test/**/*",
+    "test": "npm run db:seed && c8 npm run test:run",
+    "test:run": "glob -c \"tsx --test\" \"./test/**/*.ts\"",
     "standalone": "npm run build && node --env-file=.env dist/server.js",
     "lint": "eslint --ignore-pattern=dist",
     "lint:fix": "npm run lint -- --fix",
@@ -60,10 +61,11 @@
   },
   "devDependencies": {
     "@types/node": "^22.5.5",
+    "c8": "^10.1.3",
     "eslint": "^9.11.0",
     "fastify-tsconfig": "^2.0.0",
+    "glob": "^11.0.0",
     "neostandard": "^0.12.0",
-    "tap": "^21.0.1",
     "tsx": "^4.19.1",
     "typescript": "~5.7.2"
   }
