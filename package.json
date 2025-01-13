@@ -63,7 +63,7 @@
     "@types/node": "^22.5.5",
     "c8": "^10.1.3",
     "eslint": "^9.11.0",
-    "fastify-tsconfig": "^2.0.0",
+    "fastify-tsconfig": "^3.0.0",
     "glob": "^11.0.0",
     "neostandard": "^0.12.0",
     "tsx": "^4.19.1",
