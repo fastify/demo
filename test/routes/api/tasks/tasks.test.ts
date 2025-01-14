@@ -16,7 +16,7 @@ import os from 'os'
 
 async function createUser (
   app: FastifyInstance,
-  userData: Partial<{ username: string; password: string }>
+  userData: Partial<{ email: string; username: string; password: string }>
 ) {
   const [id] = await app.knex('users').insert(userData)
   return id
@@ -52,10 +52,12 @@ describe('Tasks api (logged user only)', () => {
 
       userId1 = await createUser(app, {
         username: 'user1',
+        email: 'user1@example.com',
         password: 'password1'
       })
       userId2 = await createUser(app, {
         username: 'user2',
+        email: 'user2@example.com',
         password: 'password2'
       })
 
@@ -88,7 +90,7 @@ describe('Tasks api (logged user only)', () => {
     it('should return a list of tasks with no pagination filter', async (t) => {
       app = await build(t)
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks'
       })
@@ -109,7 +111,7 @@ describe('Tasks api (logged user only)', () => {
 
     it('should paginate by page and limit', async (t) => {
       app = await build(t)
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks',
         query: { page: '2', limit: '1' }
@@ -130,7 +132,7 @@ describe('Tasks api (logged user only)', () => {
     it('should filter tasks by assigned_user_id', async (t) => {
       app = await build(t)
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks',
         query: { assigned_user_id: userId2.toString() }
@@ -149,7 +151,7 @@ describe('Tasks api (logged user only)', () => {
 
     it('should filter tasks by status', async (t) => {
       app = await build(t)
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks',
         query: { status: TaskStatusEnum.Completed }
@@ -168,7 +170,7 @@ describe('Tasks api (logged user only)', () => {
 
     it('should paginate and filter tasks by author_id and status', async (t) => {
       app = await build(t)
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks',
         query: {
@@ -196,7 +198,7 @@ describe('Tasks api (logged user only)', () => {
 
       await app.knex<Task>('tasks').delete()
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks'
       })
@@ -223,7 +225,7 @@ describe('Tasks api (logged user only)', () => {
 
       const newTaskId = await createTask(app, taskData)
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: `/api/tasks/${newTaskId}`
       })
@@ -236,7 +238,7 @@ describe('Tasks api (logged user only)', () => {
     it('should return 404 if task is not found', async (t) => {
       const app = await build(t)
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks/9999'
       })
@@ -255,7 +257,7 @@ describe('Tasks api (logged user only)', () => {
         name: ''
       }
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'POST',
         url: '/api/tasks',
         payload: invalidTaskData
@@ -271,7 +273,7 @@ describe('Tasks api (logged user only)', () => {
         name: 'New Task'
       }
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'POST',
         url: '/api/tasks',
         payload: taskData
@@ -294,7 +296,7 @@ describe('Tasks api (logged user only)', () => {
         assigned_user_id: 'abc'
       }
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'PATCH',
         url: '/api/tasks/1',
         payload: invalidUpdateData
@@ -317,7 +319,7 @@ describe('Tasks api (logged user only)', () => {
         name: 'Updated Task'
       }
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'PATCH',
         url: `/api/tasks/${newTaskId}`,
         payload: updatedData
@@ -338,7 +340,7 @@ describe('Tasks api (logged user only)', () => {
         name: 'Updated Task'
       }
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'PATCH',
         url: '/api/tasks/9999',
         payload: updatedData
@@ -361,7 +363,7 @@ describe('Tasks api (logged user only)', () => {
       const app = await build(t)
       const newTaskId = await createTask(app, taskData)
 
-      const res = await app.injectWithLogin('admin', {
+      const res = await app.injectWithLogin('admin@example.com', {
         method: 'DELETE',
         url: `/api/tasks/${newTaskId}`
       })
@@ -378,7 +380,7 @@ describe('Tasks api (logged user only)', () => {
     it('should return 404 if task is not found for deletion', async (t) => {
       const app = await build(t)
 
-      const res = await app.injectWithLogin('admin', {
+      const res = await app.injectWithLogin('admin@example.com', {
         method: 'DELETE',
         url: '/api/tasks/9999'
       })
@@ -397,7 +399,7 @@ describe('Tasks api (logged user only)', () => {
         userId: 'not-a-number'
       }
 
-      const res = await app.injectWithLogin('moderator', {
+      const res = await app.injectWithLogin('moderator@example.com', {
         method: 'POST',
         url: '/api/tasks/1/assign',
         payload: invalidPayload
@@ -409,7 +411,7 @@ describe('Tasks api (logged user only)', () => {
     it('should assign a task to a user and persist the changes', async (t) => {
       const app = await build(t)
 
-      for (const username of ['moderator', 'admin']) {
+      for (const email of ['moderator@example.com', 'admin@example.com']) {
         const taskData = {
           name: 'Task to Assign',
           author_id: 1,
@@ -417,7 +419,7 @@ describe('Tasks api (logged user only)', () => {
         }
         const newTaskId = await createTask(app, taskData)
 
-        const res = await app.injectWithLogin(username, {
+        const res = await app.injectWithLogin(email, {
           method: 'POST',
           url: `/api/tasks/${newTaskId}/assign`,
           payload: {
@@ -438,7 +440,7 @@ describe('Tasks api (logged user only)', () => {
     it('should unassign a task from a user and persist the changes', async (t) => {
       const app = await build(t)
 
-      for (const username of ['moderator', 'admin']) {
+      for (const email of ['moderator@example.com', 'admin@example.com']) {
         const taskData = {
           name: 'Task to Unassign',
           author_id: 1,
@@ -447,7 +449,7 @@ describe('Tasks api (logged user only)', () => {
         }
         const newTaskId = await createTask(app, taskData)
 
-        const res = await app.injectWithLogin(username, {
+        const res = await app.injectWithLogin(email, {
           method: 'POST',
           url: `/api/tasks/${newTaskId}/assign`,
           payload: {}
@@ -466,7 +468,7 @@ describe('Tasks api (logged user only)', () => {
     it('should return 403 if not a moderator', async (t) => {
       const app = await build(t)
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'POST',
         url: '/api/tasks/1/assign',
         payload: {}
@@ -478,7 +480,7 @@ describe('Tasks api (logged user only)', () => {
     it('should return 404 if task is not found', async (t) => {
       const app = await build(t)
 
-      const res = await app.injectWithLogin('moderator', {
+      const res = await app.injectWithLogin('moderator@example.com', {
         method: 'POST',
         url: '/api/tasks/9999/assign',
         payload: {
@@ -544,7 +546,7 @@ describe('Tasks api (logged user only)', () => {
         const form = new FormData()
         form.append('file', fs.createReadStream(testImagePath))
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'POST',
           url: `/api/tasks/${taskId}/upload`,
           payload: form,
@@ -563,7 +565,7 @@ describe('Tasks api (logged user only)', () => {
         const form = new FormData()
         form.append('file', fs.createReadStream(testImagePath))
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'POST',
           url: '/api/tasks/100000/upload',
           payload: form,
@@ -582,7 +584,7 @@ describe('Tasks api (logged user only)', () => {
         const form = new FormData()
         form.append('file', fs.createReadStream(testImagePath))
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'POST',
           url: `/api/tasks/${taskId}/upload`,
           payload: undefined,
@@ -601,7 +603,7 @@ describe('Tasks api (logged user only)', () => {
         const form = new FormData()
         form.append('file', fs.createReadStream(testCsvPath))
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'POST',
           url: `/api/tasks/${taskId}/upload`,
           payload: form,
@@ -623,7 +625,7 @@ describe('Tasks api (logged user only)', () => {
         const form = new FormData()
         form.append('file', fs.createReadStream(largeTestImagePath))
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'POST',
           url: `/api/tasks/${taskId}/upload`,
           payload: form,
@@ -645,7 +647,7 @@ describe('Tasks api (logged user only)', () => {
 
         const form = new FormData()
         form.append('file', fs.createReadStream(testImagePath))
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'POST',
           url: `/api/tasks/${taskId}/upload`,
           payload: form,
@@ -668,7 +670,7 @@ describe('Tasks api (logged user only)', () => {
         app = await build(t)
 
         const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'GET',
           url: `/api/tasks/${taskFilename}/image`
         })
@@ -684,7 +686,7 @@ describe('Tasks api (logged user only)', () => {
       it('should return 404 error for non-existant filename', async (t) => {
         app = await build(t)
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'GET',
           url: '/api/tasks/non-existant/image'
         })
@@ -728,7 +730,7 @@ describe('Tasks api (logged user only)', () => {
         app = await build(t)
 
         const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'DELETE',
           url: `/api/tasks/${taskFilename}/image`
         })
@@ -742,7 +744,7 @@ describe('Tasks api (logged user only)', () => {
       it('should return 404 for non-existant task with filename for deletion', async (t) => {
         app = await build(t)
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'DELETE',
           url: '/api/tasks/non-existant/image'
         })
@@ -764,7 +766,7 @@ describe('Tasks api (logged user only)', () => {
 
         const { mock: mockLogWarn } = t.mock.method(app.log, 'warn')
 
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'DELETE',
           url: '/api/tasks/does_not_exist.png/image'
         })
@@ -787,7 +789,7 @@ describe('Tasks api (logged user only)', () => {
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
 
         const taskFilename = encodeURIComponent(`${taskId}_${filename}`)
-        const res = await app.injectWithLogin('basic', {
+        const res = await app.injectWithLogin('basic@example.com', {
           method: 'DELETE',
           url: `/api/tasks/${taskFilename}/image`
         })

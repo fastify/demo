@@ -1,14 +1,16 @@
 import { Static, Type } from '@sinclair/typebox'
-import { StringSchema } from './common.js'
+import { EmailSchema, StringSchema } from './common.js'
 
 export const CredentialsSchema = Type.Object({
-  username: StringSchema,
+  email: EmailSchema,
   password: StringSchema
 })
 
 export interface Credentials extends Static<typeof CredentialsSchema> {}
 
-export interface Auth extends Omit<Credentials, 'password'> {
+export interface Auth {
   id: number;
+  username: string;
+  email: string,
   roles: string[]
 }
