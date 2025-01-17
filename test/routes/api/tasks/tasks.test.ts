@@ -13,6 +13,7 @@ import { pipeline } from 'node:stream/promises'
 import path from 'node:path'
 import FormData from 'form-data'
 import os from 'os'
+import { gunzipSync } from 'node:zlib'
 
 async function createUser (
   app: FastifyInstance,
@@ -28,8 +29,16 @@ async function createTask (app: FastifyInstance, taskData: Partial<Task>) {
   return id
 }
 
-async function uploadImageForTask (app: FastifyInstance, taskId: number, filePath: string, uploadDir: string) {
-  await app.knex<Task>('tasks').where({ id: taskId }).update({ filename: `${taskId}_short-logo.png` })
+async function uploadImageForTask (
+  app: FastifyInstance,
+  taskId: number,
+  filePath: string,
+  uploadDir: string
+) {
+  await app
+    .knex<Task>('tasks')
+    .where({ id: taskId })
+    .update({ filename: `${taskId}_short-logo.png` })
 
   const file = fs.createReadStream(filePath)
   const filename = `${taskId}_short-logo.png`
@@ -801,6 +810,50 @@ describe('Tasks api (logged user only)', () => {
 
         assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
       })
+    })
+  })
+
+  describe('GET /api/tasks/download/csv', () => {
+    before(async () => {
+      const app = await build()
+      await app.knex('tasks').del()
+      await app.close()
+    })
+
+    it('should stream a gzipped CSV file', async (t) => {
+      const app = await build(t)
+
+      const tasks = []
+      for (let i = 0; i < 1000; i++) {
+        tasks.push({
+          name: `Task ${i + 1}`,
+          author_id: 1,
+          assigned_user_id: 2,
+          filename: 'task.png',
+          status: TaskStatusEnum.InProgress
+        })
+      }
+
+      await app.knex('tasks').insert(tasks)
+
+      const res = await app.injectWithLogin('basic', {
+        method: 'GET',
+        url: '/api/tasks/download/csv'
+      })
+
+      assert.strictEqual(res.statusCode, 200)
+      assert.strictEqual(res.headers['content-type'], 'application/gzip')
+      assert.strictEqual(
+        res.headers['content-disposition'],
+        'attachment; filename="tasks.csv.gz"'
+      )
+
+      const decompressed = gunzipSync(res.rawPayload).toString('utf-8')
+      const lines = decompressed.split('\n')
+      assert.equal(lines.length - 1, 1001)
+
+      assert.ok(lines[1].includes('Task 1,1,2,task.png,in-progress'))
+      assert.equal(lines[0], 'id,name,author_id,assigned_user_id,filename,status,created_at,updated_at')
     })
   })
 })

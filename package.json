@@ -51,6 +51,7 @@
     "@fastify/under-pressure": "^9.0.1",
     "@sinclair/typebox": "^0.34.11",
     "concurrently": "^9.0.1",
+    "csv-stringify": "^6.5.2",
     "fastify": "^5.0.0",
     "fastify-cli": "^7.0.0",
     "fastify-plugin": "^5.0.1",
