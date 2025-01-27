@@ -1,6 +1,6 @@
 # Fastify Official Demo
 
-[![CI](https://github.com/fastify/demo/actions/workflows/ci.yml/badge.svg)](https://github.com/fastify/demo/actions/workflows/ci.yml?query=branch%3Amain)
+[![CI](https://github.com/fastify/demo/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/fastify/demo/actions/workflows/ci.yml)
 
 The aim of this repository is to provide a concrete example of a Fastify application using what are considered best practices by the Fastify community.
 
