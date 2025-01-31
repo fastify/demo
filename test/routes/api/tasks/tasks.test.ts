@@ -838,7 +838,7 @@ describe('Tasks api (logged user only)', () => {
 
       await app.knex('tasks').insert(tasks)
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'GET',
         url: '/api/tasks/download/csv'
       })
