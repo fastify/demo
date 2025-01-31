@@ -23,12 +23,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const { username, password } = request.body
+      const { email, password } = request.body
 
       return fastify.knex.transaction(async (trx) => {
         const user = await trx<Auth>('users')
-          .select('id', 'username', 'password')
-          .where({ username })
+          .select('id', 'username', 'email', 'password')
+          .where({ email })
           .first()
 
         if (user) {
@@ -41,11 +41,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
               .select('roles.name')
               .join('user_roles', 'roles.id', '=', 'user_roles.role_id')
               .join('users', 'user_roles.user_id', '=', 'users.id')
-              .where('users.username', username)
+              .where('users.email', user.email)
 
             request.session.user = {
               id: user.id,
-              username,
+              email: user.email,
+              username: user.username,
               roles: roles.map((role) => role.name)
             }
 
@@ -57,7 +58,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         reply.status(401)
 
-        return { message: 'Invalid username or password.' }
+        return { message: 'Invalid email or password.' }
       }).catch(() => {
         reply.internalServerError('Transaction failed.')
       })
