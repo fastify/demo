@@ -40,6 +40,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
@@ -47,12 +48,15 @@ jobs:
 
       - name: Install dependencies
         run: npm i
+        working-directory: ./server
 
       - name: Build
         run: npm run build -- --noEmit
+        working-directory: ./server
 
       - name: Lint Code
         run: npm run lint
+        working-directory: ./server
 
       - name: Generate COOKIE Secret
         run: |
@@ -61,6 +65,7 @@ jobs:
 
       - name: Generate dummy .env for scripts using -env-file=.env flag
         run: touch .env
+        working-directory: ./server
 
       - name: Test
         env:
@@ -74,3 +79,4 @@ jobs:
           RATE_LIMIT_MAX: 4
           CAN_SEED_DATABASE: 1
         run: npm run db:migrate && npm run test
+        working-directory: ./server
