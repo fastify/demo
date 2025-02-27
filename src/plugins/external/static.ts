@@ -15,7 +15,7 @@ export const autoConfig = (fastify: FastifyInstance): FastifyStaticOptions => {
   }
 
   return {
-    root: path.join(import.meta.dirname, '../../..'),
+    root: dirPath,
     prefix: `/${fastify.config.UPLOAD_DIRNAME}`
   }
 }
