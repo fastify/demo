@@ -11,7 +11,6 @@ it('UPLOAD_DIRNAME should not contain ..', async (t) => {
     const fastify = Fastify()
     await assert.rejects(async () => {
       await fastify.register(Env, { confKey, dotenv: false, data: {}, schema: { type, properties: { UPLOAD_DIRNAME: { ...UPLOAD_DIRNAME, default: failPath[i] } } } })
-      await fastify.ready()
     }, { message: `env/UPLOAD_DIRNAME must match pattern "${UPLOAD_DIRNAME.pattern}"` }).finally(async () => {
       await fastify.close()
     })
@@ -22,7 +21,6 @@ it('UPLOAD_DIRNAME should not contain ..', async (t) => {
     const fastify = Fastify()
     await assert.doesNotReject(async () => {
       await fastify.register(Env, { confKey, dotenv: false, data: {}, schema: { type, properties: { UPLOAD_DIRNAME: { ...UPLOAD_DIRNAME, default: successPath[i] } } } })
-      await fastify.ready()
     }).finally(async () => {
       await fastify.close()
     })
