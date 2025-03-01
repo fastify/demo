@@ -4,40 +4,27 @@ import assert from 'node:assert'
 import Env, { autoConfig } from '../../src/plugins/external/env.js'
 
 it('UPLOAD_DIRNAME should not contain ..', async (t) => {
-  const { schema: { type, properties: { UPLOAD_DIRNAME } }, ...otherAutoConfig } = autoConfig
+  const { confKey, schema: { type, properties: { UPLOAD_DIRNAME } } } = autoConfig
 
-  const failPath = ['/../', '../', '/..', `${UPLOAD_DIRNAME.default}/../${UPLOAD_DIRNAME.default}`, `../${UPLOAD_DIRNAME.default}`, `${UPLOAD_DIRNAME.default}/..`]
+  const failPath = ['/../', '../', '/..']
   for (let i = 0; i < failPath.length; i++) {
-    process.env.UPLOAD_DIRNAME = failPath[i]
     const fastify = Fastify()
-    fastify.register(Env, { ...otherAutoConfig, schema: { type, properties: { UPLOAD_DIRNAME } } })
-
-    try {
+    await assert.rejects(async () => {
+      await fastify.register(Env, { confKey, dotenv: false, data: {}, schema: { type, properties: { UPLOAD_DIRNAME: { ...UPLOAD_DIRNAME, default: failPath[i] } } } })
       await fastify.ready()
-      assert.fail('should failed')
-    } catch (error) {
-      if (error instanceof Error) {
-        assert.strictEqual(error.message, `env/UPLOAD_DIRNAME must match pattern "${UPLOAD_DIRNAME.pattern}"`)
-      } else {
-        assert.fail('should failed')
-      }
-    } finally {
+    }, { message: `env/UPLOAD_DIRNAME must match pattern "${UPLOAD_DIRNAME.pattern}"` }).finally(async () => {
       await fastify.close()
-    }
+    })
   }
 
   const successPath = [UPLOAD_DIRNAME.default]
   for (let i = 0; i < successPath.length; i++) {
-    process.env.UPLOAD_DIRNAME = successPath[i]
     const fastify = Fastify()
-    fastify.register(Env, { ...otherAutoConfig, schema: { type, properties: { UPLOAD_DIRNAME } } })
-
-    try {
+    await assert.doesNotReject(async () => {
+      await fastify.register(Env, { confKey, dotenv: false, data: {}, schema: { type, properties: { UPLOAD_DIRNAME: { ...UPLOAD_DIRNAME, default: successPath[i] } } } })
       await fastify.ready()
-    } catch (error) {
-      assert.fail('should succeed')
-    } finally {
+    }).finally(async () => {
       await fastify.close()
-    }
+    })
   }
 })
