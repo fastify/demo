@@ -15,14 +15,15 @@ it('UPLOAD_DIRNAME should not contain ..', async (t) => {
       await fastify.close()
     })
   }
+})
 
-  const successPath = [UPLOAD_DIRNAME.default]
-  for (let i = 0; i < successPath.length; i++) {
-    const fastify = Fastify()
-    await assert.doesNotReject(async () => {
-      await fastify.register(Env, { confKey, dotenv: false, data: {}, schema: { type, properties: { UPLOAD_DIRNAME: { ...UPLOAD_DIRNAME, default: successPath[i] } } } })
-    }).finally(async () => {
-      await fastify.close()
-    })
-  }
+it('UPLOAD_DIRNAME.default should be a valid dirname', async (t) => {
+  const { confKey, schema: { type, properties: { UPLOAD_DIRNAME } } } = autoConfig
+
+  const fastify = Fastify()
+  await assert.doesNotReject(async () => {
+    await fastify.register(Env, { confKey, dotenv: false, data: {}, schema: { type, properties: { UPLOAD_DIRNAME: { ...UPLOAD_DIRNAME, default: UPLOAD_DIRNAME.default } } } })
+  }).finally(async () => {
+    await fastify.close()
+  })
 })
