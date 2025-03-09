@@ -12,7 +12,7 @@ import fs from 'node:fs'
 import { pipeline } from 'node:stream/promises'
 import path from 'node:path'
 import FormData from 'form-data'
-import os from 'os'
+import os from 'node:os'
 import { gunzipSync } from 'node:zlib'
 
 async function createUser (
