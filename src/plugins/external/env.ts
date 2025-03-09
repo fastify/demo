@@ -70,6 +70,8 @@ const schema = {
     // Files
     UPLOAD_DIRNAME: {
       type: 'string',
+      minLength: 1,
+      pattern: '^(?!.*\\.{2}).*$',
       default: 'uploads'
     },
     UPLOAD_TASKS_DIRNAME: {
