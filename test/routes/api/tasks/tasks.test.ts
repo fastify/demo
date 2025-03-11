@@ -629,7 +629,7 @@ describe('Tasks api (logged user only)', () => {
         const largeTestImagePath = path.join(tmpDir, 'large-test-image.jpg')
 
         const largeBuffer = Buffer.alloc(1024 * 1024 * 1.5, 'a') // Max file size in bytes is 1 MB
-        fs.writeFileSync(largeTestImagePath, largeBuffer)
+        fs.writeFileSync(largeTestImagePath, largeBuffer, { mode: 0o600 }) // 0600 permissions (read/write for owner only)
 
         const form = new FormData()
         form.append('file', fs.createReadStream(largeTestImagePath))
