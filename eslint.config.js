@@ -1,5 +1,3 @@
-'use strict'
-
 import neo from 'neostandard'
 
 export default [
