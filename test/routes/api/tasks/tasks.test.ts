@@ -629,7 +629,12 @@ describe('Tasks api (logged user only)', () => {
         const largeTestImagePath = path.join(tmpDir, 'large-test-image.jpg')
 
         const largeBuffer = Buffer.alloc(1024 * 1024 * 1.5, 'a') // Max file size in bytes is 1 MB
-        fs.writeFileSync(largeTestImagePath, largeBuffer, { mode: 0o600 }) // 0600 permissions (read/write for owner only)
+        /**
+         * Limit file permissions to read/write for the owner only by setting mode
+         * to 0600, as permissions should follow the principle of least privilege.
+         * @see {@link https://learn.snyk.io/lesson/insecure-temporary-file/?ecosystem=javascript | Insecure temporary file}
+         */
+        fs.writeFileSync(largeTestImagePath, largeBuffer, { mode: 0o600 })
 
         const form = new FormData()
         form.append('file', fs.createReadStream(largeTestImagePath))
