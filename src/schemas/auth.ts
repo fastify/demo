@@ -12,3 +12,8 @@ export interface Auth extends Omit<Credentials, 'password'> {
   id: number;
   roles: string[]
 }
+
+export interface User extends Credentials {
+  id: number;
+  roles: string[]
+}

@@ -2,10 +2,10 @@ import {
   FastifyPluginAsyncTypebox,
   Type
 } from '@fastify/type-provider-typebox'
-import { Auth } from '../../../schemas/auth.js'
 import { UpdateCredentialsSchema } from '../../../schemas/users.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const { usersRepository } = fastify
   fastify.put(
     '/update-password',
     {
@@ -33,10 +33,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const username = request.session.user.username
 
       try {
-        const user = await fastify.knex<Auth>('users')
-          .select('username', 'password')
-          .where({ username })
-          .first()
+        const user = await usersRepository.findByUsername(username)
 
         if (!user) {
           return reply.code(401).send({ message: 'User does not exist.' })
@@ -57,11 +54,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         const hashedPassword = await fastify.hash(newPassword)
-        await fastify.knex('users')
-          .update({
-            password: hashedPassword
-          })
-          .where({ username })
+        await usersRepository.updatePassword(username, hashedPassword)
 
         return { message: 'Password updated successfully' }
       } catch (error) {

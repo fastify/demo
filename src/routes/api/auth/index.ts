@@ -2,9 +2,10 @@ import {
   FastifyPluginAsyncTypebox,
   Type
 } from '@fastify/type-provider-typebox'
-import { CredentialsSchema, Auth } from '../../../schemas/auth.js'
+import { CredentialsSchema } from '../../../schemas/auth.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const { usersRepository } = fastify
   fastify.post(
     '/login',
     {
@@ -26,10 +27,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { username, password } = request.body
 
       return fastify.knex.transaction(async (trx) => {
-        const user = await trx<Auth>('users')
-          .select('id', 'username', 'password')
-          .where({ username })
-          .first()
+        const user = await usersRepository.findByUsername(username, trx)
 
         if (user) {
           const isPasswordValid = await fastify.compare(
@@ -37,11 +35,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             user.password
           )
           if (isPasswordValid) {
-            const roles = await trx<{ name: string }>('roles')
-              .select('roles.name')
-              .join('user_roles', 'roles.id', '=', 'user_roles.role_id')
-              .join('users', 'user_roles.user_id', '=', 'users.id')
-              .where('users.username', username)
+            const roles = await usersRepository.findUserRolesByUsername(username, trx)
 
             request.session.user = {
               id: user.id,
