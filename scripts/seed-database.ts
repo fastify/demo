@@ -1,5 +1,5 @@
 import { createConnection, Connection } from 'mysql2/promise'
-import { scryptHash } from '../src/plugins/custom/scrypt.js'
+import { scryptHash } from '../src/plugins/app/scrypt.js'
 
 if (Number(process.env.CAN_SEED_DATABASE) !== 1) {
   throw new Error("You can't seed the database. Set `CAN_SEED_DATABASE=1` environment variable to allow this operation.")

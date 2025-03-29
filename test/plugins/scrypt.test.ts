@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import Fastify from 'fastify'
-import scryptPlugin from '../../src/plugins/custom/scrypt.js'
+import scryptPlugin from '../../src/plugins/app/scrypt.js'
 import assert from 'node:assert'
 
 test('scrypt works standalone', async t => {

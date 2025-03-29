@@ -2,7 +2,7 @@ import { it, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 import { FastifyInstance } from 'fastify'
-import { scryptHash } from '../../../../src/plugins/custom/scrypt.js'
+import { scryptHash } from '../../../../src/plugins/app/scrypt.js'
 
 async function createUser (app: FastifyInstance, userData: Partial<{ username: string; password: string }>) {
   const [id] = await app.knex('users').insert(userData)
