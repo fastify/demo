@@ -192,35 +192,46 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async function (request, reply) {
       const { id } = request.params
 
+      const file = await request.file()
+      if (!file) {
+        return reply.notFound('File not found')
+      }
+
+      if (file.file.truncated) {
+        return reply.badRequest('File size limit exceeded')
+      }
+
+      const allowedMimeTypes = ['image/jpeg', 'image/png']
+      if (!allowedMimeTypes.includes(file.mimetype)) {
+        return reply.badRequest('Invalid file type')
+      }
+
+      const existingTask = await tasksRepository.findById(id)
+      if (!existingTask) {
+        return reply.notFound('Task not found')
+      }
+
+      let oldTempFilename: string | undefined
+      const oldFilename = existingTask.filename
+      if (oldFilename) {
+        oldTempFilename = await tasksFileManager.moveOldToTemp(oldFilename)
+      }
+
       return fastify.knex
         .transaction(async (trx) => {
-          const file = await request.file()
-          if (!file) {
-            return reply.notFound('File not found')
-          }
+          const newFilename = `${id}_${file.filename}`
+          await tasksRepository.update(id, { filename: newFilename }, trx)
 
-          if (file.file.truncated) {
-            return reply.badRequest('File size limit exceeded')
-          }
-
-          const allowedMimeTypes = ['image/jpeg', 'image/png']
-          if (!allowedMimeTypes.includes(file.mimetype)) {
-            return reply.badRequest('Invalid file type')
-          }
-
-          const filename = `${id}_${file.filename}`
-
-          const updatedTask = await tasksRepository.update(id, { filename }, trx)
-          if (!updatedTask) {
-            return reply.notFound('Task not found')
-          }
-
-          await tasksFileManager.upload(filename, file)
+          await tasksFileManager.upload(newFilename, file)
 
           return { message: 'File uploaded successfully' }
         })
-        .catch(() => {
-          reply.internalServerError('Transaction failed.')
+        .catch(async (err) => {
+          if (oldFilename && oldTempFilename) {
+            await tasksFileManager.moveTempToOld(oldTempFilename, oldFilename)
+          }
+          fastify.log.error(err)
+          return reply.internalServerError('Transaction failed.')
         })
     }
   )

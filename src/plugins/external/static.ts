@@ -9,11 +9,6 @@ export const autoConfig = (fastify: FastifyInstance): FastifyStaticOptions => {
     fs.mkdirSync(dirPath)
   }
 
-  const dirTasksPath = path.join(dirPath, fastify.config.UPLOAD_TASKS_DIRNAME)
-  if (!fs.existsSync(dirTasksPath)) {
-    fs.mkdirSync(dirTasksPath)
-  }
-
   return {
     root: path.join(import.meta.dirname, '../../..'),
     prefix: `/${fastify.config.UPLOAD_DIRNAME}`

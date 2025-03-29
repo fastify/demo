@@ -636,6 +636,11 @@ describe('Tasks api (logged user only)', () => {
       it('File upload transaction should rollback on error', async (t) => {
         const app = await build(t)
 
+        // Should preserve old file on transaction failure
+        const taskFilename = `${taskId}_${filename}`
+        const oldFilePath = path.join(uploadDirTask, taskFilename)
+        assert.ok(fs.existsSync(oldFilePath))
+
         const { mock: mockPipeline } = t.mock.method(fs, 'createWriteStream')
         mockPipeline.mockImplementationOnce(() => {
           throw new Error()
@@ -653,13 +658,14 @@ describe('Tasks api (logged user only)', () => {
         })
 
         assert.strictEqual(res.statusCode, 500)
-        assert.strictEqual(mockLogError.callCount(), 1)
+        assert.strictEqual(mockLogError.callCount(), 2)
 
-        const arg = mockLogError.calls[0].arguments[0] as unknown as {
+        const arg = mockLogError.calls[1].arguments[0] as unknown as {
           err: Error;
         }
 
         assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+        assert.ok(fs.existsSync(oldFilePath))
       })
     })
 
@@ -734,8 +740,11 @@ describe('Tasks api (logged user only)', () => {
         })
 
         assert.strictEqual(res.statusCode, 204)
-
         const files = fs.readdirSync(uploadDirTask)
+          .filter((name) => {
+            const full = path.join(uploadDirTask, name)
+            return fs.statSync(full).isFile() && !name.startsWith('.')
+          })
         assert.strictEqual(files.length, 0)
       })
 
@@ -774,7 +783,8 @@ describe('Tasks api (logged user only)', () => {
         const arg = mockLogWarn.calls[0].arguments[0]
 
         assert.strictEqual(mockLogWarn.callCount(), 1)
-        assert.deepStrictEqual(arg, 'File path \'does_not_exist.png\' not found')
+        const filePath = app.tasksFileManager.buildFilePath('does_not_exist.png')
+        assert.deepStrictEqual(arg, `File path '${filePath}' not found`)
       })
 
       it('File deletion transaction should rollback on error', async (t) => {

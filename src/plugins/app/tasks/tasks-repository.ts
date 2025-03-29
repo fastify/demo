@@ -58,8 +58,8 @@ function createRepository (fastify: FastifyInstance) {
       }
     },
 
-    async findById (id: number) {
-      return knex<Task>('tasks').where({ id }).first()
+    async findById (id: number, trx?: Knex) {
+      return (trx ?? knex)<Task>('tasks').where({ id }).first()
     },
 
     async findByFilename (filename: string) {
@@ -99,21 +99,6 @@ function createRepository (fastify: FastifyInstance) {
       const affectedRows = await knex<Task>('tasks').where({ id }).delete()
 
       return affectedRows > 0
-    },
-
-    async assign (id: number, userId?: number) {
-      // Return updated record or null if not found
-      const task = await this.findById(id)
-      if (!task) {
-        return null
-      }
-
-      await knex<Task>('tasks')
-        .where({ id })
-        .update({ assigned_user_id: userId ?? undefined })
-
-      // Return the updated row
-      return this.findById(id)
     }
   }
 }
