@@ -99,6 +99,10 @@ function createRepository (fastify: FastifyInstance) {
       const affectedRows = await knex<Task>('tasks').where({ id }).delete()
 
       return affectedRows > 0
+    },
+
+    createStream () {
+      return knex.select('*').from('tasks').stream()
     }
   }
 }

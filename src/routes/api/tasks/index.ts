@@ -319,8 +319,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      // TODO: in repository
-      const queryStream = fastify.knex.select('*').from('tasks').stream()
+      const queryStream = tasksRepository.createStream()
 
       const csvTransform = stringify({
         header: true,
