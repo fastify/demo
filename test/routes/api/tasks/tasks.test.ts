@@ -659,7 +659,7 @@ describe('Tasks api (logged user only)', () => {
 
         const { mock: mockPipeline } = t.mock.method(fs, 'createWriteStream')
         mockPipeline.mockImplementationOnce(() => {
-          throw new Error()
+          throw new Error('Kaboom!')
         })
 
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
@@ -674,13 +674,13 @@ describe('Tasks api (logged user only)', () => {
         })
 
         assert.strictEqual(res.statusCode, 500)
-        assert.strictEqual(mockLogError.callCount(), 2)
+        assert.strictEqual(mockLogError.callCount(), 1)
 
-        const arg = mockLogError.calls[1].arguments[0] as unknown as {
+        const arg = mockLogError.calls[0].arguments[0] as unknown as {
           err: Error;
         }
 
-        assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+        assert.deepStrictEqual(arg.err.message, 'Kaboom!')
         assert.ok(fs.existsSync(oldFilePath))
       })
     })
@@ -807,7 +807,7 @@ describe('Tasks api (logged user only)', () => {
         const app = await build(t)
         const { mock: mockPipeline } = t.mock.method(fs.promises, 'unlink')
         mockPipeline.mockImplementationOnce(() => {
-          return Promise.reject(new Error())
+          return Promise.reject(new Error('Kaboom!'))
         })
 
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
@@ -825,7 +825,7 @@ describe('Tasks api (logged user only)', () => {
           err: Error;
         }
 
-        assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+        assert.deepStrictEqual(arg.err.message, 'Kaboom!')
       })
     })
   })

@@ -232,8 +232,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           if (oldFilename && oldTempFilename) {
             await tasksFileManager.moveTempToOld(oldTempFilename, oldFilename)
           }
-          fastify.log.error(err)
-          return reply.internalServerError('Transaction failed.')
+
+          throw err
         })
     }
   )
@@ -300,9 +300,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           reply.code(204)
 
           return { message: 'File deleted successfully' }
-        })
-        .catch(() => {
-          reply.internalServerError('Transaction failed.')
         })
     }
   )
