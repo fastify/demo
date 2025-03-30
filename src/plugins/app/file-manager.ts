@@ -34,7 +34,7 @@ function createFileManager (fastify: FastifyInstance) {
       await fs.promises.rename(source, destination)
     },
 
-    async safeUnlink (filePath: string) {
+    async unlink (filePath: string) {
       try {
         await fs.promises.unlink(filePath)
       } catch (err) {

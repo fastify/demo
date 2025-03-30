@@ -53,7 +53,7 @@ function createUploader (fastify: FastifyInstance) {
 
     async delete (filename: string) {
       const filePath = buildFilePath(filename)
-      await fileManager.safeUnlink(filePath)
+      await fileManager.unlink(filePath)
     },
 
     buildFilePath
