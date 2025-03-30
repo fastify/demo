@@ -77,7 +77,7 @@ export async function build (t?: TestContext) {
   const app = (await buildApplication(
     argv,
     config(),
-    { ...serverOptions }
+    serverOptions
   )) as FastifyInstance
 
   // This is after start, so we can't decorate the instance using `.decorate`
