@@ -22,7 +22,6 @@ function createUploader (fastify: FastifyInstance) {
 
   const tempPath = path.join(uploadPath, 'temp')
 
-  // Prepare directories
   fileManager.ensureDir(uploadPath)
   fileManager.ensureDir(tempPath)
 
