@@ -1,0 +1,57 @@
+import { ReturnType } from '@sinclair/typebox'
+import { FastifyInstance } from 'fastify'
+import fp from 'fastify-plugin'
+import fs from 'fs'
+import { pipeline } from 'node:stream/promises'
+import * as crypto from 'node:crypto'
+import fastifyMultipart from '../external/multipart.js'
+
+declare module 'fastify' {
+  export interface FastifyInstance {
+    fileManager: ReturnType<typeof createFileManager>
+  }
+}
+
+function createFileManager (fastify: FastifyInstance) {
+  return {
+    ensureDir (dir: string) {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true })
+      }
+    },
+
+    async upload (file: fastifyMultipart.MultipartFile, destPath: string) {
+      await pipeline(file.file, fs.createWriteStream(destPath))
+    },
+
+    async move (source: string, destination: string) {
+      await fs.promises.rename(source, destination)
+    },
+
+    async safeUnlink (filePath: string) {
+      try {
+        await fs.promises.unlink(filePath)
+      } catch (err) {
+        if (isErrnoException(err) && err.code === 'ENOENT') {
+          fastify.log.warn(`File path '${filePath}' not found`)
+        } else {
+          throw err
+        }
+      }
+    },
+
+    randomSuffix () {
+      return crypto.randomBytes(8).toString('hex')
+    }
+  }
+}
+
+function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error
+}
+
+export default fp(async (fastify) => {
+  fastify.decorate('fileManager', createFileManager(fastify))
+}, {
+  name: 'file-manager'
+})
