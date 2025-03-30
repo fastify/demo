@@ -5,7 +5,7 @@ import {
 import { UpdateCredentialsSchema } from '../../../schemas/users.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { usersRepository } = fastify
+  const { usersRepository, passwordManager } = fastify
   fastify.put(
     '/update-password',
     {
@@ -39,7 +39,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return reply.code(401).send({ message: 'User does not exist.' })
         }
 
-        const isPasswordValid = await fastify.compare(
+        const isPasswordValid = await passwordManager.compare(
           currentPassword,
           user.password
         )
@@ -53,7 +53,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           return { message: 'New password cannot be the same as the current password.' }
         }
 
-        const hashedPassword = await fastify.hash(newPassword)
+        const hashedPassword = await passwordManager.hash(newPassword)
         await usersRepository.updatePassword(email, hashedPassword)
 
         return { message: 'Password updated successfully' }

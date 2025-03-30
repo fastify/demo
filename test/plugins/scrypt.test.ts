@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import Fastify from 'fastify'
-import scryptPlugin from '../../src/plugins/app/scrypt.js'
+import scryptPlugin from '../../src/plugins/app/password-manager.js'
 import assert from 'node:assert'
 
 test('scrypt works standalone', async t => {
@@ -13,17 +13,18 @@ test('scrypt works standalone', async t => {
   await app.ready()
 
   const password = 'test_password'
-  const hash = await app.hash(password)
+  const { passwordManager } = app
+  const hash = await passwordManager.hash(password)
   assert.ok(typeof hash === 'string')
 
-  const isValid = await app.compare(password, hash)
+  const isValid = await passwordManager.compare(password, hash)
   assert.ok(isValid, 'compare should return true for correct password')
 
-  const isInvalid = await app.compare('wrong_password', hash)
+  const isInvalid = await passwordManager.compare('wrong_password', hash)
   assert.ok(!isInvalid, 'compare should return false for incorrect password')
 
   await assert.rejects(
-    () => app.compare(password, 'malformed_hash'),
+    () => passwordManager.compare(password, 'malformed_hash'),
     'compare should throw an error for malformed hash'
   )
 })

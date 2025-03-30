@@ -5,7 +5,7 @@ import {
 import { CredentialsSchema } from '../../../schemas/auth.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { usersRepository } = fastify
+  const { usersRepository, passwordManager } = fastify
   fastify.post(
     '/login',
     {
@@ -30,7 +30,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         const user = await usersRepository.findByEmail(email, trx)
 
         if (user) {
-          const isPasswordValid = await fastify.compare(
+          const isPasswordValid = await passwordManager.compare(
             password,
             user.password
           )

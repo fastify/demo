@@ -7,7 +7,7 @@ describe('Auth api', () => {
     it('Transaction should rollback on error', async (t) => {
       const app = await build(t)
 
-      const { mock: mockCompare } = t.mock.method(app, 'compare')
+      const { mock: mockCompare } = t.mock.method(app.passwordManager, 'compare')
       mockCompare.mockImplementationOnce((value: string, hash: string) => {
         throw new Error()
       })
