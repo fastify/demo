@@ -24,6 +24,12 @@ function createFileManager (fastify: FastifyInstance) {
       await pipeline(file.file, fs.createWriteStream(destPath))
     },
 
+    /**
+     * May fail if `source` and `destination` are on different devices or volumes.
+     *
+     * In such cases, fallback to a "copy + delete" strategy.
+     * @see https://stackoverflow.com/a/29105404
+     */
     async move (source: string, destination: string) {
       await fs.promises.rename(source, destination)
     },
