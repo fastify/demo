@@ -11,6 +11,8 @@ import {
   TaskPaginationResultSchema
 } from '../../../schemas/tasks.js'
 import path from 'node:path'
+import { stringify } from 'csv-stringify'
+import { createGzip } from 'node:zlib'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { tasksRepository, tasksFileManager } = fastify
@@ -302,6 +304,36 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         .catch(() => {
           reply.internalServerError('Transaction failed.')
         })
+    }
+  )
+
+  fastify.get(
+    '/download/csv',
+    {
+      schema: {
+        response: {
+          200: { type: 'string', contentMediaType: 'application/gzip' },
+          400: Type.Object({ message: Type.String() })
+        },
+        tags: ['Tasks']
+      }
+    },
+    async function (request, reply) {
+      // TODO: in repository
+      const queryStream = fastify.knex.select('*').from('tasks').stream()
+
+      const csvTransform = stringify({
+        header: true,
+        columns: undefined
+      })
+
+      reply.header('Content-Type', 'application/gzip')
+      reply.header(
+        'Content-Disposition',
+      `attachment; filename="${encodeURIComponent('tasks.csv.gz')}"`
+      )
+
+      return queryStream.pipe(csvTransform).pipe(createGzip())
     }
   )
 }

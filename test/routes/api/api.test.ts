@@ -17,7 +17,7 @@ test('GET /api with no login', async (t) => {
 test('GET /api with cookie', async (t) => {
   const app = await build(t)
 
-  const res = await app.injectWithLogin('basic', {
+  const res = await app.injectWithLogin('basic@example.com', {
     url: '/api'
   })
 

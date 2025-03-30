@@ -4,7 +4,7 @@ import { build } from '../../../helper.js'
 import { FastifyInstance } from 'fastify'
 import { scryptHash } from '../../../../src/plugins/app/scrypt.js'
 
-async function createUser (app: FastifyInstance, userData: Partial<{ username: string; password: string }>) {
+async function createUser (app: FastifyInstance, userData: Partial<{ username: string; email: string; password: string }>) {
   const [id] = await app.knex('users').insert(userData)
   return id
 }
@@ -14,7 +14,7 @@ async function deleteUser (app: FastifyInstance, username: string) {
 }
 
 async function updatePasswordWithLoginInjection (app: FastifyInstance, username: string, payload: { currentPassword: string; newPassword: string }) {
-  return app.injectWithLogin(username, {
+  return app.injectWithLogin(`${username}@example.com`, {
     method: 'PUT',
     url: '/api/users/update-password',
     payload
@@ -34,13 +34,13 @@ describe('Users API', async () => {
   })
 
   it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
-    await createUser(app, { username: 'random-user-0', password: hash })
+    await createUser(app, { username: 'random-user-0', email: 'random-user-0@example.com', password: hash })
 
-    const loginResponse = await app.injectWithLogin('random-user-0', {
+    const loginResponse = await app.injectWithLogin('random-user-0@example.com', {
       method: 'POST',
       url: '/api/auth/login',
       payload: {
-        username: 'random-user-0',
+        email: 'random-user-0@example.com',
         password: 'Password123$'
       }
     })
@@ -83,7 +83,7 @@ describe('Users API', async () => {
   })
 
   it('Should update the password successfully', async () => {
-    await createUser(app, { username: 'random-user-1', password: hash })
+    await createUser(app, { username: 'random-user-1', email: 'random-user-1@example.com', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-1', {
       currentPassword: 'Password123$',
       newPassword: 'NewPassword123$'
@@ -96,7 +96,7 @@ describe('Users API', async () => {
   })
 
   it('Should return 400 if the new password is the same as current password', async () => {
-    await createUser(app, { username: 'random-user-2', password: hash })
+    await createUser(app, { username: 'random-user-2', email: 'random-user-2@example.com', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-2', {
       currentPassword: 'Password123$',
       newPassword: 'Password123$'
@@ -109,7 +109,7 @@ describe('Users API', async () => {
   })
 
   it('Should return 400 if the newPassword password not match the required pattern', async () => {
-    await createUser(app, { username: 'random-user-3', password: hash })
+    await createUser(app, { username: 'random-user-3', email: 'random-user-3@example.com', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-3', {
       currentPassword: 'Password123$',
       newPassword: 'password123$'
@@ -122,7 +122,7 @@ describe('Users API', async () => {
   })
 
   it('Should return 401 the current password is incorrect', async () => {
-    await createUser(app, { username: 'random-user-4', password: hash })
+    await createUser(app, { username: 'random-user-4', email: 'random-user-4@example.com', password: hash })
     const res = await updatePasswordWithLoginInjection(app, 'random-user-4', {
       currentPassword: 'WrongPassword123$',
       newPassword: 'Password123$'
@@ -135,12 +135,12 @@ describe('Users API', async () => {
   })
 
   it('Should return 401 if user does not exist in the database', async () => {
-    await createUser(app, { username: 'random-user-5', password: hash })
-    const loginResponse = await app.injectWithLogin('random-user-5', {
+    await createUser(app, { username: 'random-user-5', email: 'random-user-5@example.com', password: hash })
+    const loginResponse = await app.injectWithLogin('random-user-5@example.com', {
       method: 'POST',
       url: '/api/auth/login',
       payload: {
-        username: 'random-user-5',
+        email: 'random-user-5@example.com',
         password: 'Password123$'
       }
     })
@@ -177,7 +177,7 @@ describe('Users API', async () => {
       throw new Error()
     })
 
-    await createUser(app, { username: 'random-user-6', password: hash })
+    await createUser(app, { username: 'random-user-6', email: 'random-user-6@example.com', password: hash })
 
     const res = await updatePasswordWithLoginInjection(app, 'random-user-6', {
       currentPassword: 'Password123$',

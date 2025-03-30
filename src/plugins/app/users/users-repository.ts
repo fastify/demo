@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
-import { User } from '../../../schemas/auth.js'
 import { Knex } from 'knex'
 import fp from 'fastify-plugin'
+import { Auth } from '../../../schemas/auth.js'
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -13,27 +13,27 @@ export function createUsersRepository (fastify: FastifyInstance) {
   const knex = fastify.knex
 
   return {
-    async findByUsername (username: string, trx?: Knex) {
-      const user: User = await (trx ?? knex)('users')
-        .select('id', 'username', 'password')
-        .where({ username })
+    async findByEmail (email: string, trx?: Knex) {
+      const user: Auth & { password: string } = await (trx ?? knex)('users')
+        .select('id', 'username', 'password', 'email')
+        .where({ email })
         .first()
 
       return user
     },
 
-    async updatePassword (username: string, hashedPassword: string) {
+    async updatePassword (email: string, hashedPassword: string) {
       return knex('users')
         .update({ password: hashedPassword })
-        .where({ username })
+        .where({ email })
     },
 
-    async findUserRolesByUsername (username: string, trx: Knex) {
+    async findUserRolesByEmail (email: string, trx: Knex) {
       const roles: ({ name: string })[] = await trx('roles')
         .select('roles.name')
         .join('user_roles', 'roles.id', '=', 'user_roles.role_id')
         .join('users', 'user_roles.user_id', '=', 'users.id')
-        .where('users.username', username)
+        .where('users.email', email)
 
       return roles
     }

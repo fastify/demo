@@ -24,10 +24,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const { username, password } = request.body
+      const { email, password } = request.body
 
       return fastify.knex.transaction(async (trx) => {
-        const user = await usersRepository.findByUsername(username, trx)
+        const user = await usersRepository.findByEmail(email, trx)
 
         if (user) {
           const isPasswordValid = await fastify.compare(
@@ -35,11 +35,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
             user.password
           )
           if (isPasswordValid) {
-            const roles = await usersRepository.findUserRolesByUsername(username, trx)
+            const roles = await usersRepository.findUserRolesByEmail(email, trx)
 
             request.session.user = {
               id: user.id,
-              username,
+              email: user.email,
+              username: user.username,
               roles: roles.map((role) => role.name)
             }
 
@@ -51,7 +52,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
         reply.status(401)
 
-        return { message: 'Invalid username or password.' }
+        return { message: 'Invalid email or password.' }
       }).catch(() => {
         reply.internalServerError('Transaction failed.')
       })

@@ -28,12 +28,12 @@ export function expectValidationError (res: LightMyRequestResponse, expectedMess
   assert.strictEqual(message, expectedMessage)
 }
 
-async function login (this: FastifyInstance, username: string) {
+async function login (this: FastifyInstance, email: string) {
   const res = await this.inject({
     method: 'POST',
     url: '/api/auth/login',
     payload: {
-      username,
+      email,
       password: 'Password123$'
     }
   })
@@ -51,10 +51,10 @@ async function login (this: FastifyInstance, username: string) {
 
 async function injectWithLogin (
   this: FastifyInstance,
-  username: string,
+  email: string,
   opts: InjectOptions
 ) {
-  const cookieValue = await this.login(username)
+  const cookieValue = await this.login(email)
 
   opts.cookies = {
     ...opts.cookies,
@@ -77,7 +77,7 @@ export async function build (t?: TestContext) {
   const app = (await buildApplication(
     argv,
     config(),
-    serverOptions
+    { ...serverOptions }
   )) as FastifyInstance
 
   // This is after start, so we can't decorate the instance using `.decorate`

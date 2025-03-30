@@ -30,10 +30,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { newPassword, currentPassword } = request.body
-      const username = request.session.user.username
+      const { email } = request.session.user
 
       try {
-        const user = await usersRepository.findByUsername(username)
+        const user = await usersRepository.findByEmail(email)
 
         if (!user) {
           return reply.code(401).send({ message: 'User does not exist.' })
@@ -54,11 +54,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         }
 
         const hashedPassword = await fastify.hash(newPassword)
-        await usersRepository.updatePassword(username, hashedPassword)
+        await usersRepository.updatePassword(email, hashedPassword)
 
         return { message: 'Password updated successfully' }
-      } catch (error) {
-        reply.internalServerError()
+      } catch (err) {
+        console.error(err)
+        fastify.log.error(err)
+        reply.internalServerError('Failed to update password')
       }
     }
   )
