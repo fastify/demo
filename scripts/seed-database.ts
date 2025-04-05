@@ -47,25 +47,29 @@ async function truncateTables (connection: Connection) {
 }
 
 async function seedUsers (connection: Connection) {
-  const usernames = ['basic', 'moderator', 'admin']
+  const users = [
+    { username: 'basic', email: 'basic@example.com' },
+    { username: 'moderator', email: 'moderator@example.com' },
+    { username: 'admin', email: 'admin@example.com' }
+  ]
   const hash = await scryptHash('Password123$')
 
   // The goal here is to create a role hierarchy
   // E.g. an admin should have all the roles
   const rolesAccumulator: number[] = []
 
-  for (const username of usernames) {
+  for (const user of users) {
     const [userResult] = await connection.execute(`
-      INSERT INTO users (username, password)
-      VALUES (?, ?)
-    `, [username, hash])
+      INSERT INTO users (username, email, password)
+      VALUES (?, ?, ?)
+    `, [user.username, user.email, hash])
 
     const userId = (userResult as { insertId: number }).insertId
 
     const [roleResult] = await connection.execute(`
       INSERT INTO roles (name)
       VALUES (?)
-    `, [username])
+    `, [user.username])
 
     const newRoleId = (roleResult as { insertId: number }).insertId
 

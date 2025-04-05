@@ -17,6 +17,8 @@ on:
 
 jobs:
   build-and-test:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -43,6 +45,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
+          check-latest: true
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies

@@ -18,7 +18,7 @@ describe('Auth api', () => {
         method: 'POST',
         url: '/api/auth/login',
         payload: {
-          username: 'basic',
+          email: 'basic@example.com',
           password: 'Password123$'
         }
       })
@@ -37,11 +37,11 @@ describe('Auth api', () => {
       const app = await build(t)
 
       const invalidPayload = {
-        username: '',
+        email: '',
         password: 'Password123$'
       }
 
-      const res = await app.injectWithLogin('basic', {
+      const res = await app.injectWithLogin('basic@example.com', {
         method: 'POST',
         url: '/api/auth/login',
         payload: invalidPayload
@@ -49,7 +49,7 @@ describe('Auth api', () => {
 
       expectValidationError(
         res,
-        'body/username must NOT have fewer than 1 characters'
+        'body/email must NOT have fewer than 1 characters'
       )
     })
 
@@ -60,7 +60,7 @@ describe('Auth api', () => {
         method: 'POST',
         url: '/api/auth/login',
         payload: {
-          username: 'basic',
+          email: 'basic@example.com',
           password: 'Password123$'
         }
       })
@@ -76,17 +76,17 @@ describe('Auth api', () => {
 
       const testCases = [
         {
-          username: 'invalid_user',
+          email: 'invalid@email.com',
           password: 'password',
-          description: 'invalid username'
+          description: 'invalid email'
         },
         {
-          username: 'basic',
+          email: 'basic@example.com',
           password: 'wrong_password',
           description: 'invalid password'
         },
         {
-          username: 'invalid_user',
+          email: 'invalid@email.com',
           password: 'wrong_password',
           description: 'both invalid'
         }
@@ -97,7 +97,7 @@ describe('Auth api', () => {
           method: 'POST',
           url: '/api/auth/login',
           payload: {
-            username: testCase.username,
+            email: testCase.email,
             password: testCase.password
           }
         })
@@ -109,7 +109,7 @@ describe('Auth api', () => {
         )
 
         assert.deepStrictEqual(JSON.parse(res.payload), {
-          message: 'Invalid username or password.'
+          message: 'Invalid email or password.'
         })
       }
     })
