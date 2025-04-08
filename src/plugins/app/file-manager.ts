@@ -5,6 +5,8 @@ import fs from 'fs'
 import { pipeline } from 'node:stream/promises'
 import * as crypto from 'node:crypto'
 import fastifyMultipart from '../external/multipart.js'
+import sanitize from 'sanitize-filename'
+import path from 'node:path'
 
 declare module 'fastify' {
   export interface FastifyInstance {
@@ -45,6 +47,9 @@ function createFileManager (fastify: FastifyInstance) {
         }
       }
     },
+
+    // Centralize filename upload sanitization
+    safeJoin: (uploadPath: string, filename: string) => path.join(uploadPath, sanitize(filename)),
 
     randomSuffix () {
       return crypto.randomBytes(8).toString('hex')

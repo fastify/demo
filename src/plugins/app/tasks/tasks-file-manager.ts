@@ -25,8 +25,8 @@ function createUploader (fastify: FastifyInstance) {
   fileManager.ensureDir(uploadPath)
   fileManager.ensureDir(tempPath)
 
-  const buildFilePath = (filename: string) => path.join(uploadPath, filename)
-  const buildTempFilePath = (filename: string) => path.join(tempPath, filename)
+  const buildFilePath = (filename: string) => fileManager.safeJoin(uploadPath, filename)
+  const buildTempFilePath = (filename: string) => fileManager.safeJoin(tempPath, filename)
 
   return {
     async upload (filename: string, file: fastifyMultipart.MultipartFile) {

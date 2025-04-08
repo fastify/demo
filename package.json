@@ -57,7 +57,8 @@
     "fastify-plugin": "^5.0.1",
     "knex": "^3.1.0",
     "mysql2": "^3.11.3",
-    "postgrator": "^8.0.0"
+    "postgrator": "^8.0.0",
+    "sanitize-filename": "^1.6.3"
   },
   "devDependencies": {
     "@types/node": "^22.5.5",
