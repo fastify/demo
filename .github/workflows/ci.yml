@@ -15,6 +15,9 @@ on:
       - "docs/**"
       - "*.md"
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     permissions:
@@ -42,6 +45,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
