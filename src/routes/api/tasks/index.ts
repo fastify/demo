@@ -4,7 +4,6 @@ import {
 } from '@fastify/type-provider-typebox'
 import {
   TaskSchema,
-  Task,
   CreateTaskSchema,
   UpdateTaskSchema,
   TaskStatusEnum,
@@ -12,12 +11,11 @@ import {
   TaskPaginationResultSchema
 } from '../../../schemas/tasks.js'
 import path from 'node:path'
-import fs from 'node:fs'
-import { pipeline } from 'node:stream/promises'
-import { createGzip } from 'node:zlib'
 import { stringify } from 'csv-stringify'
+import { createGzip } from 'node:zlib'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const { tasksRepository, tasksFileManager } = fastify
   fastify.get(
     '/',
     {
@@ -30,36 +28,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request) {
-      const q = request.query
-
-      const offset = (q.page - 1) * q.limit
-
-      const query = fastify
-        .knex<Task & { total: number }>('tasks')
-        .select('*')
-        .select(fastify.knex.raw('count(*) OVER() as total'))
-
-      if (q.author_id !== undefined) {
-        query.where({ author_id: q.author_id })
-      }
-
-      if (q.assigned_user_id !== undefined) {
-        query.where({ assigned_user_id: q.assigned_user_id })
-      }
-
-      if (q.status !== undefined) {
-        query.where({ status: q.status })
-      }
-
-      const tasks = await query
-        .limit(q.limit)
-        .offset(offset)
-        .orderBy('created_at', q.order)
-
-      return {
-        tasks,
-        total: tasks.length > 0 ? Number(tasks[0].total) : 0
-      }
+      return tasksRepository.paginate(request.query)
     }
   )
 
@@ -79,7 +48,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const task = await fastify.knex<Task>('tasks').where({ id }).first()
+      const task = await tasksRepository.findById(id)
 
       if (!task) {
         return reply.notFound('Task not found')
@@ -103,9 +72,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const newTask = { ...request.body, author_id: request.session.user.id, status: TaskStatusEnum.New }
+      const newTask = {
+        ...request.body,
+        author_id: request.session.user.id,
+        status: TaskStatusEnum.New
+      }
 
-      const [id] = await fastify.knex<Task>('tasks').insert(newTask)
+      const id = await tasksRepository.create(newTask)
 
       reply.code(201)
 
@@ -130,16 +103,13 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const affectedRows = await fastify
-        .knex<Task>('tasks')
-        .where({ id })
-        .update(request.body)
+      const updatedTask = await tasksRepository.update(id, request.body)
 
-      if (affectedRows === 0) {
+      if (!updatedTask) {
         return reply.notFound('Task not found')
       }
 
-      return fastify.knex<Task>('tasks').where({ id }).first()
+      return updatedTask
     }
   )
 
@@ -159,17 +129,12 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       preHandler: (request, reply) => request.isAdmin(reply)
     },
     async function (request, reply) {
-      const { id } = request.params
-      const affectedRows = await fastify
-        .knex<Task>('tasks')
-        .where({ id })
-        .delete()
-
-      if (affectedRows === 0) {
+      const deleted = await tasksRepository.delete(request.params.id)
+      if (!deleted) {
         return reply.notFound('Task not found')
       }
 
-      reply.code(204).send(null)
+      return reply.code(204).send(null)
     }
   )
 
@@ -193,17 +158,14 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { id } = request.params
-      const { userId } = request.body
 
-      const task = await fastify.knex<Task>('tasks').where({ id }).first()
+      const task = await tasksRepository.findById(id)
       if (!task) {
         return reply.notFound('Task not found')
       }
 
-      await fastify
-        .knex('tasks')
-        .where({ id })
-        .update({ assigned_user_id: userId ?? null })
+      const { userId } = request.body
+      await tasksRepository.update(id, { assigned_user_id: userId ?? null })
 
       task.assigned_user_id = userId
 
@@ -232,45 +194,47 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async function (request, reply) {
       const { id } = request.params
 
-      return fastify.knex.transaction(async (trx) => {
-        const file = await request.file()
-        if (!file) {
-          return reply.notFound('File not found')
-        }
+      const file = await request.file()
+      if (!file) {
+        return reply.notFound('File not found')
+      }
 
-        if (file.file.truncated) {
-          return reply.badRequest('File size limit exceeded')
-        }
+      if (file.file.truncated) {
+        return reply.badRequest('File size limit exceeded')
+      }
 
-        const allowedMimeTypes = ['image/jpeg', 'image/png']
-        if (!allowedMimeTypes.includes(file.mimetype)) {
-          return reply.badRequest('Invalid file type')
-        }
+      const allowedMimeTypes = ['image/jpeg', 'image/png']
+      if (!allowedMimeTypes.includes(file.mimetype)) {
+        return reply.badRequest('Invalid file type')
+      }
 
-        const filename = `${id}_${file.filename}`
+      const existingTask = await tasksRepository.findById(id)
+      if (!existingTask) {
+        return reply.notFound('Task not found')
+      }
 
-        const affectedRows = await trx<Task>('tasks')
-          .where({ id })
-          .update({ filename })
+      let oldTempFilename: string | undefined
+      const oldFilename = existingTask.filename
+      if (oldFilename) {
+        oldTempFilename = await tasksFileManager.moveOldToTemp(oldFilename)
+      }
 
-        if (affectedRows === 0) {
-          return reply.notFound('Task not found')
-        }
+      return fastify.knex
+        .transaction(async (trx) => {
+          const newFilename = `${id}_${file.filename}`
+          await tasksRepository.update(id, { filename: newFilename }, trx)
 
-        const filePath = path.join(
-          import.meta.dirname,
-          '../../../..',
-          fastify.config.UPLOAD_DIRNAME,
-          fastify.config.UPLOAD_TASKS_DIRNAME,
-          filename
-        )
+          await tasksFileManager.upload(newFilename, file)
 
-        await pipeline(file.file, fs.createWriteStream(filePath))
+          return { message: 'File uploaded successfully' }
+        })
+        .catch(async (err) => {
+          if (oldFilename && oldTempFilename) {
+            await tasksFileManager.moveTempToOld(oldTempFilename, oldFilename)
+          }
 
-        return { message: 'File uploaded successfully' }
-      }).catch(() => {
-        reply.internalServerError('Transaction failed.')
-      })
+          throw err
+        })
     }
   )
 
@@ -291,14 +255,17 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async function (request, reply) {
       const { filename } = request.params
 
-      const task = await fastify.knex<Task>('tasks').select('filename').where({ filename }).first()
+      const task = await tasksRepository.findByFilename(filename)
       if (!task) {
         return reply.notFound(`No task has filename "${filename}"`)
       }
 
       return reply.sendFile(
         task.filename as string,
-        path.join(fastify.config.UPLOAD_DIRNAME, fastify.config.UPLOAD_TASKS_DIRNAME)
+        path.join(
+          fastify.config.UPLOAD_DIRNAME,
+          fastify.config.UPLOAD_TASKS_DIRNAME
+        )
       )
     }
   )
@@ -320,41 +287,20 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async function (request, reply) {
       const { filename } = request.params
 
-      return fastify.knex.transaction(async (trx) => {
-        const affectedRows = await trx<Task>('tasks')
-          .where({ filename })
-          .update({ filename: null })
+      return fastify.knex
+        .transaction(async (trx) => {
+          const hasBeenUpdated = await tasksRepository.deleteFilename(filename, null, trx)
 
-        if (affectedRows === 0) {
-          return reply.notFound(`No task has filename "${filename}"`)
-        }
-
-        const filePath = path.join(
-          import.meta.dirname,
-          '../../../..',
-          fastify.config.UPLOAD_DIRNAME,
-          fastify.config.UPLOAD_TASKS_DIRNAME,
-          filename
-        )
-
-        try {
-          await fs.promises.unlink(filePath)
-        } catch (err) {
-          if (isErrnoException(err) && err.code === 'ENOENT') {
-            // A file could have been deleted by an external actor, e.g. system administrator.
-            // We log the error to keep a record of the failure, but consider that the operation was successful.
-            fastify.log.warn(`File path '${filename}' not found`)
-          } else {
-            throw err
+          if (!hasBeenUpdated) {
+            return reply.notFound(`No task has filename "${filename}"`)
           }
-        }
 
-        reply.code(204)
+          await tasksFileManager.delete(filename)
 
-        return { message: 'File deleted successfully' }
-      }).catch(() => {
-        reply.internalServerError('Transaction failed.')
-      })
+          reply.code(204)
+
+          return { message: 'File deleted successfully' }
+        })
     }
   )
 
@@ -370,7 +316,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const queryStream = fastify.knex.select('*').from('tasks').stream()
+      const queryStream = tasksRepository.createStream()
 
       const csvTransform = stringify({
         header: true,
@@ -386,10 +332,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       return queryStream.pipe(csvTransform).pipe(createGzip())
     }
   )
-}
-
-function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
-  return error instanceof Error && 'code' in error
 }
 
 export default plugin

@@ -3,8 +3,7 @@ import { scrypt, timingSafeEqual, randomBytes } from 'node:crypto'
 
 declare module 'fastify' {
   export interface FastifyInstance {
-    hash: typeof scryptHash;
-    compare: typeof compare
+    passwordManager: typeof passwordManager
   }
 }
 
@@ -13,6 +12,11 @@ const SCRYPT_COST = 65536
 const SCRYPT_BLOCK_SIZE = 8
 const SCRYPT_PARALLELIZATION = 2
 const SCRYPT_MAXMEM = 128 * SCRYPT_COST * SCRYPT_BLOCK_SIZE * 2
+
+const passwordManager = {
+  hash: scryptHash,
+  compare
+}
 
 export async function scryptHash (value: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -58,8 +62,7 @@ async function compare (value: string, hash: string): Promise<boolean> {
 }
 
 export default fp(async (fastify) => {
-  fastify.decorate('hash', scryptHash)
-  fastify.decorate('compare', compare)
+  fastify.decorate('passwordManager', passwordManager)
 }, {
-  name: 'scrypt'
+  name: 'password-manager'
 })
