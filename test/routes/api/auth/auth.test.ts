@@ -7,9 +7,9 @@ describe('Auth api', () => {
     it('Transaction should rollback on error', async (t) => {
       const app = await build(t)
 
-      const { mock: mockCompare } = t.mock.method(app, 'compare')
+      const { mock: mockCompare } = t.mock.method(app.passwordManager, 'compare')
       mockCompare.mockImplementationOnce((value: string, hash: string) => {
-        throw new Error()
+        throw new Error('Kaboom!')
       })
 
       const { mock: mockLogError } = t.mock.method(app.log, 'error')
@@ -30,7 +30,7 @@ describe('Auth api', () => {
       }
 
       assert.strictEqual(res.statusCode, 500)
-      assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+      assert.deepStrictEqual(arg.err.message, 'Kaboom!')
     })
 
     it('should return 400 if credentials payload is invalid', async (t) => {

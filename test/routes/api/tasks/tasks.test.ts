@@ -652,9 +652,14 @@ describe('Tasks api (logged user only)', () => {
       it('File upload transaction should rollback on error', async (t) => {
         const app = await build(t)
 
+        // Should preserve old file on transaction failure
+        const taskFilename = `${taskId}_${filename}`
+        const oldFilePath = path.join(uploadDirTask, taskFilename)
+        assert.ok(fs.existsSync(oldFilePath))
+
         const { mock: mockPipeline } = t.mock.method(fs, 'createWriteStream')
         mockPipeline.mockImplementationOnce(() => {
-          throw new Error()
+          throw new Error('Kaboom!')
         })
 
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
@@ -675,7 +680,8 @@ describe('Tasks api (logged user only)', () => {
           err: Error;
         }
 
-        assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+        assert.deepStrictEqual(arg.err.message, 'Kaboom!')
+        assert.ok(fs.existsSync(oldFilePath))
       })
     })
 
@@ -750,8 +756,11 @@ describe('Tasks api (logged user only)', () => {
         })
 
         assert.strictEqual(res.statusCode, 204)
-
         const files = fs.readdirSync(uploadDirTask)
+          .filter((name) => {
+            const full = path.join(uploadDirTask, name)
+            return fs.statSync(full).isFile() && !name.startsWith('.')
+          })
         assert.strictEqual(files.length, 0)
       })
 
@@ -790,14 +799,15 @@ describe('Tasks api (logged user only)', () => {
         const arg = mockLogWarn.calls[0].arguments[0]
 
         assert.strictEqual(mockLogWarn.callCount(), 1)
-        assert.deepStrictEqual(arg, 'File path \'does_not_exist.png\' not found')
+        const filePath = app.tasksFileManager.buildFilePath('does_not_exist.png')
+        assert.deepStrictEqual(arg, `File path '${filePath}' not found`)
       })
 
       it('File deletion transaction should rollback on error', async (t) => {
         const app = await build(t)
         const { mock: mockPipeline } = t.mock.method(fs.promises, 'unlink')
         mockPipeline.mockImplementationOnce(() => {
-          return Promise.reject(new Error())
+          return Promise.reject(new Error('Kaboom!'))
         })
 
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
@@ -815,7 +825,7 @@ describe('Tasks api (logged user only)', () => {
           err: Error;
         }
 
-        assert.deepStrictEqual(arg.err.message, 'Transaction failed.')
+        assert.deepStrictEqual(arg.err.message, 'Kaboom!')
       })
     })
   })

@@ -2,9 +2,10 @@ import {
   FastifyPluginAsyncTypebox,
   Type
 } from '@fastify/type-provider-typebox'
-import { CredentialsSchema, Auth } from '../../../schemas/auth.js'
+import { CredentialsSchema } from '../../../schemas/auth.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
+  const { usersRepository, passwordManager } = fastify
   fastify.post(
     '/login',
     {
@@ -26,22 +27,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       const { email, password } = request.body
 
       return fastify.knex.transaction(async (trx) => {
-        const user = await trx<Auth>('users')
-          .select('id', 'username', 'email', 'password')
-          .where({ email })
-          .first()
+        const user = await usersRepository.findByEmail(email, trx)
 
         if (user) {
-          const isPasswordValid = await fastify.compare(
+          const isPasswordValid = await passwordManager.compare(
             password,
             user.password
           )
           if (isPasswordValid) {
-            const roles = await trx<{ name: string }>('roles')
-              .select('roles.name')
-              .join('user_roles', 'roles.id', '=', 'user_roles.role_id')
-              .join('users', 'user_roles.user_id', '=', 'users.id')
-              .where('users.email', user.email)
+            const roles = await usersRepository.findUserRolesByEmail(email, trx)
 
             request.session.user = {
               id: user.id,
@@ -59,8 +53,6 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         reply.status(401)
 
         return { message: 'Invalid email or password.' }
-      }).catch(() => {
-        reply.internalServerError('Transaction failed.')
       })
     }
   )
