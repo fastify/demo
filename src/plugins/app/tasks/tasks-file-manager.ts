@@ -1,17 +1,14 @@
-import { ReturnType } from '@sinclair/typebox'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
 import path from 'path'
 import fastifyMultipart from '../../external/multipart.js'
+import { FileManager, kFileManager } from '../file-manager.js'
 
-declare module 'fastify' {
-  export interface FastifyInstance {
-    tasksFileManager: ReturnType<typeof createUploader>
-  }
-}
+export type TasksFileManager = ReturnType<typeof createUploader>
+export const kTasksFileManager = Symbol('app.tasksFileManager')
 
 function createUploader (fastify: FastifyInstance) {
-  const { fileManager } = fastify
+  const fileManager = fastify.getDecorator<FileManager>(kFileManager)
 
   const uploadPath = path.join(
     import.meta.dirname,
@@ -61,7 +58,7 @@ function createUploader (fastify: FastifyInstance) {
 }
 
 export default fp(async (fastify) => {
-  fastify.decorate('tasksFileManager', createUploader(fastify))
+  fastify.decorate(kTasksFileManager, createUploader(fastify))
 }, {
   name: 'tasks-file-manager',
   dependencies: ['file-manager']

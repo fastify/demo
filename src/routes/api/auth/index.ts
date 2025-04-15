@@ -3,9 +3,14 @@ import {
   Type
 } from '@fastify/type-provider-typebox'
 import { CredentialsSchema } from '../../../schemas/auth.js'
+import { kUsersRepository, UsersRepository } from '../../../plugins/app/users/users-repository.js'
+import { SessionData } from '../../../plugins/external/session.js'
+import { kPasswordManager, PasswordManager } from '../../../plugins/app/password-manager.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { usersRepository, passwordManager } = fastify
+  const usersRepository = fastify.getDecorator<UsersRepository>(kUsersRepository)
+  const passwordManager = fastify.getDecorator<PasswordManager>(kPasswordManager)
+
   fastify.post(
     '/login',
     {
@@ -37,7 +42,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           if (isPasswordValid) {
             const roles = await usersRepository.findUserRolesByEmail(email, trx)
 
-            request.session.user = {
+            const session = request.getDecorator<SessionData>('session')
+            session.auth = {
               id: user.id,
               email: user.email,
               username: user.username,
