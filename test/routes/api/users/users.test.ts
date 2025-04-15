@@ -2,7 +2,7 @@ import { it, describe, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert'
 import { build } from '../../../helper.js'
 import { FastifyInstance } from 'fastify'
-import { scryptHash } from '../../../../src/plugins/app/password-manager.js'
+import { kPasswordManager, PasswordManager, scryptHash } from '../../../../src/plugins/app/password-manager.js'
 
 async function createUser (app: FastifyInstance, userData: Partial<{ username: string; email: string; password: string }>) {
   const [id] = await app.knex('users').insert(userData)
@@ -172,7 +172,8 @@ describe('Users API', async () => {
   })
 
   it('Should handle errors gracefully and return 500 Internal Server Error when an unexpected error occurs', async (t) => {
-    const { mock: mockKnex } = t.mock.method(app.passwordManager, 'hash')
+    const passwordManager = app.getDecorator<PasswordManager>(kPasswordManager)
+    const { mock: mockKnex } = t.mock.method(passwordManager, 'hash')
     mockKnex.mockImplementation(() => {
       throw new Error()
     })

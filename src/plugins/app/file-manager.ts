@@ -1,4 +1,3 @@
-import { ReturnType } from '@sinclair/typebox'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
 import fs from 'fs'
@@ -8,11 +7,8 @@ import fastifyMultipart from '../external/multipart.js'
 import sanitize from 'sanitize-filename'
 import path from 'node:path'
 
-declare module 'fastify' {
-  export interface FastifyInstance {
-    fileManager: ReturnType<typeof createFileManager>
-  }
-}
+export type FileManager = ReturnType<typeof createFileManager>
+export const kFileManager = Symbol('app.fileManager')
 
 function createFileManager (fastify: FastifyInstance) {
   return {
@@ -62,7 +58,7 @@ function isErrnoException (error: unknown): error is NodeJS.ErrnoException {
 }
 
 export default fp(async (fastify) => {
-  fastify.decorate('fileManager', createFileManager(fastify))
+  fastify.decorate(kFileManager, createFileManager(fastify))
 }, {
   name: 'file-manager'
 })

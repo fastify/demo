@@ -13,9 +13,17 @@ import {
 import path from 'node:path'
 import { stringify } from 'csv-stringify'
 import { createGzip } from 'node:zlib'
+import { kTasksRepository, TasksRepository } from '../../../plugins/app/tasks/tasks-repository.js'
+import { kTasksFileManager, TasksFileManager } from '../../../plugins/app/tasks/tasks-file-manager.js'
+import { Auth } from '../../../schemas/auth.js'
+import { AuthorizationManager, kAuthorizationManager } from '../../../plugins/app/authorization.js'
+import { kAuth } from '../../../plugins/app/authentication.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { tasksRepository, tasksFileManager } = fastify
+  const tasksRepository = fastify.getDecorator<TasksRepository>(kTasksRepository)
+  const tasksFileManager = fastify.getDecorator<TasksFileManager>(kTasksFileManager)
+  const authorizationManager = fastify.getDecorator<AuthorizationManager>(kAuthorizationManager)
+
   fastify.get(
     '/',
     {
@@ -72,9 +80,10 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
+      const auth = request.getDecorator<Auth>(kAuth)
       const newTask = {
         ...request.body,
-        author_id: request.session.user.id,
+        author_id: auth.id,
         status: TaskStatusEnum.New
       }
 
@@ -126,7 +135,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         tags: ['Tasks']
       },
-      preHandler: (request, reply) => request.isAdmin(reply)
+      preHandler: authorizationManager.ensureIsAdmin
     },
     async function (request, reply) {
       const deleted = await tasksRepository.delete(request.params.id)
@@ -154,7 +163,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         },
         tags: ['Tasks']
       },
-      preHandler: (request, reply) => request.isModerator(reply)
+      preHandler: authorizationManager.ensureIsModerator
     },
     async function (request, reply) {
       const { id } = request.params

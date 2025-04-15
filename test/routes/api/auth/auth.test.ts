@@ -1,13 +1,15 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
 import { build, expectValidationError } from '../../../helper.js'
+import { kPasswordManager, PasswordManager } from '../../../../src/plugins/app/password-manager.js'
 
 describe('Auth api', () => {
   describe('POST /api/auth/login', () => {
     it('Transaction should rollback on error', async (t) => {
       const app = await build(t)
 
-      const { mock: mockCompare } = t.mock.method(app.passwordManager, 'compare')
+      const passwordManager = app.getDecorator<PasswordManager>(kPasswordManager)
+      const { mock: mockCompare } = t.mock.method(passwordManager, 'compare')
       mockCompare.mockImplementationOnce((value: string, hash: string) => {
         throw new Error('Kaboom!')
       })

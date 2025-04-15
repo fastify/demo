@@ -1,4 +1,4 @@
-import { ReturnType, Static } from '@sinclair/typebox'
+import { Static } from '@sinclair/typebox'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
 import {
@@ -9,11 +9,8 @@ import {
 } from '../../../schemas/tasks.js'
 import { Knex } from 'knex'
 
-declare module 'fastify' {
-  export interface FastifyInstance {
-    tasksRepository: ReturnType<typeof createRepository>;
-  }
-}
+export type TasksRepository = ReturnType<typeof createRepository>
+export const kTasksRepository = Symbol('app.tasksRepository')
 
 type CreateTask = Static<typeof CreateTaskSchema>
 type UpdateTask = Omit<Static<typeof UpdateTaskSchema>, 'assigned_user_id'> & {
@@ -109,7 +106,7 @@ function createRepository (fastify: FastifyInstance) {
 
 export default fp(
   function (fastify) {
-    fastify.decorate('tasksRepository', createRepository(fastify))
+    fastify.decorate(kTasksRepository, createRepository(fastify))
   },
   {
     name: 'tasks-repository',

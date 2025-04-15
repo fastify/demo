@@ -1,10 +1,13 @@
 import { FastifyInstance } from 'fastify'
+import { Auth } from '../../schemas/auth.js'
+import { kAuth } from '../../plugins/app/authentication.js'
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get('/', ({ session, protocol, hostname }) => {
+  fastify.get('/', (request) => {
+    const { username } = request.getDecorator<Auth>(kAuth)
     return {
       message:
-        `Hello ${session.user.username}! See documentation at ${protocol}://${hostname}/documentation`
+        `Hello ${username}! See documentation at ${request.protocol}://${request.hostname}/documentation`
     }
   })
 }

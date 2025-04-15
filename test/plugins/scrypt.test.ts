@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import Fastify from 'fastify'
-import scryptPlugin from '../../src/plugins/app/password-manager.js'
+import scryptPlugin, { kPasswordManager, PasswordManager } from '../../src/plugins/app/password-manager.js'
 import assert from 'node:assert'
 
 test('scrypt works standalone', async t => {
@@ -13,7 +13,7 @@ test('scrypt works standalone', async t => {
   await app.ready()
 
   const password = 'test_password'
-  const { passwordManager } = app
+  const passwordManager = app.getDecorator<PasswordManager>(kPasswordManager)
   const hash = await passwordManager.hash(password)
   assert.ok(typeof hash === 'string')
 

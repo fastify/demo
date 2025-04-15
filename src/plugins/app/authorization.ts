@@ -1,26 +1,28 @@
 import fp from 'fastify-plugin'
 import { FastifyReply, FastifyRequest } from 'fastify'
+import { Auth } from '../../schemas/auth.js'
+import { kAuth } from './authentication.js'
 
-declare module 'fastify' {
-  export interface FastifyRequest {
-    verifyAccess: typeof verifyAccess;
-    isModerator: typeof isModerator;
-    isAdmin: typeof isAdmin;
+export type AuthorizationManager = ReturnType<typeof createChecker>
+export const kAuthorizationManager = Symbol('app.authorizationManager')
+
+function createChecker () {
+  function ensureHasRole (request: FastifyRequest, reply: FastifyReply, role: string) {
+    const { roles } = request.getDecorator<Auth>(kAuth)
+    if (!roles.includes(role)) {
+      reply.status(403).send('You are not authorized to access this resource.')
+    }
   }
-}
 
-function verifyAccess (this: FastifyRequest, reply: FastifyReply, role: string) {
-  if (!this.session.user.roles.includes(role)) {
-    reply.status(403).send('You are not authorized to access this resource.')
+  return {
+    async ensureIsModerator (request: FastifyRequest, reply: FastifyReply) {
+      return ensureHasRole(request, reply, 'moderator')
+    },
+
+    async ensureIsAdmin (request: FastifyRequest, reply: FastifyReply) {
+      return ensureHasRole(request, reply, 'admin')
+    }
   }
-}
-
-async function isModerator (this: FastifyRequest, reply: FastifyReply) {
-  this.verifyAccess(reply, 'moderator')
-}
-
-async function isAdmin (this: FastifyRequest, reply: FastifyReply) {
-  this.verifyAccess(reply, 'admin')
 }
 
 /**
@@ -31,9 +33,7 @@ async function isAdmin (this: FastifyRequest, reply: FastifyReply) {
  */
 export default fp(
   async function (fastify) {
-    fastify.decorateRequest('verifyAccess', verifyAccess)
-    fastify.decorateRequest('isModerator', isModerator)
-    fastify.decorateRequest('isAdmin', isAdmin)
+    fastify.decorate(kAuthorizationManager, createChecker())
   },
   // You should name your plugins if you want to avoid name collisions
   // and/or to perform dependency checks.

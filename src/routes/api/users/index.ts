@@ -3,9 +3,14 @@ import {
   Type
 } from '@fastify/type-provider-typebox'
 import { UpdateCredentialsSchema } from '../../../schemas/users.js'
+import { kUsersRepository, UsersRepository } from '../../../plugins/app/users/users-repository.js'
+import { kPasswordManager, PasswordManager } from '../../../plugins/app/password-manager.js'
+import { Auth } from '../../../schemas/auth.js'
+import { kAuth } from '../../../plugins/app/authentication.js'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
-  const { usersRepository, passwordManager } = fastify
+  const usersRepository = fastify.getDecorator<UsersRepository>(kUsersRepository)
+  const passwordManager = fastify.getDecorator<PasswordManager>(kPasswordManager)
   fastify.put(
     '/update-password',
     {
@@ -30,7 +35,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const { newPassword, currentPassword } = request.body
-      const { email } = request.session.user
+      const { email } = request.getDecorator<Auth>(kAuth)
 
       const user = await usersRepository.findByEmail(email)
 

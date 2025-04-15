@@ -1,4 +1,5 @@
 import { FastifyInstance } from 'fastify'
+import { Authenticate, kAuthenticate } from '../../plugins/app/authentication.js'
 
 export default async function (fastify: FastifyInstance) {
   fastify.addHook('onRequest', async (request, reply) => {
@@ -6,8 +7,9 @@ export default async function (fastify: FastifyInstance) {
       return
     }
 
-    if (!request.session.user) {
-      reply.unauthorized('You must be authenticated to access this route.')
+    const success = request.getDecorator<Authenticate>(kAuthenticate)()
+    if (!success) {
+      return reply.unauthorized('You must be authenticated to access this route.')
     }
   })
 }

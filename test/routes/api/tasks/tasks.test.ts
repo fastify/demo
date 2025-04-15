@@ -14,6 +14,7 @@ import path from 'node:path'
 import FormData from 'form-data'
 import os from 'node:os'
 import { gunzipSync } from 'node:zlib'
+import { kTasksFileManager, TasksFileManager } from '../../../../src/plugins/app/tasks/tasks-file-manager.js'
 
 async function createUser (
   app: FastifyInstance,
@@ -799,7 +800,9 @@ describe('Tasks api (logged user only)', () => {
         const arg = mockLogWarn.calls[0].arguments[0]
 
         assert.strictEqual(mockLogWarn.callCount(), 1)
-        const filePath = app.tasksFileManager.buildFilePath('does_not_exist.png')
+
+        const tasksFileManager = app.getDecorator<TasksFileManager>(kTasksFileManager)
+        const filePath = tasksFileManager.buildFilePath('does_not_exist.png')
         assert.deepStrictEqual(arg, `File path '${filePath}' not found`)
       })
 
