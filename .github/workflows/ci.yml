@@ -54,7 +54,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm i
+        run: npm i --ignore-scripts
 
       - name: Build
         run: npm run build -- --noEmit
