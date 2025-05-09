@@ -1,11 +1,8 @@
 import fp from 'fastify-plugin'
 import { scrypt, timingSafeEqual, randomBytes } from 'node:crypto'
 
-declare module 'fastify' {
-  export interface FastifyInstance {
-    passwordManager: typeof passwordManager
-  }
-}
+export type PasswordManager = typeof passwordManager
+export const kPasswordManager = Symbol('app.passwordManager')
 
 const SCRYPT_KEYLEN = 32
 const SCRYPT_COST = 65536
@@ -62,7 +59,7 @@ async function compare (value: string, hash: string): Promise<boolean> {
 }
 
 export default fp(async (fastify) => {
-  fastify.decorate('passwordManager', passwordManager)
+  fastify.decorate(kPasswordManager, passwordManager)
 }, {
   name: 'password-manager'
 })
