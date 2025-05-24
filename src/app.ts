@@ -2,9 +2,10 @@
  * If you would like to turn your application into a standalone executable, look at server.js file
  */
 
-import path from 'node:path'
+import path, { resolve } from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import fastifyVite from '@fastify/vite'
 
 export const options = {
   ajv: {
@@ -43,6 +44,17 @@ export default async function serviceApp (
     cascadeHooks: true,
     options: { ...opts }
   })
+
+  await fastify.register(fastifyVite, {
+    // The compiled server will live in <root>/build which is the same depth as <root>/src,
+    // so we can use import.meta.dirname here
+    root: resolve(import.meta.dirname, '..'),
+    distDir: resolve(import.meta.dirname, '..', 'dist'), // Must match build.outDir in Vite config
+    renderer: '@fastify/react',
+    dev: fastify.config.FASTIFY_VITE_DEV_MODE
+  })
+
+  await fastify.vite.ready()
 
   fastify.setErrorHandler((err, request, reply) => {
     fastify.log.error(
