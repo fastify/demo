@@ -15,6 +15,7 @@ declare module 'fastify' {
       RATE_LIMIT_MAX: number;
       UPLOAD_DIRNAME: string;
       UPLOAD_TASKS_DIRNAME: string;
+      FASTIFY_VITE_DEV_MODE: boolean;
     };
   }
 }
@@ -77,6 +78,11 @@ const schema = {
     UPLOAD_TASKS_DIRNAME: {
       type: 'string',
       default: 'tasks'
+    },
+    // Vite
+    FASTIFY_VITE_DEV_MODE: {
+      type: 'boolean',
+      default: true
     }
   }
 }
