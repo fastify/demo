@@ -4,7 +4,7 @@
 
 import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
-import { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import type { FastifyInstance, FastifyPluginOptions } from 'fastify'
 
 export const options = {
   ajv: {
