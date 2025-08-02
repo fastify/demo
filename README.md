@@ -6,6 +6,12 @@ The aim of this repository is to provide a concrete example of a Fastify applica
 
 **Prerequisites:** You need to have Node.js version 22 or higher installed.
 
+## About the Application
+
+This demo is a simple task management API. 
+It allows users to create, retrieve, update, and delete tasks.
+Additional features include file uploads, CSV downloads, task assignment, and role-based access control.
+
 ## Getting started
 Install the dependencies:
 ```bash
@@ -23,6 +29,11 @@ To run it in the background:
 docker compose up -d
 ```
 
+To create the database, run:
+```bash
+npm run db:create
+```
+
 To create and update the database schema, run the migrations:
 ```bash
 npm run db:migrate
@@ -31,6 +42,11 @@ npm run db:migrate
 To populate the database with initial data, run:
 ```bash
 npm run db:seed
+```
+
+To drop the database, run:
+```bash
+npm run db:drop
 ```
 
 ### TypeScript
@@ -50,6 +66,12 @@ In production mode:
 ```bash
 npm run start
 ```
+
+### API Documentation
+
+The application exposes interactive API documentation using Swagger UI.
+
+Once the server is running, visit: http://localhost:3000/api/docs
 
 ### Testing
 To run the tests:
