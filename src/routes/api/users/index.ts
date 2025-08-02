@@ -1,5 +1,5 @@
 import {
-  type FastifyPluginAsyncTypebox,
+  FastifyPluginAsyncTypebox,
   Type
 } from '@fastify/type-provider-typebox'
 import { UpdateCredentialsSchema } from '../../../schemas/users.js'
