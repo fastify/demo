@@ -69,6 +69,6 @@
     "glob": "^11.0.2",
     "neostandard": "^0.12.1",
     "tsx": "^4.19.4",
-    "typescript": "~5.8.3"
+    "typescript": "~5.9.2"
   }
 }
