@@ -24,7 +24,7 @@ export default async function serviceApp (
   // those should be registered first as your application plugins might depend on them
   await fastify.register(fastifyAutoload, {
     dir: path.join(import.meta.dirname, 'plugins/external'),
-    options: { ...opts }
+    options: {}
   })
 
   // This loads all your application plugins defined in plugins/app
