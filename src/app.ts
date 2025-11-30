@@ -4,7 +4,7 @@
 
 import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
-import { FastifyInstance, FastifyPluginOptions } from 'fastify'
+import { FastifyError, FastifyInstance, FastifyPluginOptions } from 'fastify'
 
 export default async function serviceApp (
   fastify: FastifyInstance,
@@ -35,7 +35,7 @@ export default async function serviceApp (
     options: { ...opts }
   })
 
-  fastify.setErrorHandler((err, request, reply) => {
+  fastify.setErrorHandler((err: FastifyError, request, reply) => {
     fastify.log.error(
       {
         err,
