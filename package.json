@@ -66,6 +66,7 @@
     "form-data": "^4.0.4",
     "glob": "^11.0.3",
     "neostandard": "^0.12.2",
+    "pino-pretty": "^13.1.2",
     "tsx": "^4.20.5",
     "typescript": "~5.9.2"
   }
