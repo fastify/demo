@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "start": "npm run build && node --env-file=.env dist/server.js",
+    "start": "npm run build && node dist/server.js",
     "build": "tsc",
     "watch": "tsc -w",
     "dev": "tsx --env-file=.env ./src/server.ts",
