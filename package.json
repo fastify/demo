@@ -8,14 +8,12 @@
     "test": "test"
   },
   "scripts": {
-    "start": "npm run build && fastify start -l info dist/app.js",
+    "start": "npm run build && node dist/server.js",
     "build": "tsc",
     "watch": "tsc -w",
-    "dev": "npm run build && concurrently -k -p \"[{name}]\" -n \"TypeScript,App\" -c \"yellow.bold,cyan.bold\" \"npm:watch\" \"npm:dev:start\"",
-    "dev:start": "npm run build && fastify start --ignore-watch=.ts$ -w -l info -P dist/app.js",
+    "dev": "tsx --env-file=.env ./src/server.ts",
     "test": "npm run db:seed && c8 npm run test:run",
     "test:run": "glob -c \"tsx --test\" \"./test/**/*.ts\"",
-    "standalone": "npm run build && node --env-file=.env dist/server.js",
     "lint": "eslint --ignore-pattern=dist",
     "lint:fix": "npm run lint -- --fix",
     "db:create": "tsx --env-file=.env ./scripts/create-database.ts",
@@ -54,7 +52,6 @@
     "concurrently": "^9.2.1",
     "csv-stringify": "^6.6.0",
     "fastify": "^5.6.0",
-    "fastify-cli": "^7.4.0",
     "fastify-plugin": "^5.0.1",
     "knex": "^3.1.0",
     "mysql2": "^3.15.0",
@@ -69,6 +66,7 @@
     "form-data": "^4.0.4",
     "glob": "^11.0.3",
     "neostandard": "^0.12.2",
+    "pino-pretty": "^13.1.2",
     "tsx": "^4.20.5",
     "typescript": "~5.9.2"
   }
