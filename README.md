@@ -19,7 +19,13 @@ npm install
 ```
 
 ### Database
-You can run a MySQL instance with Docker:
+
+Prepare the environment file:
+```bash
+cp .env.example .env
+```
+
+Run MySQL with Docker:
 ```bash
 docker compose up
 ```
