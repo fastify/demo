@@ -10,13 +10,13 @@ declare module 'fastify' {
 
 export const autoConfig = (fastify: FastifyInstance) => {
   return {
-    client: 'mysql2',
+    client: 'pg',
     connection: {
-      host: fastify.config.MYSQL_HOST,
-      user: fastify.config.MYSQL_USER,
-      password: fastify.config.MYSQL_PASSWORD,
-      database: fastify.config.MYSQL_DATABASE,
-      port: Number(fastify.config.MYSQL_PORT)
+      host: fastify.config.POSTGRES_HOST,
+      user: fastify.config.POSTGRES_USER,
+      password: fastify.config.POSTGRES_PASSWORD,
+      database: fastify.config.POSTGRES_DATABASE,
+      port: Number(fastify.config.POSTGRES_PORT)
     },
     pool: { min: 2, max: 10 }
   }

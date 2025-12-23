@@ -71,8 +71,10 @@ function createRepository (fastify: FastifyInstance) {
     },
 
     async create (newTask: CreateTask) {
-      const [id] = await knex<Task>('tasks').insert(newTask)
-      return id
+      const [row] = await knex<Task>('tasks')
+        .insert(newTask)
+        .returning('id')
+      return row.id
     },
 
     async update (id: number, changes: UpdateTask, trx?: Knex) {

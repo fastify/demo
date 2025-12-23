@@ -19,7 +19,7 @@ npm install
 ```
 
 ### Database
-You can run a MySQL instance with Docker:
+You can run a PostgreSQL instance with Docker:
 ```bash
 docker compose up
 ```
