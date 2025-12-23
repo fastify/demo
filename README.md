@@ -18,12 +18,16 @@ Install the dependencies:
 npm install
 ```
 
-### Database
+### Environment variables
 
-Prepare the environment file:
+Create a `.env` file based on `.env.example` and update values as needed.
+
+Make sure `COOKIE_SECRET` is set to a 32-byte secret (64 hex chars) in your `.env`. You can generate a random secret with:
 ```bash
-cp .env.example .env
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
+
+### Database
 
 Run MySQL with Docker:
 ```bash
