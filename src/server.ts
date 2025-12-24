@@ -38,6 +38,13 @@ function getLoggerOptions () {
 
 const app = Fastify({
   logger: getLoggerOptions(),
+  // Apply recommended timeouts to prevent slow or idle clients from holding connections open
+  connectionTimeout: 120_000,
+  requestTimeout: 60_000,
+  keepAliveTimeout: 10_000,
+  http: {
+    headersTimeout: 15_000
+  },
   ajv: {
     customOptions: {
       coerceTypes: 'array', // change type of data to match type keyword
