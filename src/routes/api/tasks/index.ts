@@ -13,8 +13,6 @@ import {
 import path from 'node:path'
 import { stringify } from 'csv-stringify'
 import { createGzip } from 'node:zlib'
-import { PassThrough } from 'node:stream'
-import { pipeline } from 'node:stream/promises'
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   const { tasksRepository, tasksFileManager } = fastify
@@ -319,8 +317,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     },
     async function (request, reply) {
       const queryStream = await tasksRepository.createStream()
-      const csvTransform = stringify({ header: true })
-      const gzip = createGzip()
+      const csvTransform = stringify({ header: true, columns: undefined })
 
       reply
         .header('Content-Type', 'application/gzip')
@@ -329,10 +326,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           `attachment; filename="${encodeURIComponent('tasks.csv.gz')}"`
         )
 
-      const out = new PassThrough()
-      reply.send(out)
-
-      await pipeline(queryStream, csvTransform, gzip, out)
+      return queryStream.pipe(csvTransform).pipe(createGzip())
     }
   )
 }
