@@ -33,20 +33,19 @@ jobs:
         node-version: [22, 24]
 
     services:
-      mysql:
-        image: mysql:8.4
+      postgres:
+        image: postgres:16
         ports:
-          - 3306:3306
+          - 5432:5432
         env:
-          MYSQL_ROOT_PASSWORD: root_password
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
         options: >-
-          --health-cmd="mysqladmin ping -u$MYSQL_USER -p$MYSQL_PASSWORD"
+          --health-cmd="pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
     steps:
       - uses: actions/checkout@v6
@@ -77,11 +76,11 @@ jobs:
 
       - name: Test
         env:
-          MYSQL_HOST: localhost
-          MYSQL_PORT: 3306
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: test_user
-          MYSQL_PASSWORD: test_password
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: 5432
+          POSTGRES_DATABASE: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
           # COOKIE_SECRET is dynamically generated and loaded from the environment
           COOKIE_NAME: 'sessid'
           RATE_LIMIT_MAX: 4
