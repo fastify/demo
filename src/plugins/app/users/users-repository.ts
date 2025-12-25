@@ -24,7 +24,7 @@ export function createUsersRepository (fastify: FastifyInstance) {
 
     async updatePassword (email: string, hashedPassword: string) {
       return knex('users')
-        .update({ password: hashedPassword })
+        .update({ password: hashedPassword, updated_at: knex.fn.now() })
         .where({ email })
     },
 

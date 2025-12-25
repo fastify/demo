@@ -10,7 +10,3 @@ CREATE TABLE tasks (
   FOREIGN KEY (author_id) REFERENCES users(id),
   FOREIGN KEY (assigned_user_id) REFERENCES users(id)
 );
-
-CREATE TRIGGER set_tasks_updated_at
-BEFORE UPDATE ON tasks
-FOR EACH ROW EXECUTE FUNCTION set_updated_at();

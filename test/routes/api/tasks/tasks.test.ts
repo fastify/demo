@@ -324,10 +324,12 @@ describe('Tasks api (logged user only)', () => {
     it('should update an existing task', async (t) => {
       const app = await build(t)
 
+      const originalUpdatedAt = '2025-01-01T10:00:00.000Z'
       const taskData = {
         name: 'Task to Update',
         author_id: 1,
-        status: TaskStatusEnum.New
+        status: TaskStatusEnum.New,
+        updated_at: originalUpdatedAt
       }
       const newTaskId = await createTask(app, taskData)
 
@@ -347,6 +349,11 @@ describe('Tasks api (logged user only)', () => {
         .where({ id: newTaskId })
         .first()
       assert.equal(updatedTask?.name, updatedData.name)
+      assert.ok(updatedTask?.updated_at)
+      assert.ok(
+        new Date(updatedTask.updated_at as unknown as string).getTime() >
+          new Date(originalUpdatedAt).getTime()
+      )
     })
 
     it('should return 404 if task is not found for update', async (t) => {
