@@ -5,8 +5,8 @@ import { FastifyInstance } from 'fastify'
 import { scryptHash } from '../../../../src/plugins/app/password-manager.js'
 
 async function createUser (app: FastifyInstance, userData: Partial<{ username: string; email: string; password: string }>) {
-  const [id] = await app.knex('users').insert(userData)
-  return id
+  const [row] = await app.knex('users').insert(userData).returning('id')
+  return row.id
 }
 
 async function deleteUser (app: FastifyInstance, username: string) {

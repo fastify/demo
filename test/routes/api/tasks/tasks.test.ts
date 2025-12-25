@@ -19,14 +19,13 @@ async function createUser (
   app: FastifyInstance,
   userData: Partial<{ email: string; username: string; password: string }>
 ) {
-  const [id] = await app.knex('users').insert(userData)
-  return id
+  const [row] = await app.knex('users').insert(userData).returning('id')
+  return row.id
 }
 
 async function createTask (app: FastifyInstance, taskData: Partial<Task>) {
-  const [id] = await app.knex<Task>('tasks').insert(taskData)
-
-  return id
+  const [row] = await app.knex<Task>('tasks').insert(taskData).returning('id')
+  return row.id
 }
 
 async function uploadImageForTask (
@@ -73,24 +72,32 @@ describe('Tasks api (logged user only)', () => {
       firstTaskId = await createTask(app, {
         name: 'Task 1',
         author_id: userId1,
-        status: TaskStatusEnum.New
+        status: TaskStatusEnum.New,
+        created_at: '2025-01-01T10:00:00.000Z',
+        updated_at: '2025-01-01T10:00:00.000Z'
       })
       await createTask(app, {
         name: 'Task 2',
         author_id: userId1,
         assigned_user_id: userId2,
-        status: TaskStatusEnum.InProgress
+        status: TaskStatusEnum.InProgress,
+        created_at: '2025-01-01T10:01:00.000Z',
+        updated_at: '2025-01-01T10:01:00.000Z'
       })
       await createTask(app, {
         name: 'Task 3',
         author_id: userId2,
-        status: TaskStatusEnum.Completed
+        status: TaskStatusEnum.Completed,
+        created_at: '2025-01-01T10:02:00.000Z',
+        updated_at: '2025-01-01T10:02:00.000Z'
       })
       await createTask(app, {
         name: 'Task 4',
         author_id: userId1,
         assigned_user_id: userId1,
-        status: TaskStatusEnum.OnHold
+        status: TaskStatusEnum.OnHold,
+        created_at: '2025-01-01T10:03:00.000Z',
+        updated_at: '2025-01-01T10:03:00.000Z'
       })
 
       app.close()
@@ -133,9 +140,9 @@ describe('Tasks api (logged user only)', () => {
 
       assert.strictEqual(total, 4)
       assert.strictEqual(tasks.length, 1)
-      assert.strictEqual(tasks[0].name, 'Task 2')
-      assert.strictEqual(tasks[0].author_id, userId1)
-      assert.strictEqual(tasks[0].status, TaskStatusEnum.InProgress)
+      assert.strictEqual(tasks[0].name, 'Task 3')
+      assert.strictEqual(tasks[0].author_id, userId2)
+      assert.strictEqual(tasks[0].status, TaskStatusEnum.Completed)
     })
 
     it('should filter tasks by assigned_user_id', async (t) => {
@@ -340,6 +347,7 @@ describe('Tasks api (logged user only)', () => {
         .where({ id: newTaskId })
         .first()
       assert.equal(updatedTask?.name, updatedData.name)
+      assert.ok(updatedTask?.updated_at)
     })
 
     it('should return 404 if task is not found for update', async (t) => {

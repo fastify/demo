@@ -1,20 +1,19 @@
 services:
   db:
-    image: mysql:8.4
+    image: postgres:18
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - 3306:3306
+      - 5432:5432
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-u${MYSQL_USER}", "-p${MYSQL_PASSWORD}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
       interval: 10s
       timeout: 5s
       retries: 3
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql
 
 volumes:
   db_data:

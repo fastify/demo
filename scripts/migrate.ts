@@ -1,24 +1,21 @@
-import mysql, { FieldPacket } from 'mysql2/promise'
+import { Client, QueryResult } from 'pg'
 import path from 'node:path'
 import fs from 'node:fs'
 import Postgrator from 'postgrator'
 
-interface PostgratorResult {
-  rows: any;
-  fields: FieldPacket[];
-}
+type PostgratorResult = QueryResult
 
 async function doMigration (): Promise<void> {
-  const connection = await mysql.createConnection({
-    multipleStatements: true,
-    host: process.env.MYSQL_HOST,
-    port: Number(process.env.MYSQL_PORT),
-    database: process.env.MYSQL_DATABASE,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD
+  const connection = new Client({
+    host: process.env.POSTGRES_HOST,
+    port: Number(process.env.POSTGRES_PORT),
+    database: process.env.POSTGRES_DATABASE,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD
   })
 
   try {
+    await connection.connect()
     const migrationDir = path.join(import.meta.dirname, '../migrations')
 
     if (!fs.existsSync(migrationDir)) {
@@ -29,11 +26,10 @@ async function doMigration (): Promise<void> {
 
     const postgrator = new Postgrator({
       migrationPattern: path.join(migrationDir, '*'),
-      driver: 'mysql',
-      database: process.env.MYSQL_DATABASE,
+      driver: 'pg',
+      database: process.env.POSTGRES_DATABASE,
       execQuery: async (query: string): Promise<PostgratorResult> => {
-        const [rows, fields] = await connection.query(query)
-        return { rows, fields }
+        return await connection.query(query)
       },
       schemaTable: 'schemaversion'
     })

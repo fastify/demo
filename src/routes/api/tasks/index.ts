@@ -316,18 +316,15 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       }
     },
     async function (request, reply) {
-      const queryStream = tasksRepository.createStream()
+      const queryStream = await tasksRepository.createStream()
+      const csvTransform = stringify({ header: true, columns: undefined })
 
-      const csvTransform = stringify({
-        header: true,
-        columns: undefined
-      })
-
-      reply.header('Content-Type', 'application/gzip')
-      reply.header(
-        'Content-Disposition',
-      `attachment; filename="${encodeURIComponent('tasks.csv.gz')}"`
-      )
+      reply
+        .header('Content-Type', 'application/gzip')
+        .header(
+          'Content-Disposition',
+          `attachment; filename="${encodeURIComponent('tasks.csv.gz')}"`
+        )
 
       return queryStream.pipe(csvTransform).pipe(createGzip())
     }
