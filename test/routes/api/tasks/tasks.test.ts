@@ -866,6 +866,14 @@ describe('Tasks api (logged user only)', () => {
         url: '/api/tasks/download/csv'
       })
 
+      console.log('[test gzipped csv] status', res.statusCode)
+      console.log('[test gzipped csv] content-type', res.headers['content-type'])
+      console.log(
+        '[test gzipped csv] content-disposition',
+        res.headers['content-disposition']
+      )
+      console.log('[test gzipped csv] payload-bytes', res.rawPayload.length)
+
       assert.strictEqual(res.statusCode, 200)
       assert.strictEqual(res.headers['content-type'], 'application/gzip')
       assert.strictEqual(

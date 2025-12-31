@@ -318,6 +318,21 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     async function (request, reply) {
       const queryStream = await tasksRepository.createStream()
       const csvTransform = stringify({ header: true, columns: undefined })
+      const gzipStream = createGzip()
+
+      console.log('[tasks csv] start', { requestId: request.id })
+      queryStream.on('error', (err) => {
+        console.log('[tasks csv] queryStream error', err)
+      })
+      csvTransform.on('error', (err) => {
+        console.log('[tasks csv] csvTransform error', err)
+      })
+      gzipStream.on('error', (err) => {
+        console.log('[tasks csv] gzipStream error', err)
+      })
+      gzipStream.on('finish', () => {
+        console.log('[tasks csv] done', { requestId: request.id })
+      })
 
       reply
         .header('Content-Type', 'application/gzip')
@@ -326,7 +341,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
           `attachment; filename="${encodeURIComponent('tasks.csv.gz')}"`
         )
 
-      return queryStream.pipe(csvTransform).pipe(createGzip())
+      return queryStream.pipe(csvTransform).pipe(gzipStream)
     }
   )
 }
