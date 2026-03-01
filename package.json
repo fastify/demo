@@ -65,7 +65,7 @@
     "fastify-tsconfig": "^3.0.0",
     "form-data": "^4.0.4",
     "glob": "^11.0.3",
-    "neostandard": "^0.12.2",
+    "neostandard": "^0.13.0",
     "pino-pretty": "^13.1.2",
     "tsx": "^4.20.5",
     "typescript": "~5.9.2"
