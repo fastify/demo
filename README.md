@@ -8,7 +8,7 @@ The aim of this repository is to provide a concrete example of a Fastify applica
 
 ## About the Application
 
-This demo is a simple task management API. 
+This demo is a simple task management API.
 It allows users to create, retrieve, update, and delete tasks.
 Additional features include file uploads, CSV downloads, task assignment, and role-based access control.
 
