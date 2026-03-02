@@ -71,14 +71,16 @@ function createRepository (fastify: FastifyInstance) {
     },
 
     async create (newTask: CreateTask) {
-      const [id] = await knex<Task>('tasks').insert(newTask)
-      return id
+      const [row] = await knex<Task>('tasks')
+        .insert(newTask)
+        .returning('id')
+      return row.id
     },
 
     async update (id: number, changes: UpdateTask, trx?: Knex) {
       const affectedRows = await (trx ?? knex)('tasks')
         .where({ id })
-        .update(changes)
+        .update({ ...changes, updated_at: knex.fn.now() })
 
       if (affectedRows === 0) {
         return null
@@ -90,7 +92,7 @@ function createRepository (fastify: FastifyInstance) {
     async deleteFilename (filename: string, value: string | null, trx: Knex) {
       const affectedRows = await trx('tasks')
         .where({ filename })
-        .update({ filename: value })
+        .update({ filename: value, updated_at: knex.fn.now() })
 
       return affectedRows > 0
     },
