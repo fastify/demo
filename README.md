@@ -25,8 +25,7 @@ Create a `.env` file based on `.env.example` and update values as needed.
 Make sure `COOKIE_SECRET` is set to a secret with at least 32 characters.
 
 ### Database
-
-You can run a MySQL instance with Docker:
+You can run a PostgreSQL instance with Docker:
 ```bash
 docker compose up
 ```

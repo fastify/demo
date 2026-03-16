@@ -1,4 +1,4 @@
-import { createConnection, Connection } from 'mysql2/promise'
+import { Client } from 'pg'
 import { scryptHash } from '../src/plugins/app/password-manager.js'
 
 if (Number(process.env.CAN_SEED_DATABASE) !== 1) {
@@ -6,16 +6,16 @@ if (Number(process.env.CAN_SEED_DATABASE) !== 1) {
 }
 
 async function seed () {
-  const connection: Connection = await createConnection({
-    multipleStatements: true,
-    host: process.env.MYSQL_HOST,
-    port: Number(process.env.MYSQL_PORT),
-    database: process.env.MYSQL_DATABASE,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD
+  const connection = new Client({
+    host: process.env.POSTGRES_HOST,
+    port: Number(process.env.POSTGRES_PORT),
+    database: process.env.POSTGRES_DATABASE,
+    user: process.env.POSTGRES_USER,
+    password: process.env.POSTGRES_PASSWORD
   })
 
   try {
+    await connection.connect()
     await truncateTables(connection)
     await seedUsers(connection)
   } catch (error) {
@@ -25,28 +25,24 @@ async function seed () {
   }
 }
 
-async function truncateTables (connection: Connection) {
-  const [tables]: any[] = await connection.query('SHOW TABLES')
+async function truncateTables (connection: Client) {
+  const { rows } = await connection.query(
+    "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
+  )
 
-  if (tables.length > 0) {
-    const tableNames = tables.map(
-      (row: Record<string, string>) => row[`Tables_in_${process.env.MYSQL_DATABASE}`]
-    )
-    const truncateQueries = tableNames
-      .map((tableName: string) => `TRUNCATE TABLE \`${tableName}\``)
-      .join('; ')
-
-    await connection.query('SET FOREIGN_KEY_CHECKS = 0')
-    try {
-      await connection.query(truncateQueries)
-      console.log('All tables have been truncated successfully.')
-    } finally {
-      await connection.query('SET FOREIGN_KEY_CHECKS = 1')
-    }
+  if (rows.length === 0) {
+    return
   }
+
+  const tableNames = rows
+    .map((row) => `"${String(row.tablename).replace(/"/g, '""')}"`)
+    .join(', ')
+
+  await connection.query(`TRUNCATE TABLE ${tableNames} RESTART IDENTITY CASCADE`)
+  console.log('All tables have been truncated successfully.')
 }
 
-async function seedUsers (connection: Connection) {
+async function seedUsers (connection: Client) {
   const users = [
     { username: 'basic', email: 'basic@example.com' },
     { username: 'moderator', email: 'moderator@example.com' },
@@ -59,27 +55,38 @@ async function seedUsers (connection: Connection) {
   const rolesAccumulator: number[] = []
 
   for (const user of users) {
-    const [userResult] = await connection.execute(`
+    const userResult = await connection.query(
+      `
       INSERT INTO users (username, email, password)
-      VALUES (?, ?, ?)
-    `, [user.username, user.email, hash])
+      VALUES ($1, $2, $3)
+      RETURNING id
+      `,
+      [user.username, user.email, hash]
+    )
 
-    const userId = (userResult as { insertId: number }).insertId
+    const userId = userResult.rows[0]?.id
 
-    const [roleResult] = await connection.execute(`
+    const roleResult = await connection.query(
+      `
       INSERT INTO roles (name)
-      VALUES (?)
-    `, [user.username])
+      VALUES ($1)
+      RETURNING id
+      `,
+      [user.username]
+    )
 
-    const newRoleId = (roleResult as { insertId: number }).insertId
+    const newRoleId = roleResult.rows[0]?.id
 
     rolesAccumulator.push(newRoleId)
 
     for (const roleId of rolesAccumulator) {
-      await connection.execute(`
+      await connection.query(
+        `
         INSERT INTO user_roles (user_id, role_id)
-        VALUES (?, ?)
-      `, [userId, roleId])
+        VALUES ($1, $2)
+        `,
+        [userId, roleId]
+      )
     }
   }
 
