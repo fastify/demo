@@ -1,4 +1,4 @@
-import { Static, Type } from '@sinclair/typebox'
+import { Static, Type } from 'typebox'
 import { EmailSchema, StringSchema } from './common.js'
 
 export const CredentialsSchema = Type.Object({

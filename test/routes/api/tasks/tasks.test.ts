@@ -7,7 +7,7 @@ import {
   TaskPaginationResultSchema
 } from '../../../../src/schemas/tasks.js'
 import { FastifyInstance } from 'fastify'
-import { Static } from '@sinclair/typebox'
+import { Static } from 'typebox'
 import fs from 'node:fs'
 import { pipeline } from 'node:stream/promises'
 import path from 'node:path'

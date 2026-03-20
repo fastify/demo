@@ -1,4 +1,4 @@
-import { ReturnType, Static } from '@sinclair/typebox'
+import { ReturnType, Static } from 'typebox'
 import { FastifyInstance } from 'fastify'
 import fp from 'fastify-plugin'
 import {
