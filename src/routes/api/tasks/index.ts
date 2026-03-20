@@ -309,7 +309,7 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
     {
       schema: {
         response: {
-          200: { type: 'string', contentMediaType: 'application/gzip' },
+          200: Type.Unknown({ type: 'string', contentMediaType: 'application/gzip' }),
           400: Type.Object({ message: Type.String() })
         },
         tags: ['Tasks']

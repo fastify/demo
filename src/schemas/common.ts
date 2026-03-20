@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox'
+import { Type } from 'typebox'
 
 export const StringSchema = Type.String({
   minLength: 1,
