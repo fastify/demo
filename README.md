@@ -105,4 +105,4 @@ npm run lint:fix
 ```
 
 ## Learn More
-To learn more about Fastify, check out the [Fastify documentation](https://www.fastify.io/docs/latest/).
+To learn more about Fastify, check out the [Fastify documentation](https://fastify.dev/docs/latest/).
