@@ -1,8 +1,8 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-      "baseUrl": ".",
+      "rootDir": "..",
       "noEmit": false
     },
-    "include": ["@types", "../src/**/*.ts", "**/*.ts"]
+    "include": ["../@types/**/*.d.ts", "../src/**/*.ts", "**/*.ts"]
 }
