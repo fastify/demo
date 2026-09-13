@@ -76,6 +76,11 @@ function createRepository (fastify: FastifyInstance) {
     },
 
     async update (id: number, changes: UpdateTask, trx?: Knex) {
+      if (Object.keys(changes).length === 0) {
+        // Knex throws on an empty .update({}) call, so just return the task as-is
+        return this.findById(id)
+      }
+
       const affectedRows = await (trx ?? knex)('tasks')
         .where({ id })
         .update(changes)
