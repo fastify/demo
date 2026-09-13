@@ -1,8 +1,6 @@
 /**
- * This file is here only to show you how to proceed if you would
- * like to run your application as a standalone executable.
- *
- * You can launch it with the command `npm run standalone`
+ * Builds and starts the Fastify server directly, no CLI wrapper.
+ * This is the actual entry point `npm run dev`/`npm run start` use.
  */
 
 import Fastify from 'fastify'

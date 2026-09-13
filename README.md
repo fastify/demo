@@ -86,13 +86,6 @@ To run the tests:
 npm run test
 ```
 
-### Standalone
-`dev` and `start` leverage [fastify-cli](https://github.com/fastify/fastify-cli),
-but you can run the demo as a standalone executable (see [server.ts](./src/server.ts)):
-```bash
-npm run standalone
-```
-
 ### Linting
 To check for linting errors:
 ```bash

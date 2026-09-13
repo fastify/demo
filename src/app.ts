@@ -1,5 +1,5 @@
 /**
- * If you would like to turn your application into a standalone executable, look at server.js file
+ * This plugin is registered by src/server.ts, the app's actual entry point.
  */
 
 import path from 'node:path'
