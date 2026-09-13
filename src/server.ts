@@ -1,8 +1,3 @@
-/**
- * Builds and starts the Fastify server directly, no CLI wrapper.
- * This is the actual entry point `npm run dev`/`npm run start` use.
- */
-
 import Fastify from 'fastify'
 import fp from 'fastify-plugin'
 
