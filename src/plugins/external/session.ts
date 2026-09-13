@@ -22,6 +22,7 @@ export default fp(async (fastify) => {
     cookie: {
       secure: fastify.config.COOKIE_SECURED,
       httpOnly: true,
+      sameSite: 'lax',
       maxAge: 1800000
     }
   })
