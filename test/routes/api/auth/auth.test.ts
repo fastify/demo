@@ -4,7 +4,7 @@ import { build, expectValidationError } from '../../../helper.js'
 
 describe('Auth api', () => {
   describe('POST /api/auth/login', () => {
-    it('Transaction should rollback on error', async (t: { mock: { method: (arg0: any, arg1: string) => { mock: any } } }) => {
+    it('Transaction should rollback on error', async (t) => {
       const app = await build(t)
 
       const { mock: mockCompare } = t.mock.method(app.passwordManager, 'compare')
@@ -33,7 +33,7 @@ describe('Auth api', () => {
       assert.deepStrictEqual(arg.err.message, 'Kaboom!')
     })
 
-    it('should return 400 if credentials payload is invalid', async (t: any) => {
+    it('should return 400 if credentials payload is invalid', async (t) => {
       const app = await build(t)
 
       const invalidPayload = {
@@ -53,7 +53,7 @@ describe('Auth api', () => {
       )
     })
 
-    it('should authenticate with valid credentials', async (t: any) => {
+    it('should authenticate with valid credentials', async (t) => {
       const app = await build(t)
 
       const res = await app.inject({
@@ -66,12 +66,12 @@ describe('Auth api', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      const sessionCookie = res.cookies.find((cookie: { name: any }) => cookie.name === app.config.COOKIE_NAME)
+      const sessionCookie = res.cookies.find((cookie) => cookie.name === app.config.COOKIE_NAME)
       assert.ok(sessionCookie)
       assert.strictEqual(String(sessionCookie.sameSite).toLowerCase(), 'lax')
     })
 
-    it('should not authneticate with invalid credentials', async (t: any) => {
+    it('should not authneticate with invalid credentials', async (t) => {
       const app = await build(t)
 
       const testCases = [
