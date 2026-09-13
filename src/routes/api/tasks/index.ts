@@ -219,8 +219,8 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
         oldTempFilename = await tasksFileManager.moveOldToTemp(oldFilename)
       }
 
-      return fastify.knex
-        .transaction(async (trx) => {
+      try {
+        const result = await fastify.knex.transaction(async (trx) => {
           const newFilename = `${id}_${file.filename}`
           await tasksRepository.update(id, { filename: newFilename }, trx)
 
@@ -228,13 +228,19 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
 
           return { message: 'File uploaded successfully' }
         })
-        .catch(async (err) => {
-          if (oldFilename && oldTempFilename) {
-            await tasksFileManager.moveTempToOld(oldTempFilename, oldFilename)
-          }
 
-          throw err
-        })
+        if (oldTempFilename) {
+          await tasksFileManager.deleteTemp(oldTempFilename)
+        }
+
+        return result
+      } catch (err) {
+        if (oldFilename && oldTempFilename) {
+          await tasksFileManager.moveTempToOld(oldTempFilename, oldFilename)
+        }
+
+        throw err
+      }
     }
   )
 

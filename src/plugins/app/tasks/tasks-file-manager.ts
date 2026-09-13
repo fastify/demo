@@ -56,6 +56,11 @@ function createUploader (fastify: FastifyInstance) {
       await fileManager.unlink(filePath)
     },
 
+    async deleteTemp (tempFilename: string) {
+      const tempFilePath = buildTempFilePath(tempFilename)
+      await fileManager.unlink(tempFilePath)
+    },
+
     buildFilePath
   }
 }

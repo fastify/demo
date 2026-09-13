@@ -48,6 +48,22 @@ async function uploadImageForTask (
   await pipeline(file, writeStream)
 }
 
+async function uploadFile (
+  app: FastifyInstance,
+  taskId: number | string,
+  filePath: string
+) {
+  const form = new FormData()
+  form.append('file', fs.createReadStream(filePath))
+
+  return app.injectWithLogin('basic@example.com', {
+    method: 'POST',
+    url: `/api/tasks/${taskId}/upload`,
+    payload: form,
+    headers: form.getHeaders()
+  })
+}
+
 describe('Tasks api (logged user only)', () => {
   describe('GET /api/tasks', () => {
     let app: FastifyInstance
@@ -552,15 +568,7 @@ describe('Tasks api (logged user only)', () => {
       it('should upload a valid image for a task', async (t) => {
         app = await build(t)
 
-        const form = new FormData()
-        form.append('file', fs.createReadStream(testImagePath))
-
-        const res = await app.injectWithLogin('basic@example.com', {
-          method: 'POST',
-          url: `/api/tasks/${taskId}/upload`,
-          payload: form,
-          headers: form.getHeaders()
-        })
+        const res = await uploadFile(app, taskId, testImagePath)
 
         assert.strictEqual(res.statusCode, 200)
 
@@ -568,18 +576,25 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(message, 'File uploaded successfully')
       })
 
+      it('should not leave the old file behind in temp/ after a successful re-upload', async (t) => {
+        app = await build(t)
+
+        const tempDir = path.join(uploadDirTask, 'temp')
+
+        const firstRes = await uploadFile(app, taskId, testImagePath)
+        assert.strictEqual(firstRes.statusCode, 200)
+
+        const secondRes = await uploadFile(app, taskId, testImagePath)
+        assert.strictEqual(secondRes.statusCode, 200)
+
+        const leftoverTempFiles = fs.readdirSync(tempDir)
+        assert.deepStrictEqual(leftoverTempFiles, [])
+      })
+
       it('should return 404 if task not found', async (t) => {
         app = await build(t)
 
-        const form = new FormData()
-        form.append('file', fs.createReadStream(testImagePath))
-
-        const res = await app.injectWithLogin('basic@example.com', {
-          method: 'POST',
-          url: '/api/tasks/100000/upload',
-          payload: form,
-          headers: form.getHeaders()
-        })
+        const res = await uploadFile(app, 100000, testImagePath)
 
         assert.strictEqual(res.statusCode, 404)
 
@@ -609,15 +624,7 @@ describe('Tasks api (logged user only)', () => {
       it('should reject an invalid file type', async (t) => {
         app = await build(t)
 
-        const form = new FormData()
-        form.append('file', fs.createReadStream(testCsvPath))
-
-        const res = await app.injectWithLogin('basic@example.com', {
-          method: 'POST',
-          url: `/api/tasks/${taskId}/upload`,
-          payload: form,
-          headers: form.getHeaders()
-        })
+        const res = await uploadFile(app, taskId, testCsvPath)
 
         expectValidationError(res, 'Invalid file type')
       })
@@ -636,15 +643,7 @@ describe('Tasks api (logged user only)', () => {
          */
         fs.writeFileSync(largeTestImagePath, largeBuffer, { mode: 0o600 })
 
-        const form = new FormData()
-        form.append('file', fs.createReadStream(largeTestImagePath))
-
-        const res = await app.injectWithLogin('basic@example.com', {
-          method: 'POST',
-          url: `/api/tasks/${taskId}/upload`,
-          payload: form,
-          headers: form.getHeaders()
-        })
+        const res = await uploadFile(app, taskId, largeTestImagePath)
 
         expectValidationError(res, 'File size limit exceeded')
       })
@@ -664,14 +663,7 @@ describe('Tasks api (logged user only)', () => {
 
         const { mock: mockLogError } = t.mock.method(app.log, 'error')
 
-        const form = new FormData()
-        form.append('file', fs.createReadStream(testImagePath))
-        const res = await app.injectWithLogin('basic@example.com', {
-          method: 'POST',
-          url: `/api/tasks/${taskId}/upload`,
-          payload: form,
-          headers: form.getHeaders()
-        })
+        const res = await uploadFile(app, taskId, testImagePath)
 
         assert.strictEqual(res.statusCode, 500)
         assert.strictEqual(mockLogError.callCount(), 1)
