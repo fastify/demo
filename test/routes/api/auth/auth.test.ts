@@ -71,6 +71,29 @@ describe('Auth api', () => {
       )
     })
 
+    it('should regenerate the session ID on login, even when a valid session cookie was already presented', async (t) => {
+      const app = await build(t)
+
+      const firstRes = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        payload: { email: 'basic@example.com', password: 'Password123$' }
+      })
+      const firstCookie = firstRes.cookies.find((cookie) => cookie.name === app.config.COOKIE_NAME)
+      assert.ok(firstCookie)
+
+      const secondRes = await app.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        cookies: { [app.config.COOKIE_NAME]: firstCookie.value },
+        payload: { email: 'moderator@example.com', password: 'Password123$' }
+      })
+      const secondCookie = secondRes.cookies.find((cookie) => cookie.name === app.config.COOKIE_NAME)
+      assert.ok(secondCookie)
+
+      assert.notStrictEqual(secondCookie.value, firstCookie.value)
+    })
+
     it('should not authneticate with invalid credentials', async (t) => {
       const app = await build(t)
 

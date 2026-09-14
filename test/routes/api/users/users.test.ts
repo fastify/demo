@@ -36,7 +36,7 @@ describe('Users API', async () => {
   it('Should enforce rate limiting by returning a 429 status after exceeding 3 password update attempts within 1 minute', async () => {
     await createUser(app, { username: 'random-user-0', email: 'random-user-0@example.com', password: hash })
 
-    const loginResponse = await app.injectWithLogin('random-user-0@example.com', {
+    const loginResponse = await app.inject({
       method: 'POST',
       url: '/api/auth/login',
       payload: {
@@ -136,7 +136,7 @@ describe('Users API', async () => {
 
   it('Should return 401 if user does not exist in the database', async () => {
     await createUser(app, { username: 'random-user-5', email: 'random-user-5@example.com', password: hash })
-    const loginResponse = await app.injectWithLogin('random-user-5@example.com', {
+    const loginResponse = await app.inject({
       method: 'POST',
       url: '/api/auth/login',
       payload: {
