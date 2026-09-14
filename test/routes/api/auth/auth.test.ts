@@ -66,9 +66,9 @@ describe('Auth api', () => {
       })
 
       assert.strictEqual(res.statusCode, 200)
-      assert.ok(
-        res.cookies.some((cookie) => cookie.name === app.config.COOKIE_NAME)
-      )
+      const sessionCookie = res.cookies.find((cookie) => cookie.name === app.config.COOKIE_NAME)
+      assert.ok(sessionCookie)
+      assert.strictEqual(String(sessionCookie.sameSite).toLowerCase(), 'lax')
     })
 
     it('should not authneticate with invalid credentials', async (t) => {
