@@ -133,9 +133,10 @@ describe('Tasks api (logged user only)', () => {
 
       assert.strictEqual(total, 4)
       assert.strictEqual(tasks.length, 1)
-      assert.strictEqual(tasks[0].name, 'Task 2')
-      assert.strictEqual(tasks[0].author_id, userId1)
-      assert.strictEqual(tasks[0].status, TaskStatusEnum.InProgress)
+      // order: 4, 3, 2, 1 by id -- page 1 = Task 4, page 2 = Task 3
+      assert.strictEqual(tasks[0].name, 'Task 3')
+      assert.strictEqual(tasks[0].author_id, userId2)
+      assert.strictEqual(tasks[0].status, TaskStatusEnum.Completed)
     })
 
     it('should filter tasks by assigned_user_id', async (t) => {

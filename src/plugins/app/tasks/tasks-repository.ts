@@ -50,7 +50,12 @@ function createRepository (fastify: FastifyInstance) {
       const tasks = await query
         .limit(q.limit)
         .offset(offset)
-        .orderBy('created_at', q.order)
+        // created_at only stores whole seconds, so tasks created in the same
+        // second tie exactly. While id is unique, so it breaks the tie
+        .orderBy([
+          { column: 'created_at', order: q.order },
+          { column: 'id', order: q.order }
+        ])
 
       return {
         tasks,
