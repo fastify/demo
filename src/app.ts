@@ -1,7 +1,3 @@
-/**
- * This plugin is registered by src/server.ts, the app's actual entry point.
- */
-
 import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
 import { FastifyError, FastifyInstance, FastifyPluginOptions } from 'fastify'
