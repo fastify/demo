@@ -1,7 +1,3 @@
-/**
- * If you would like to turn your application into a standalone executable, look at server.js file
- */
-
 import path from 'node:path'
 import fastifyAutoload from '@fastify/autoload'
 import { FastifyError, FastifyInstance, FastifyPluginOptions } from 'fastify'

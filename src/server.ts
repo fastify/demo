@@ -1,10 +1,3 @@
-/**
- * This file is here only to show you how to proceed if you would
- * like to run your application as a standalone executable.
- *
- * You can launch it with the command `npm run standalone`
- */
-
 import Fastify from 'fastify'
 import fp from 'fastify-plugin'
 
