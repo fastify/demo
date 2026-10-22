@@ -75,7 +75,7 @@ export async function build (t?: TestContext) {
   app.login = login
   app.injectWithLogin = injectWithLogin
 
-  // If we pass the test contest, it will close the app after we are done
+  // If we pass the test context, it will close the app after we are done
   if (t) {
     t.after(() => app.close())
   }

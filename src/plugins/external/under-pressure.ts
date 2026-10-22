@@ -26,7 +26,7 @@ export const autoConfig = (fastify: FastifyInstance) => {
 }
 
 /**
- * A Fastify plugin for mesuring process load and automatically
+ * A Fastify plugin for measuring process load and automatically
  * handle of "Service Unavailable"
  *
  * @see {@link https://github.com/fastify/under-pressure}

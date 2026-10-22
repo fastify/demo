@@ -71,7 +71,7 @@ describe('Auth api', () => {
       assert.strictEqual(String(sessionCookie.sameSite).toLowerCase(), 'lax')
     })
 
-    it('should not authneticate with invalid credentials', async (t) => {
+    it('should not authenticate with invalid credentials', async (t) => {
       const app = await build(t)
 
       const testCases = [
