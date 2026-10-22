@@ -704,17 +704,17 @@ describe('Tasks api (logged user only)', () => {
         assert.deepStrictEqual(originalFile, res.rawPayload)
       })
 
-      it('should return 404 error for non-existant filename', async (t) => {
+      it('should return 404 error for nonexistent filename', async (t) => {
         app = await build(t)
 
         const res = await app.injectWithLogin('basic@example.com', {
           method: 'GET',
-          url: '/api/tasks/non-existant/image'
+          url: '/api/tasks/nonexistent/image'
         })
 
         assert.strictEqual(res.statusCode, 404)
         const { message } = JSON.parse(res.payload)
-        assert.strictEqual(message, 'No task has filename "non-existant"')
+        assert.strictEqual(message, 'No task has filename "nonexistent"')
       })
     })
 
@@ -765,20 +765,20 @@ describe('Tasks api (logged user only)', () => {
         assert.strictEqual(files.length, 0)
       })
 
-      it('should return 404 for non-existant task with filename for deletion', async (t) => {
+      it('should return 404 for nonexistent task with filename for deletion', async (t) => {
         app = await build(t)
 
         const res = await app.injectWithLogin('basic@example.com', {
           method: 'DELETE',
-          url: '/api/tasks/non-existant/image'
+          url: '/api/tasks/nonexistent/image'
         })
 
         assert.strictEqual(res.statusCode, 404)
         const { message } = JSON.parse(res.payload)
-        assert.strictEqual(message, 'No task has filename "non-existant"')
+        assert.strictEqual(message, 'No task has filename "nonexistent"')
       })
 
-      it('should return 204 for non-existant file in upload dir', async (t) => {
+      it('should return 204 for nonexistent file in upload dir', async (t) => {
         const app = await build(t)
 
         await createTask(app, {
