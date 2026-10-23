@@ -52,7 +52,7 @@
     "@fastify/under-pressure": "^9.1.0",
     "close-with-grace": "^2.5.0",
     "csv-stringify": "^6.8.1",
-    "fastify": "^5.10.0",
+    "fastify": "github:fastify/fastify#refactor/types",
     "fastify-plugin": "^6.0.0",
     "knex": "^3.3.0",
     "mysql2": "^3.23.1",
