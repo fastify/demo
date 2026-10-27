@@ -360,6 +360,21 @@ describe('Tasks api (logged user only)', () => {
       const payload = JSON.parse(res.payload)
       assert.strictEqual(payload.message, 'Task not found')
     })
+
+    it('should return the task unchanged, not throw, when tasksRepository.update is called with no changes', async (t) => {
+      const app = await build(t)
+      const taskData = {
+        name: 'Task left untouched',
+        author_id: 1,
+        status: TaskStatusEnum.New
+      }
+      const newTaskId = await createTask(app, taskData)
+
+      const updatedTask = await app.tasksRepository.update(newTaskId, {})
+
+      assert.strictEqual(updatedTask?.name, taskData.name)
+      assert.strictEqual(updatedTask?.status, TaskStatusEnum.New)
+    })
   })
 
   describe('DELETE /api/tasks/:id', () => {
